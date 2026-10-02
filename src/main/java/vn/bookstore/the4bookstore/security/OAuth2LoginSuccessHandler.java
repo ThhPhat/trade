@@ -63,6 +63,12 @@ public class OAuth2LoginSuccessHandler extends SavedRequestAwareAuthenticationSu
         boolean isAdminOrManager = authentication.getAuthorities().stream().anyMatch(a ->
                 "ROLE_ADMIN".equals(a.getAuthority()) || "ROLE_QUANLY".equals(a.getAuthority())
         );
+        boolean isWarehouse = authentication.getAuthorities().stream().anyMatch(a ->
+                "ROLE_NHANVIENKHO".equals(a.getAuthority())
+        );
+        boolean isSales = authentication.getAuthorities().stream().anyMatch(a ->
+                "ROLE_NHANVIENBANHANG".equals(a.getAuthority())
+        );
 
         SavedRequest savedRequest = requestCache.getRequest(request, response);
 
@@ -73,6 +79,24 @@ public class OAuth2LoginSuccessHandler extends SavedRequestAwareAuthenticationSu
                 return;
             }
             getRedirectStrategy().sendRedirect(request, response, "/admin/dashboard");
+            return;
+        }
+
+        if (isWarehouse) {
+            if (savedRequest != null && (savedRequest.getRedirectUrl().contains("/kho") || savedRequest.getRedirectUrl().contains("/admin/kho"))) {
+                getRedirectStrategy().sendRedirect(request, response, savedRequest.getRedirectUrl());
+                return;
+            }
+            getRedirectStrategy().sendRedirect(request, response, "/admin/kho");
+            return;
+        }
+
+        if (isSales) {
+            if (savedRequest != null && savedRequest.getRedirectUrl().contains("/orders")) {
+                getRedirectStrategy().sendRedirect(request, response, savedRequest.getRedirectUrl());
+                return;
+            }
+            getRedirectStrategy().sendRedirect(request, response, "/admin/orders");
             return;
         }
 

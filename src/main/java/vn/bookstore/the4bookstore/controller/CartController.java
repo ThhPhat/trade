@@ -316,8 +316,12 @@ public class CartController {
                 if (km.getGiamToiDa() != null && discount > km.getGiamToiDa()) {
                     discount = km.getGiamToiDa();
                 }
+            } else if ("TienCoDinh".equalsIgnoreCase(km.getLoaiGiam())) {
+                discount = Math.min(subtotal, km.getGiaTriGiam());
+            } else if ("Freeship".equalsIgnoreCase(km.getLoaiGiam())) {
+                discount = km.getGiaTriGiam() != null ? km.getGiaTriGiam() : 30000;
             } else {
-                discount = km.getGiaTriGiam();
+                discount = Math.min(subtotal, km.getGiaTriGiam() != null ? km.getGiaTriGiam() : 0);
             }
 
             result.put("valid", true);
@@ -330,22 +334,9 @@ public class CartController {
             return result;
         }
 
-        // 2. Dự phòng các mã mặc định
-        if ("THE4BOOK15".equals(cleanCode) || "BOOK15".equals(cleanCode) || "SALE15".equals(cleanCode)) {
-            int discount = (int) Math.round(subtotal * 0.15);
-            result.put("valid", true);
-            result.put("code", cleanCode);
-            result.put("discountAmount", discount);
-            result.put("loaiGiam", "PhanTram");
-            result.put("giaTriGiam", 15);
-            result.put("tenKM", "Ưu đãi độc quyền 15%");
-            result.put("message", "Áp dụng thành công mã [" + cleanCode + "] giảm 15% cho các sản phẩm đã chọn!");
-            return result;
-        }
-
-        // Nếu không khớp mã nào
+        // Chỉ chấp nhận mã được tạo trong trang Quản lý Khuyến Mãi của Admin
         result.put("valid", false);
-        result.put("message", "Sai mã giảm giá hoặc mã không tồn tại!");
+        result.put("message", "Mã giảm giá không tồn tại hoặc không hợp lệ!");
         return result;
     }
 

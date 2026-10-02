@@ -155,14 +155,14 @@
 
                 <!-- Right Actions: Admin Link, Cart, User Auth Status -->
                 <div class="flex items-center gap-space-md shrink-0">
-                    <!-- Quick Admin Button (Visible for Admin, or quick portal link) -->
+                    <!-- Quick Admin / Staff Button (Chỉ hiển thị cho người có thẩm quyền quản trị/kho) -->
                     <a sec:authorize="hasAnyRole('ADMIN', 'QUANLY')" th:href="@{/admin/dashboard}" class="inline-flex items-center gap-1 px-space-sm py-2 rounded-xl bg-primary text-on-primary font-label-md text-xs font-semibold hover:bg-primary-container transition-colors shadow-sm">
                         <span class="material-symbols-outlined text-[18px]">admin_panel_settings</span>
                         <span>Quản Trị</span>
                     </a>
-                    <a sec:authorize="!hasAnyRole('ADMIN', 'QUANLY')" th:href="@{/admin}" title="Truy cập Cổng Quản Trị Hệ Thống" class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-surface-container text-on-surface-variant font-label-md text-xs hover:text-primary hover:bg-surface-container transition-colors">
-                        <span class="material-symbols-outlined text-[16px] text-primary">admin_panel_settings</span>
-                        <span class="hidden sm:inline">Quản Trị</span>
+                    <a sec:authorize="hasRole('NHANVIENKHO')" th:href="@{/admin/kho}" class="inline-flex items-center gap-1 px-space-sm py-2 rounded-xl bg-primary text-on-primary font-label-md text-xs font-semibold hover:bg-primary-container transition-colors shadow-sm">
+                        <span class="material-symbols-outlined text-[18px]">warehouse</span>
+                        <span>Quản Lý Kho</span>
                     </a>
 
                     <!-- Client Notification Bell (Visible for Logged-In Users) -->
@@ -250,13 +250,21 @@
                                         <span class="material-symbols-outlined text-[18px] text-on-surface-variant">receipt_long</span>
                                         <span>Đơn mua của tôi</span>
                                     </a>
+                                    <a th:href="@{/profile#voucher-section}" class="flex items-center gap-2.5 px-4 py-2.5 font-label-md text-xs text-on-surface hover:bg-surface-container-low transition-colors">
+                                        <span class="material-symbols-outlined text-[18px] text-secondary">account_balance_wallet</span>
+                                        <span>Ví Voucher của tôi</span>
+                                    </a>
+                                    <a th:href="@{/san-voucher}" class="flex items-center gap-2.5 px-4 py-2.5 font-label-md text-xs text-on-surface hover:bg-surface-container-low transition-colors">
+                                        <span class="material-symbols-outlined text-[18px] text-primary">confirmation_number</span>
+                                        <span>Săn Khuyến Mãi</span>
+                                    </a>
                                     <a sec:authorize="hasAnyRole('ADMIN', 'QUANLY')" th:href="@{/admin/dashboard}" class="flex items-center gap-2.5 px-4 py-2.5 font-label-md text-xs text-on-surface hover:bg-surface-container-low transition-colors">
                                         <span class="material-symbols-outlined text-[18px] text-primary">admin_panel_settings</span>
                                         <span>Trang Quản Trị</span>
                                     </a>
-                                    <a sec:authorize="!hasAnyRole('ADMIN', 'QUANLY')" th:href="@{/admin}" class="flex items-center gap-2.5 px-4 py-2.5 font-label-md text-xs text-on-surface hover:bg-surface-container-low transition-colors">
-                                        <span class="material-symbols-outlined text-[18px] text-primary">admin_panel_settings</span>
-                                        <span>Cổng Quản Trị</span>
+                                    <a sec:authorize="hasRole('NHANVIENKHO')" th:href="@{/admin/kho}" class="flex items-center gap-2.5 px-4 py-2.5 font-label-md text-xs text-on-surface hover:bg-surface-container-low transition-colors">
+                                        <span class="material-symbols-outlined text-[18px] text-primary">warehouse</span>
+                                        <span>Quản Lý Kho</span>
                                     </a>
                                     <div class="h-[1px] bg-surface-container my-1"></div>
                                     <form th:action="@{/logout}" method="post">

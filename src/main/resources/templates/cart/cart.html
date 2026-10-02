@@ -200,6 +200,22 @@
                             <span class="material-symbols-outlined text-secondary text-[20px]">loyalty</span>
                             <span>Mã Giảm Giá &amp; Khuyến Mãi</span>
                         </h2>
+
+                        <!-- Ví Voucher Button -->
+                        <button onclick="openVoucherWallet()" type="button" sec:authorize="isAuthenticated()"
+                                class="w-full mb-3 px-space-md py-2.5 rounded-xl bg-gradient-to-r from-secondary/10 to-tertiary/10 border border-secondary/30 text-on-surface font-label-md text-xs font-bold hover:from-secondary/20 hover:to-tertiary/20 transition-all cursor-pointer flex items-center justify-between">
+                            <span class="flex items-center gap-1.5">
+                                <span class="material-symbols-outlined text-secondary text-[18px]">account_balance_wallet</span>
+                                <span>Mở Ví Voucher</span>
+                            </span>
+                            <span class="material-symbols-outlined text-[16px] text-on-surface-variant">chevron_right</span>
+                        </button>
+
+                        <!-- Manual Code Input -->
+                        <p class="text-[10px] text-on-surface-variant mb-1.5 flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[12px]">keyboard</span>
+                            <span>Nhập mã thủ công</span>
+                        </p>
                         <div class="flex gap-2">
                             <input class="bg-surface-container-low px-space-sm py-2 rounded-xl font-body-md text-xs md:text-sm text-on-surface flex-1 focus:outline-none placeholder:text-on-surface-variant uppercase font-mono border border-surface-container" 
                                    id="voucherCode" 
@@ -704,7 +720,167 @@
         document.addEventListener('DOMContentLoaded', () => {
             recalculateSelectedCart();
         });
+
+        // ========== VÍ VOUCHER MODAL ==========
+        function openVoucherWallet() {
+            const modal = document.getElementById('walletModal');
+            const list = document.getElementById('walletVoucherList');
+            const loading = document.getElementById('walletLoading');
+            const empty = document.getElementById('walletEmpty');
+            if (!modal) return;
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            if (loading) loading.classList.remove('hidden');
+            if (list) list.innerHTML = '';
+            if (empty) empty.classList.add('hidden');
+
+            // Lấy subtotal hiện tại
+            const calc = recalculateSelectedCart();
+            const subtotal = calc ? calc.selectedSubtotal : 0;
+
+            fetch('/api/voucher/vi?subtotal=' + subtotal)
+                .then(res => res.json())
+                .then(data => {
+                    if (loading) loading.classList.add('hidden');
+                    if (!data.success || !data.vouchers || data.vouchers.length === 0) {
+                        if (empty) empty.classList.remove('hidden');
+                        return;
+                    }
+
+                    data.vouchers.forEach(v => {
+                        const card = document.createElement('div');
+                        const isEligible = v.eligible && !v.expired;
+
+                        card.className = `p-space-md rounded-2xl border-2 flex items-center gap-3 transition-all ${
+                            isEligible 
+                                ? 'border-primary/30 bg-surface-container-lowest hover:shadow-md cursor-pointer hover:border-primary' 
+                                : 'border-surface-container bg-surface-container-low/50 opacity-60 cursor-not-allowed'
+                        }`;
+
+                        // Icon based on type
+                        let icon = 'payments';
+                        let iconColor = 'text-secondary';
+                        if (v.loaiGiam === 'PhanTram') { icon = 'percent'; iconColor = 'text-primary'; }
+                        else if (v.loaiGiam === 'Freeship') { icon = 'local_shipping'; iconColor = 'text-tertiary'; }
+
+                        // Discount text
+                        let discountText = '';
+                        if (v.loaiGiam === 'PhanTram') discountText = `Giảm ${v.giaTriGiam}%`;
+                        else if (v.loaiGiam === 'TienCoDinh') discountText = `Giảm ${Number(v.giaTriGiam).toLocaleString('vi-VN')}₫`;
+                        else if (v.loaiGiam === 'Freeship') discountText = 'Miễn phí ship';
+
+                        let conditionHtml = '';
+                        if (v.donToiThieu && v.donToiThieu > 0) {
+                            conditionHtml += `<span class="text-[10px] text-on-surface-variant">Đơn từ ${Number(v.donToiThieu).toLocaleString('vi-VN')}₫</span>`;
+                        }
+
+                        let statusHtml = '';
+                        if (v.expired) {
+                            statusHtml = `<span class="text-[10px] text-error font-bold flex items-center gap-0.5"><span class="material-symbols-outlined text-[12px]">error</span>Đã hết hạn</span>`;
+                        } else if (!v.eligible && v.reason) {
+                            statusHtml = `<span class="text-[10px] text-error font-bold flex items-center gap-0.5"><span class="material-symbols-outlined text-[12px]">info</span>${v.reason}</span>`;
+                        } else if (v.discountPreview) {
+                            statusHtml = `<span class="text-[10px] text-primary font-bold">Tiết kiệm ${Number(v.discountPreview).toLocaleString('vi-VN')}₫</span>`;
+                        }
+
+                        card.innerHTML = `
+                            <div class="w-10 h-10 rounded-xl ${isEligible ? 'bg-primary' : 'bg-surface-container'} flex items-center justify-center shrink-0">
+                                <span class="material-symbols-outlined text-[20px] ${isEligible ? 'text-on-primary' : 'text-on-surface-variant'}">${icon}</span>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center justify-between">
+                                    <span class="font-headline-sm text-xs font-bold text-on-surface truncate">${discountText}</span>
+                                    <span class="font-mono text-[10px] font-bold ${isEligible ? 'text-primary' : 'text-on-surface-variant'} uppercase shrink-0 ml-2">${v.maCode}</span>
+                                </div>
+                                <p class="text-[11px] text-on-surface-variant truncate">${v.tenKM}</p>
+                                <div class="flex items-center gap-2 mt-0.5">
+                                    ${conditionHtml}
+                                    ${statusHtml}
+                                </div>
+                            </div>
+                        `;
+
+                        if (isEligible) {
+                            card.addEventListener('click', () => {
+                                const codeInput = document.getElementById('voucherCode');
+                                if (codeInput) codeInput.value = v.maCode;
+                                closeWalletModal();
+                                applyVoucher();
+                            });
+                        }
+
+                        list.appendChild(card);
+                    });
+                })
+                .catch(err => {
+                    if (loading) loading.classList.add('hidden');
+                    if (empty) {
+                        empty.classList.remove('hidden');
+                        empty.querySelector('h3').textContent = 'Lỗi tải Ví Voucher';
+                    }
+                });
+        }
+
+        function closeWalletModal() {
+            const modal = document.getElementById('walletModal');
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+        }
     </script>
+
+    <!-- Ví Voucher Modal -->
+    <div id="walletModal" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm hidden items-center justify-center p-4" onclick="if(event.target===this)closeWalletModal()">
+        <div class="bg-surface-container-lowest rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl border border-surface-container max-h-[80vh] flex flex-col">
+            <!-- Header -->
+            <div class="flex items-center justify-between pb-4 border-b border-surface-container shrink-0">
+                <div>
+                    <h2 class="font-headline-lg text-lg font-bold text-on-surface flex items-center gap-2">
+                        <span class="material-symbols-outlined text-secondary text-[24px]">account_balance_wallet</span>
+                        Ví Voucher Của Tôi
+                    </h2>
+                    <p class="text-[11px] text-on-surface-variant mt-0.5">Chọn mã đủ điều kiện để áp dụng.</p>
+                </div>
+                <button onclick="closeWalletModal()" class="p-2 rounded-xl hover:bg-surface-container transition-colors cursor-pointer" type="button">
+                    <span class="material-symbols-outlined text-[20px] text-on-surface-variant">close</span>
+                </button>
+            </div>
+
+            <!-- Content -->
+            <div class="flex-1 overflow-y-auto py-4 space-y-3" id="walletVoucherList">
+                <!-- Vouchers loaded via JS -->
+            </div>
+
+            <!-- Loading -->
+            <div id="walletLoading" class="flex items-center justify-center py-12 hidden">
+                <div class="flex flex-col items-center gap-2">
+                    <span class="material-symbols-outlined text-[32px] text-primary animate-spin">progress_activity</span>
+                    <span class="text-xs text-on-surface-variant">Đang tải Ví Voucher...</span>
+                </div>
+            </div>
+
+            <!-- Empty State -->
+            <div id="walletEmpty" class="flex flex-col items-center justify-center py-12 hidden">
+                <span class="material-symbols-outlined text-[40px] text-on-surface-variant">confirmation_number</span>
+                <h3 class="font-headline-sm text-sm font-bold text-on-surface mt-2">Ví trống</h3>
+                <p class="text-xs text-on-surface-variant mt-1 text-center max-w-xs">Bạn chưa thu thập mã giảm giá nào. Hãy vào trang Săn Voucher!</p>
+                <a href="/san-voucher" class="mt-3 px-4 py-2 rounded-xl bg-secondary text-on-secondary text-xs font-bold hover:opacity-90 transition-all inline-flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[14px]">confirmation_number</span>
+                    Săn Voucher
+                </a>
+            </div>
+
+            <!-- Footer -->
+            <div class="pt-4 border-t border-surface-container shrink-0">
+                <a href="/san-voucher" class="text-xs text-secondary font-semibold hover:underline flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[14px]">add_circle</span>
+                    Thu thập thêm mã giảm giá
+                </a>
+            </div>
+        </div>
+    </div>
 
 </body>
 </html>
