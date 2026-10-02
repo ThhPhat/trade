@@ -42,10 +42,11 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**"))
             .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/admin/kho", "/admin/kho/**", "/kho/**").hasAnyRole("ADMIN", "QUANLY", "NHANVIENKHO")
+                .requestMatchers("/admin/orders", "/admin/orders/**").hasAnyRole("ADMIN", "QUANLY", "NHANVIENBANHANG")
                 .requestMatchers("/admin", "/admin/**").hasAnyRole("ADMIN", "QUANLY")
-                .requestMatchers("/kho/**").hasAnyRole("ADMIN", "QUANLY", "NHANVIENKHO")
                 .requestMatchers("/ban-hang/**").hasAnyRole("ADMIN", "QUANLY", "NHANVIENBANHANG")
-                .requestMatchers("/khach-hang/**", "/thanh-toan/**").hasAnyRole("KHACHHANG")
+                .requestMatchers("/khach-hang/**", "/thanh-toan/**").hasAnyRole("KHACHHANG", "ADMIN", "QUANLY")
                 .requestMatchers("/profile", "/profile/**").authenticated()
                 .requestMatchers("/don-hang", "/don-hang/**").authenticated()
                 .requestMatchers("/gio-hang/dat-hang").authenticated()
@@ -56,8 +57,8 @@ public class SecurityConfig {
             )
             .exceptionHandling(ex -> ex
                 .accessDeniedHandler((request, response, accessDeniedException) -> {
-                    if (request.getRequestURI().startsWith("/admin")) {
-                        response.sendRedirect(request.getContextPath() + "/login?adminDenied=true");
+                    if (request.getRequestURI().startsWith("/admin") || request.getRequestURI().startsWith("/kho")) {
+                        response.sendRedirect(request.getContextPath() + "/?accessDenied=true");
                     } else {
                         response.sendRedirect(request.getContextPath() + "/");
                     }

@@ -148,4 +148,31 @@ class AdminControllerTest {
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/admin/publishers"));
     }
+
+    @Test
+    @WithMockUser(username = "khachhang", roles = {"KHACHHANG"})
+    void testCustomerCannotAccessAdminDashboard() throws Exception {
+        mockMvc.perform(get("/admin/dashboard"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/?accessDenied=true"));
+    }
+
+    @Test
+    void testAnonymousUserCannotAccessAdminDashboard() throws Exception {
+        mockMvc.perform(get("/admin/dashboard"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/login"));
+    }
+
+    @Test
+    @WithMockUser(username = "quanly", roles = {"QUANLY"})
+    void testManagerCanAccessAdminDashboard() throws Exception {
+        when(sanPhamRepository.count()).thenReturn(100L);
+        when(sanPhamRepository.countLowStock()).thenReturn(5L);
+        when(sanPhamRepository.countOutOfStock()).thenReturn(2L);
+
+        mockMvc.perform(get("/admin/dashboard"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("admin/dashboard"));
+    }
 }

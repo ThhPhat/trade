@@ -32,6 +32,19 @@
     <main class="w-full pt-28 bg-background flex-1">
         <div class="flex flex-col w-full">
 
+            <!-- Access Denied Feedback Alert -->
+            <div th:if="${param.accessDenied}" class="max-w-7xl mx-auto w-full px-margin md:px-margin-desktop pt-2 pb-0">
+                <div class="p-4 rounded-2xl bg-amber-50 border-2 border-amber-500/60 text-amber-950 text-xs sm:text-sm font-semibold flex items-center justify-between shadow-md animate-in fade-in duration-300">
+                    <div class="flex items-center gap-2.5">
+                        <span class="material-symbols-outlined text-[24px] text-amber-600 shrink-0">shield_lock</span>
+                        <span>Tài khoản của bạn không có quyền truy cập vào Cổng Quản Trị Hệ Thống.</span>
+                    </div>
+                    <a th:href="@{/login(switch='true')}" class="text-xs bg-amber-600 text-white font-bold px-3 py-1.5 rounded-xl hover:bg-amber-700 transition shrink-0">
+                        Đổi tài khoản
+                    </a>
+                </div>
+            </div>
+
             <!-- 1. HERO SPOTLIGHT SECTION -->
             <section class="max-w-7xl mx-auto w-full px-margin md:px-margin-desktop py-space-lg">
                 <div class="bg-gradient-to-br from-surface-container-low via-surface to-surface-container-high rounded-3xl p-space-lg md:p-space-xl border border-surface-container shadow-sm relative overflow-hidden">
@@ -62,6 +75,10 @@
                                 <a th:href="@{/gio-hang}" class="px-space-md py-3 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface font-headline-sm text-xs font-semibold transition-colors flex items-center gap-space-xs">
                                     <span class="material-symbols-outlined text-[18px] text-primary">shopping_bag</span>
                                     <span>Xem Giỏ Hàng</span>
+                                </a>
+                                <a href="#voucher-hunt" class="px-space-md py-3 rounded-xl bg-gradient-to-r from-secondary to-tertiary text-on-secondary font-headline-sm text-xs font-bold hover:opacity-90 transition-all shadow-md flex items-center gap-space-xs animate-pulse hover:animate-none">
+                                    <span class="material-symbols-outlined text-[18px]">confirmation_number</span>
+                                    <span>Săn Voucher</span>
                                 </a>
                             </div>
 
@@ -134,6 +151,103 @@
                           class="featured-card-wrapper h-full flex flex-col"
                           th:attr="data-price=${book.giaBan}, data-name=${book.tenSP?.toLowerCase()}">
                         <div th:replace="~{fragments/common/book_card :: book_card(${book})}"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2.5 SĂN VOUCHER SECTION (Carousel) -->
+            <section id="voucher-hunt" class="max-w-7xl mx-auto w-full px-margin md:px-margin-desktop py-space-lg" th:if="${publicVouchers != null and !#lists.isEmpty(publicVouchers)}">
+                <div class="flex flex-col sm:flex-row sm:items-end justify-between mb-space-md gap-space-xs">
+                    <div>
+                        <div class="inline-flex items-center gap-1 text-secondary font-label-sm text-xs font-bold mb-1">
+                            <span class="material-symbols-outlined text-[16px]">confirmation_number</span>
+                            <span>Ưu Đãi Độc Quyền - Số Lượng Có Hạn</span>
+                        </div>
+                        <h2 class="font-headline-lg text-2xl md:text-3xl font-bold text-on-surface tracking-tight">
+                            🎟️ Săn Voucher Giảm Giá
+                        </h2>
+                        <p class="text-on-surface-variant text-sm mt-1">Bấm <strong>"Lưu mã"</strong> để thu thập vào Ví Voucher cá nhân, sử dụng khi thanh toán!</p>
+                    </div>
+                    <a th:href="@{/san-voucher}" class="inline-flex items-center gap-1 text-secondary font-label-md text-xs font-semibold hover:underline">
+                        <span>Xem tất cả ưu đãi</span>
+                        <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+                    </a>
+                </div>
+
+                <!-- Voucher Ticket Carousel (scroll ngang) -->
+                <div class="flex gap-space-md overflow-x-auto pb-3 scroll-smooth horizontal-scroll-category snap-x snap-mandatory">
+                    <div th:each="km, stat : ${publicVouchers}" 
+                         class="voucher-ticket snap-start shrink-0 w-[320px] sm:w-[360px] relative overflow-hidden rounded-2xl border-2 border-dashed transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
+                         th:classappend="${stat.index % 3 == 0} ? 'border-primary bg-gradient-to-br from-primary/5 via-surface-container-lowest to-primary/10' : (${stat.index % 3 == 1} ? 'border-secondary bg-gradient-to-br from-secondary/5 via-surface-container-lowest to-secondary/10' : 'border-tertiary bg-gradient-to-br from-tertiary/5 via-surface-container-lowest to-tertiary/10')">
+                        
+                        <!-- Decorative perforation line -->
+                        <div class="absolute right-[72px] top-0 bottom-0 border-r-2 border-dashed opacity-30"
+                             th:classappend="${stat.index % 3 == 0} ? 'border-primary' : (${stat.index % 3 == 1} ? 'border-secondary' : 'border-tertiary')"></div>
+
+                        <div class="flex">
+                            <!-- Left: Voucher info -->
+                            <div class="flex-1 p-space-md flex flex-col gap-2 pr-[80px]">
+                                <!-- Type Badge -->
+                                <div class="inline-flex items-center gap-1 w-fit px-2 py-0.5 rounded-lg text-[10px] font-bold uppercase tracking-wider"
+                                     th:classappend="${km.loaiGiam == 'PhanTram'} ? 'bg-primary/15 text-primary' : (${km.loaiGiam == 'Freeship'} ? 'bg-tertiary/15 text-tertiary' : 'bg-secondary/15 text-secondary')">
+                                    <span class="material-symbols-outlined text-[12px]" th:text="${km.loaiGiam == 'PhanTram'} ? 'percent' : (${km.loaiGiam == 'Freeship'} ? 'local_shipping' : 'payments')">percent</span>
+                                    <span th:text="${km.loaiGiam == 'PhanTram'} ? 'Giảm %' : (${km.loaiGiam == 'Freeship'} ? 'Freeship' : 'Giảm tiền')">Giảm %</span>
+                                </div>
+
+                                <!-- Discount Value (Big Text) -->
+                                <div class="font-headline-xl text-2xl font-black tracking-tight"
+                                     th:classappend="${stat.index % 3 == 0} ? 'text-primary' : (${stat.index % 3 == 1} ? 'text-secondary' : 'text-tertiary')">
+                                    <span th:if="${km.loaiGiam == 'PhanTram'}" th:text="'Giảm ' + ${km.giaTriGiam} + '%'">Giảm 15%</span>
+                                    <span th:if="${km.loaiGiam == 'TienCoDinh'}" th:text="'Giảm ' + ${#numbers.formatDecimal(km.giaTriGiam, 0, 'POINT', 0, 'COMMA')} + '₫'">Giảm 20.000₫</span>
+                                    <span th:if="${km.loaiGiam == 'Freeship'}">Freeship</span>
+                                </div>
+
+                                <!-- Voucher Name -->
+                                <p class="font-headline-sm text-xs font-bold text-on-surface" th:text="${km.tenKM}">Tên voucher</p>
+
+                                <!-- Conditions -->
+                                <div class="space-y-0.5 text-[11px] text-on-surface-variant">
+                                    <p th:if="${km.donToiThieu != null and km.donToiThieu > 0}" class="flex items-center gap-1">
+                                        <span class="material-symbols-outlined text-[12px]">shopping_cart</span>
+                                        <span th:text="'Đơn từ ' + ${#numbers.formatDecimal(km.donToiThieu, 0, 'POINT', 0, 'COMMA')} + '₫'">Đơn từ 200.000₫</span>
+                                    </p>
+                                    <p th:if="${km.giamToiDa != null}" class="flex items-center gap-1">
+                                        <span class="material-symbols-outlined text-[12px]">info</span>
+                                        <span th:text="'Tối đa ' + ${#numbers.formatDecimal(km.giamToiDa, 0, 'POINT', 0, 'COMMA')} + '₫'">Tối đa 50.000₫</span>
+                                    </p>
+                                    <p th:if="${km.ngayKetThuc != null}" class="flex items-center gap-1 text-error font-medium">
+                                        <span class="material-symbols-outlined text-[12px]">timer</span>
+                                        <span th:text="'HSD: ' + ${#temporals.format(km.ngayKetThuc, 'dd/MM/yyyy')}">HSD: 31/12/2026</span>
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Right: Save Button Area -->
+                            <div class="w-[72px] flex flex-col items-center justify-center gap-2 py-space-md">
+                                <!-- Already Saved State -->
+                                <div th:if="${savedVoucherIds.contains(km.maKM)}" class="flex flex-col items-center gap-1">
+                                    <span class="material-symbols-outlined text-[28px] text-primary">bookmark_added</span>
+                                    <span class="text-[10px] font-bold text-primary text-center leading-tight">Đã lưu</span>
+                                </div>
+                                <!-- Save Button -->
+                                <button th:unless="${savedVoucherIds.contains(km.maKM)}"
+                                        th:data-makm="${km.maKM}"
+                                        onclick="saveVoucher(this)"
+                                        class="voucher-save-btn flex flex-col items-center gap-1 cursor-pointer group transition-transform hover:scale-110"
+                                        type="button">
+                                    <span class="material-symbols-outlined text-[28px] text-on-surface-variant group-hover:text-secondary transition-colors">bookmark_add</span>
+                                    <span class="text-[10px] font-bold text-on-surface-variant group-hover:text-secondary text-center leading-tight transition-colors">Lưu mã</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Toast notification for save result -->
+                <div id="voucherToast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 hidden">
+                    <div class="px-5 py-3 rounded-2xl shadow-2xl text-sm font-bold flex items-center gap-2 border" id="voucherToastInner">
+                        <span class="material-symbols-outlined text-[20px]" id="voucherToastIcon">check_circle</span>
+                        <span id="voucherToastText">Đã lưu mã thành công!</span>
                     </div>
                 </div>
             </section>
@@ -594,6 +708,63 @@
                 dmSelect.value = '0';
             });
         })();
+
+        // ========== SĂN VOUCHER: Lưu mã AJAX ==========
+        function saveVoucher(btn) {
+            const maKM = btn.getAttribute('data-makm');
+            if (!maKM) return;
+
+            btn.disabled = true;
+            btn.querySelector('.material-symbols-outlined').textContent = 'hourglass_empty';
+
+            const formData = new FormData();
+            formData.append('maKM', maKM);
+
+            fetch('/api/voucher/luu', { method: 'POST', body: formData })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        // Thay nút "Lưu mã" bằng "Đã lưu"
+                        btn.outerHTML = `<div class="flex flex-col items-center gap-1">
+                            <span class="material-symbols-outlined text-[28px] text-primary">bookmark_added</span>
+                            <span class="text-[10px] font-bold text-primary text-center leading-tight">Đã lưu</span>
+                        </div>`;
+                        showVoucherToast(data.message, true);
+                    } else if (data.requireLogin) {
+                        showVoucherToast('Vui lòng đăng nhập để lưu mã!', false);
+                        setTimeout(() => { window.location.href = '/login'; }, 1500);
+                    } else {
+                        showVoucherToast(data.message || 'Không thể lưu mã!', false);
+                        btn.disabled = false;
+                        btn.querySelector('.material-symbols-outlined').textContent = 'bookmark_add';
+                    }
+                })
+                .catch(err => {
+                    console.error('Lỗi lưu voucher:', err);
+                    showVoucherToast('Lỗi kết nối!', false);
+                    btn.disabled = false;
+                    btn.querySelector('.material-symbols-outlined').textContent = 'bookmark_add';
+                });
+        }
+
+        function showVoucherToast(msg, success) {
+            const toast = document.getElementById('voucherToast');
+            const inner = document.getElementById('voucherToastInner');
+            const icon = document.getElementById('voucherToastIcon');
+            const text = document.getElementById('voucherToastText');
+            if (!toast) return;
+
+            text.textContent = msg;
+            if (success) {
+                inner.className = 'px-5 py-3 rounded-2xl shadow-2xl text-sm font-bold flex items-center gap-2 border bg-primary/10 text-primary border-primary/30';
+                icon.textContent = 'check_circle';
+            } else {
+                inner.className = 'px-5 py-3 rounded-2xl shadow-2xl text-sm font-bold flex items-center gap-2 border bg-error/10 text-error border-error/30';
+                icon.textContent = 'error';
+            }
+            toast.classList.remove('hidden');
+            setTimeout(() => { toast.classList.add('hidden'); }, 3000);
+        }
     </script>
 </body>
 </html>

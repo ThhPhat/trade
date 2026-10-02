@@ -23,15 +23,18 @@ public class AuthController {
     private final KhachHangRepository khachHangRepository;
     private final PasswordEncoder passwordEncoder;
     private final PasswordResetService passwordResetService;
+    private final vn.bookstore.the4bookstore.security.JwtService jwtService;
 
     public AuthController(TaiKhoanRepository taiKhoanRepository,
                           KhachHangRepository khachHangRepository,
                           PasswordEncoder passwordEncoder,
-                          PasswordResetService passwordResetService) {
+                          PasswordResetService passwordResetService,
+                          vn.bookstore.the4bookstore.security.JwtService jwtService) {
         this.taiKhoanRepository = taiKhoanRepository;
         this.khachHangRepository = khachHangRepository;
         this.passwordEncoder = passwordEncoder;
         this.passwordResetService = passwordResetService;
+        this.jwtService = jwtService;
     }
 
     @GetMapping("/login")
@@ -46,12 +49,7 @@ public class AuthController {
             if (session != null) {
                 session.invalidate();
             }
-            org.springframework.http.ResponseCookie deleteCookie = org.springframework.http.ResponseCookie.from("THE4_JWT", "")
-                    .httpOnly(true)
-                    .secure(false)
-                    .path("/")
-                    .maxAge(0)
-                    .build();
+            org.springframework.http.ResponseCookie deleteCookie = jwtService.cleanJwtCookie();
             response.addHeader(org.springframework.http.HttpHeaders.SET_COOKIE, deleteCookie.toString());
             return "auth/login";
         }

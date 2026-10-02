@@ -624,4 +624,10 @@ public class AdminController {
         }).toList();
         return ResponseEntity.ok(notifs);
     }
+
+    @GetMapping({"/import-export", "/users"})
+    public String placeholderFeatures(RedirectAttributes redirectAttributes) {
+        redirectAttributes.addFlashAttribute("infoMessage", "Chức năng đang được hoàn thiện!");
+        return "redirect:/admin/dashboard";
+    }
 }

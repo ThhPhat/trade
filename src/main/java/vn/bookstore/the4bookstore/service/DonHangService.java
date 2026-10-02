@@ -21,6 +21,7 @@ public class DonHangService {
     private final ThanhToanRepository thanhToanRepository;
     private final GioHangService gioHangService;
     private final KhuyenMaiRepository khuyenMaiRepository;
+    private final VoucherDaLuuRepository voucherDaLuuRepository;
     private final SimpMessagingTemplate messagingTemplate;
 
     public DonHangService(DonHangRepository donHangRepository,
@@ -29,6 +30,7 @@ public class DonHangService {
                           ThanhToanRepository thanhToanRepository,
                           GioHangService gioHangService,
                           KhuyenMaiRepository khuyenMaiRepository,
+                          VoucherDaLuuRepository voucherDaLuuRepository,
                           SimpMessagingTemplate messagingTemplate) {
         this.donHangRepository = donHangRepository;
         this.chiTietDonHangRepository = chiTietDonHangRepository;
@@ -36,6 +38,7 @@ public class DonHangService {
         this.thanhToanRepository = thanhToanRepository;
         this.gioHangService = gioHangService;
         this.khuyenMaiRepository = khuyenMaiRepository;
+        this.voucherDaLuuRepository = voucherDaLuuRepository;
         this.messagingTemplate = messagingTemplate;
     }
 
@@ -131,26 +134,62 @@ public class DonHangService {
             tongTien += sp.getGiaBan() * ctGH.getSoLuong();
         }
 
-        // 6. Xử lý giảm giá từ mã khuyến mãi (nếu có)
+        // 6. Xử lý giảm giá từ mã khuyến mãi (chỉ chấp nhận mã từ trang Admin Khuyến Mãi)
         int tienGiam = 0;
         KhuyenMai khuyenMai = null;
         if (maVoucher != null && !maVoucher.isBlank()) {
-            Optional<KhuyenMai> kmOpt = khuyenMaiRepository.findByMaCode(maVoucher.trim());
-            if (kmOpt.isPresent() && "HoatDong".equalsIgnoreCase(kmOpt.get().getTrangThai())) {
-                khuyenMai = kmOpt.get();
-                if ("PhanTram".equalsIgnoreCase(khuyenMai.getLoaiGiam())) {
-                    tienGiam = (int) Math.round(tongTien * (khuyenMai.getGiaTriGiam() / 100.0));
-                    if (khuyenMai.getGiamToiDa() != null && tienGiam > khuyenMai.getGiamToiDa()) {
-                        tienGiam = khuyenMai.getGiamToiDa();
-                    }
-                } else {
-                    tienGiam = khuyenMai.getGiaTriGiam();
-                }
-                khuyenMai.setSoLuongDaDung(khuyenMai.getSoLuongDaDung() != null ? khuyenMai.getSoLuongDaDung() + 1 : 1);
-                khuyenMaiRepository.save(khuyenMai);
-            } else if ("THE4BOOK15".equalsIgnoreCase(maVoucher.trim()) || "BOOK15".equalsIgnoreCase(maVoucher.trim()) || "SALE15".equalsIgnoreCase(maVoucher.trim())) {
-                tienGiam = (int) Math.round(tongTien * 0.15);
+            String cleanCode = maVoucher.trim().toUpperCase();
+            Optional<KhuyenMai> kmOpt = khuyenMaiRepository.findByMaCode(cleanCode);
+            if (kmOpt.isEmpty()) {
+                throw new RuntimeException("Mã giảm giá [" + cleanCode + "] không tồn tại trên hệ thống!");
             }
+
+            KhuyenMai km = kmOpt.get();
+            if (!"HoatDong".equalsIgnoreCase(km.getTrangThai())) {
+                throw new RuntimeException("Mã giảm giá [" + cleanCode + "] đã hết hạn hoặc tạm ngưng sử dụng!");
+            }
+            if (km.getNgayBatDau() != null && LocalDateTime.now().isBefore(km.getNgayBatDau())) {
+                throw new RuntimeException("Mã giảm giá [" + cleanCode + "] chưa đến ngày áp dụng!");
+            }
+            if (km.getNgayKetThuc() != null && LocalDateTime.now().isAfter(km.getNgayKetThuc())) {
+                throw new RuntimeException("Mã giảm giá [" + cleanCode + "] đã hết hạn sử dụng!");
+            }
+            if (km.getSoLuongToiDa() != null && km.getSoLuongDaDung() != null && km.getSoLuongDaDung() >= km.getSoLuongToiDa()) {
+                throw new RuntimeException("Mã giảm giá [" + cleanCode + "] đã hết lượt sử dụng!");
+            }
+            if (km.getDonToiThieu() != null && tongTien < km.getDonToiThieu()) {
+                throw new RuntimeException("Đơn hàng chưa đạt mức tối thiểu " + String.format("%,d đ", km.getDonToiThieu()) + " để áp dụng mã giảm giá này!");
+            }
+
+            if ("PhanTram".equalsIgnoreCase(km.getLoaiGiam())) {
+                tienGiam = (int) Math.round(tongTien * (km.getGiaTriGiam() / 100.0));
+                if (km.getGiamToiDa() != null && tienGiam > km.getGiamToiDa()) {
+                    tienGiam = km.getGiamToiDa();
+                }
+            } else if ("TienCoDinh".equalsIgnoreCase(km.getLoaiGiam())) {
+                tienGiam = Math.min(tongTien, km.getGiaTriGiam());
+            } else if ("Freeship".equalsIgnoreCase(km.getLoaiGiam())) {
+                tienGiam = km.getGiaTriGiam() != null ? km.getGiaTriGiam() : 30000;
+            } else {
+                tienGiam = Math.min(tongTien, km.getGiaTriGiam() != null ? km.getGiaTriGiam() : 0);
+            }
+
+            km.setSoLuongDaDung(km.getSoLuongDaDung() != null ? km.getSoLuongDaDung() + 1 : 1);
+            khuyenMaiRepository.save(km);
+            khuyenMai = km;
+
+            // Nếu khách hàng đã lưu voucher này trong ví, đánh dấu là đã dùng
+            try {
+                if (khachHang != null) {
+                    Optional<VoucherDaLuu> vdlOpt = voucherDaLuuRepository.findByKhachHangAndKhuyenMai(khachHang, km);
+                    if (vdlOpt.isPresent()) {
+                        VoucherDaLuu vdl = vdlOpt.get();
+                        vdl.setTrangThai("DaDung");
+                        vdl.setNgaySuDung(LocalDateTime.now());
+                        voucherDaLuuRepository.save(vdl);
+                    }
+                }
+            } catch (Exception ignored) {}
         }
 
         int finalTotal = Math.max(0, tongTien - tienGiam);

@@ -10,10 +10,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import vn.bookstore.the4bookstore.entity.DonHang;
 import vn.bookstore.the4bookstore.entity.KhachHang;
+import vn.bookstore.the4bookstore.entity.KhuyenMai;
 import vn.bookstore.the4bookstore.entity.TaiKhoan;
+import vn.bookstore.the4bookstore.entity.VoucherDaLuu;
 import vn.bookstore.the4bookstore.repository.DonHangRepository;
 import vn.bookstore.the4bookstore.repository.KhachHangRepository;
+import vn.bookstore.the4bookstore.repository.KhuyenMaiRepository;
 import vn.bookstore.the4bookstore.repository.TaiKhoanRepository;
+import vn.bookstore.the4bookstore.repository.VoucherDaLuuRepository;
 import vn.bookstore.the4bookstore.security.CustomOAuth2User;
 import vn.bookstore.the4bookstore.security.CustomOidcUser;
 import vn.bookstore.the4bookstore.security.CustomUserDetails;
@@ -38,15 +42,21 @@ public class ProfileController {
     private final TaiKhoanRepository taiKhoanRepository;
     private final KhachHangRepository khachHangRepository;
     private final DonHangRepository donHangRepository;
+    private final KhuyenMaiRepository khuyenMaiRepository;
+    private final VoucherDaLuuRepository voucherDaLuuRepository;
     private final PasswordEncoder passwordEncoder;
 
     public ProfileController(TaiKhoanRepository taiKhoanRepository,
                              KhachHangRepository khachHangRepository,
                              DonHangRepository donHangRepository,
+                             KhuyenMaiRepository khuyenMaiRepository,
+                             VoucherDaLuuRepository voucherDaLuuRepository,
                              PasswordEncoder passwordEncoder) {
         this.taiKhoanRepository = taiKhoanRepository;
         this.khachHangRepository = khachHangRepository;
         this.donHangRepository = donHangRepository;
+        this.khuyenMaiRepository = khuyenMaiRepository;
+        this.voucherDaLuuRepository = voucherDaLuuRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -223,11 +233,33 @@ public class ProfileController {
             }
         }
 
+        // Lấy voucher đã thu thập vào Ví cá nhân (chỉ những mã user đã bấm "Lưu mã")
+        LocalDateTime now = LocalDateTime.now();
+        List<KhuyenMai> availableVouchers = Collections.emptyList();
+        long expiringSoonCount = 0;
+        try {
+            if (kh != null && kh.getMaKH() != null) {
+                List<VoucherDaLuu> savedVouchers = voucherDaLuuRepository
+                        .findByKhachHangAndTrangThaiOrderByNgayLuuDesc(kh, "ChuaDung");
+                availableVouchers = savedVouchers.stream()
+                        .map(VoucherDaLuu::getKhuyenMai)
+                        .filter(km -> km.isDangDienRa())
+                        .toList();
+                expiringSoonCount = availableVouchers.stream()
+                        .filter(km -> km.getNgayKetThuc() != null && km.getNgayKetThuc().isBefore(now.plusDays(3)))
+                        .count();
+            }
+        } catch (Exception ignored) {
+        }
+
         model.addAttribute("taiKhoan", tk);
         model.addAttribute("khachHang", kh);
         model.addAttribute("donHangs", donHangs);
         model.addAttribute("totalOrders", totalOrders);
         model.addAttribute("completedOrders", completedOrders);
+        model.addAttribute("availableVouchers", availableVouchers);
+        model.addAttribute("totalVouchers", availableVouchers.size());
+        model.addAttribute("expiringSoonCount", expiringSoonCount);
         model.addAttribute("activePage", "profile");
 
         return "profile/index";

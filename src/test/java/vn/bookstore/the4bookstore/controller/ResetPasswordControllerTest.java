@@ -54,8 +54,14 @@ class ResetPasswordControllerTest {
     @MockitoBean
     private CustomUserDetailsService customUserDetailsService;
 
+    @MockitoBean
+    private JwtService jwtService;
+
     @org.junit.jupiter.api.BeforeEach
     void setUp() throws Exception {
+        org.mockito.Mockito.when(jwtService.cleanJwtCookie())
+                .thenReturn(org.springframework.http.ResponseCookie.from("the4book_jwt", "").path("/").maxAge(0).build());
+
         org.mockito.Mockito.doAnswer(invocation -> {
             jakarta.servlet.ServletRequest req = invocation.getArgument(0);
             jakarta.servlet.ServletResponse res = invocation.getArgument(1);
