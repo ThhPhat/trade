@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import vn.bookstore.the4bookstore.entity.DanhMuc;
 import vn.bookstore.the4bookstore.entity.SanPham;
 import vn.bookstore.the4bookstore.repository.DanhMucRepository;
@@ -13,6 +14,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class SanPhamService {
 

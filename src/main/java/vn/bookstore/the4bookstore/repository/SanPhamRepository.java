@@ -121,10 +121,10 @@ public interface SanPhamRepository extends JpaRepository<SanPham, Integer> {
 
     long countByNhaXuatBan_MaNXB(Integer maNXB);
 
-    @Query("SELECT COUNT(s) FROM SanPham s WHERE s.soLuongTon > 0 AND s.soLuongTon <= 5")
+    @Query(value = "SELECT fn_DemSanPhamSapHet()", nativeQuery = true)
     long countLowStock();
 
-    @Query("SELECT COUNT(s) FROM SanPham s WHERE s.soLuongTon IS NULL OR s.soLuongTon = 0")
+    @Query(value = "SELECT fn_DemSanPhamHetHang()", nativeQuery = true)
     long countOutOfStock();
 
     List<SanPham> findByNhaXuatBan_MaNXB(Integer maNXB);

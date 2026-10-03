@@ -8,6 +8,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -18,6 +19,7 @@ import vn.bookstore.the4bookstore.repository.ChiTietDonHangRepository;
 import vn.bookstore.the4bookstore.repository.DonHangRepository;
 
 @Service
+@Transactional(readOnly = true)
 public class ReportService {
 
     @Autowired
@@ -38,12 +40,7 @@ public class ReportService {
     }
 
     public List<MonthlyRevenueDTO> getRevenueByMonth() {
-        String sql = "SELECT YEAR(dh.ngay_hoan_thanh) as nam, MONTH(dh.ngay_hoan_thanh) as thang, SUM(dh.tong_tien) as doanh_thu " +
-                     "FROM don_hang dh " +
-                     "WHERE dh.trang_thai = 'DaGiao' AND dh.ngay_hoan_thanh IS NOT NULL " +
-                     "GROUP BY YEAR(dh.ngay_hoan_thanh), MONTH(dh.ngay_hoan_thanh) " +
-                     "ORDER BY nam DESC, thang DESC " +
-                     "LIMIT 12";
+        String sql = "CALL sp_DoanhThuTheoThang()";
 
         Query query = entityManager.createNativeQuery(sql);
         List<Object[]> results = query.getResultList();
@@ -60,14 +57,7 @@ public class ReportService {
     }
 
     public List<TopSellingBookDTO> getTopSellingBooks() {
-        String sql = "SELECT sp.masp, sp.tensp, SUM(ct.so_luong) as so_luong_ban, sp.gia_ban " +
-                     "FROM chi_tiet_don_hang ct " +
-                     "JOIN don_hang dh ON ct.madh = dh.madh " +
-                     "JOIN san_pham sp ON ct.masp = sp.masp " +
-                     "WHERE dh.trang_thai = 'DaGiao' " +
-                     "GROUP BY sp.masp, sp.tensp, sp.gia_ban " +
-                     "ORDER BY so_luong_ban DESC " +
-                     "LIMIT 10";
+        String sql = "CALL sp_TopSachBanChay(10)";
 
         Query query = entityManager.createNativeQuery(sql);
         List<Object[]> results = query.getResultList();

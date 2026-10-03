@@ -32,6 +32,7 @@ public class GioHangService {
     /**
      * Lấy hoặc tạo giỏ hàng cho khách hàng
      */
+    @Transactional
     public GioHang getOrCreateCart(KhachHang khachHang) {
         return gioHangRepository.findByKhachHang(khachHang)
                 .orElseGet(() -> {

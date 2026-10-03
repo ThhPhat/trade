@@ -26,6 +26,7 @@ public class NhaXuatBanService {
         return nhaXuatBanRepository.findById(id);
     }
 
+    @Transactional
     public NhaXuatBan save(NhaXuatBan nxb) {
         return nhaXuatBanRepository.save(nxb);
     }

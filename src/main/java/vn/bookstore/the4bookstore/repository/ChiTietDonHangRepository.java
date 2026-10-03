@@ -8,7 +8,7 @@ import vn.bookstore.the4bookstore.entity.ChiTietDonHangId;
 @Repository
 public interface ChiTietDonHangRepository extends JpaRepository<ChiTietDonHang, ChiTietDonHangId> {
 
-    @Query("SELECT SUM(ct.soLuong) FROM ChiTietDonHang ct JOIN ct.donHang dh WHERE dh.trangThai = 'DaGiao'")
+    @Query(value = "SELECT fn_TongSachDaBan()", nativeQuery = true)
     Long getTotalBooksSold();
 }
 
