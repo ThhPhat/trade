@@ -28,6 +28,7 @@ public class TacGiaService {
         return tacGiaRepository.findById(id);
     }
 
+    @Transactional
     public TacGia save(TacGia tacGia) {
         return tacGiaRepository.save(tacGia);
     }

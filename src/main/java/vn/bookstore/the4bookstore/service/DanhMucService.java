@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import vn.bookstore.the4bookstore.entity.DanhMuc;
 import vn.bookstore.the4bookstore.repository.DanhMucRepository;
 
@@ -51,11 +52,14 @@ public class DanhMucService {
         return danhMucRepository.findById(id);
     }
 
+    @Transactional
     public DanhMuc save(DanhMuc danhMuc) {
         return danhMucRepository.save(danhMuc);
     }
 
+    @Transactional
     public void delete(Integer id) {
         danhMucRepository.deleteById(id);
     }
 }
+

@@ -16,10 +16,10 @@ import java.util.List;
 @Repository
 public interface DonHangRepository extends JpaRepository<DonHang, Integer> {
 
-    @Query("SELECT COALESCE(SUM(dh.tongTien), 0) FROM DonHang dh WHERE dh.trangThai = 'DaGiao' AND COALESCE(dh.ngayHoanThanh, dh.ngayDat) >= :startDate AND COALESCE(dh.ngayHoanThanh, dh.ngayDat) < :endDate")
+    @Query(value = "SELECT fn_TinhDoanhThu(:startDate, :endDate)", nativeQuery = true)
     Long getRevenueByDateRange(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 
-    @Query("SELECT COUNT(dh) FROM DonHang dh WHERE dh.trangThai = 'DaGiao' AND COALESCE(dh.ngayHoanThanh, dh.ngayDat) >= :startDate AND COALESCE(dh.ngayHoanThanh, dh.ngayDat) < :endDate")
+    @Query(value = "SELECT fn_DemDonHang(:startDate, :endDate)", nativeQuery = true)
     Long getOrderCountByDateRange(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 
     List<DonHang> findByKhachHangOrderByNgayDatDesc(KhachHang khachHang);
@@ -44,10 +44,10 @@ public interface DonHangRepository extends JpaRepository<DonHang, Integer> {
 
     Long countByKhuyenMai(KhuyenMai khuyenMai);
 
-    @Query("SELECT COALESCE(SUM(dh.tienGiam), 0) FROM DonHang dh WHERE dh.khuyenMai = :km")
+    @Query(value = "SELECT fn_TinhTienGiamKhuyenMai(:#{#km.maKM})", nativeQuery = true)
     Long sumTienGiamByKhuyenMai(@Param("km") KhuyenMai km);
 
-    @Query("SELECT COALESCE(SUM(dh.tongTien), 0) FROM DonHang dh WHERE dh.khuyenMai = :km")
+    @Query(value = "SELECT fn_TinhDoanhThuKhuyenMai(:#{#km.maKM})", nativeQuery = true)
     Long sumTongTienByKhuyenMai(@Param("km") KhuyenMai km);
 }
 
