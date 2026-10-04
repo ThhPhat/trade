@@ -37,26 +37,24 @@ import java.util.Collections;
 import java.util.List;
 
 @Controller
+@org.springframework.web.bind.annotation.RequestMapping("/profile")
 public class ProfileController {
 
     private final TaiKhoanRepository taiKhoanRepository;
     private final KhachHangRepository khachHangRepository;
     private final DonHangRepository donHangRepository;
-    private final KhuyenMaiRepository khuyenMaiRepository;
-    private final VoucherDaLuuRepository voucherDaLuuRepository;
+        private final VoucherDaLuuRepository voucherDaLuuRepository;
     private final PasswordEncoder passwordEncoder;
 
     public ProfileController(TaiKhoanRepository taiKhoanRepository,
                              KhachHangRepository khachHangRepository,
                              DonHangRepository donHangRepository,
-                             KhuyenMaiRepository khuyenMaiRepository,
-                             VoucherDaLuuRepository voucherDaLuuRepository,
+                                                          VoucherDaLuuRepository voucherDaLuuRepository,
                              PasswordEncoder passwordEncoder) {
         this.taiKhoanRepository = taiKhoanRepository;
         this.khachHangRepository = khachHangRepository;
         this.donHangRepository = donHangRepository;
-        this.khuyenMaiRepository = khuyenMaiRepository;
-        this.voucherDaLuuRepository = voucherDaLuuRepository;
+                this.voucherDaLuuRepository = voucherDaLuuRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -140,7 +138,7 @@ public class ProfileController {
         return null;
     }
 
-    @GetMapping("/profile")
+    @GetMapping
     public String profilePage(Authentication authentication, Model model) {
         TaiKhoan tk = getCurrentTaiKhoan(authentication);
         if (tk == null) {
@@ -265,7 +263,7 @@ public class ProfileController {
         return "profile/index";
     }
 
-    @PostMapping("/profile/update")
+    @PostMapping("/update")
     public String updateProfile(Authentication authentication,
                                 @RequestParam("hoTen") String hoTen,
                                 @RequestParam(value = "soDienThoai", required = false) String soDienThoai,

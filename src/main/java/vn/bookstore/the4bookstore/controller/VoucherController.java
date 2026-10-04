@@ -152,8 +152,7 @@ public class VoucherController {
                 .findByKhachHangAndTrangThaiOrderByNgayLuuDesc(kh, "ChuaDung");
 
         List<Map<String, Object>> voucherList = new ArrayList<>();
-        LocalDateTime now = LocalDateTime.now();
-
+        
         for (VoucherDaLuu v : savedVouchers) {
             KhuyenMai km = v.getKhuyenMai();
             Map<String, Object> item = new LinkedHashMap<>();
@@ -210,8 +209,7 @@ public class VoucherController {
     @ResponseBody
     public Map<String, Object> getPublicVouchers(Authentication authentication) {
         Map<String, Object> result = new HashMap<>();
-        LocalDateTime now = LocalDateTime.now();
-
+        
         List<KhuyenMai> publicVouchers = khuyenMaiRepository.findAll().stream()
                 .filter(km -> "HoatDong".equalsIgnoreCase(km.getTrangThai()))
                 .filter(km -> Boolean.TRUE.equals(km.getHienThiCongKhai()))
@@ -249,8 +247,7 @@ public class VoucherController {
     // ==================== Trang "Săn Khuyến Mãi" (full page) ====================
     @GetMapping("/san-voucher")
     public String sanVoucherPage(Authentication authentication, Model model) {
-        LocalDateTime now = LocalDateTime.now();
-
+        
         List<KhuyenMai> publicVouchers = khuyenMaiRepository.findAll().stream()
                 .filter(km -> "HoatDong".equalsIgnoreCase(km.getTrangThai()))
                 .filter(km -> Boolean.TRUE.equals(km.getHienThiCongKhai()))

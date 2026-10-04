@@ -5,7 +5,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.stereotype.Repository;
+
 import vn.bookstore.the4bookstore.entity.DonHang;
 import vn.bookstore.the4bookstore.entity.KhachHang;
 import vn.bookstore.the4bookstore.entity.KhuyenMai;
@@ -13,7 +13,7 @@ import vn.bookstore.the4bookstore.entity.KhuyenMai;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Repository
+
 public interface DonHangRepository extends JpaRepository<DonHang, Integer> {
 
     @Query(value = "SELECT fn_TinhDoanhThu(:startDate, :endDate)", nativeQuery = true)
