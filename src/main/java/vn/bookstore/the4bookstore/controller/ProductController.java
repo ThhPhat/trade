@@ -10,8 +10,6 @@ import java.util.Optional;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import vn.bookstore.the4bookstore.entity.DanhMuc;
 import vn.bookstore.the4bookstore.entity.SanPham;
-import vn.bookstore.the4bookstore.entity.TacGia;
-import vn.bookstore.the4bookstore.entity.NhaXuatBan;
 import vn.bookstore.the4bookstore.service.DanhMucService;
 import vn.bookstore.the4bookstore.service.SanPhamService;
 import vn.bookstore.the4bookstore.service.TacGiaService;
@@ -19,15 +17,15 @@ import vn.bookstore.the4bookstore.service.NhaXuatBanService;
 
 @Controller
 @RequiredArgsConstructor
+@RequestMapping("/san-pham")
 public class ProductController {
 
     private final SanPhamService sanPhamService;
-    private final DanhMucService danhMucService;
-    private final TacGiaService tacGiaService;
+        private final TacGiaService tacGiaService;
     private final NhaXuatBanService nhaXuatBanService;
 
     // CẤP 0: Landing page — Tất cả sản phẩm (hoặc hiển thị kết quả nếu người dùng tìm kiếm / lọc)
-    @GetMapping("/san-pham")
+    @GetMapping
     public String landing(
             @RequestParam(required = false) String q,
             @RequestParam(required = false) String loaiSP,
@@ -172,7 +170,7 @@ public class ProductController {
     }
 
     // Chi tiết sản phẩm
-    @GetMapping("/san-pham/{id}")
+    @GetMapping("/{id}")
     public String productDetail(@PathVariable Integer id, Model model, RedirectAttributes ra) {
         Optional<SanPham> opt = sanPhamService.getById(id);
         if (opt.isEmpty()) {

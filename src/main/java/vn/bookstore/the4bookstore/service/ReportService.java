@@ -22,11 +22,15 @@ import vn.bookstore.the4bookstore.repository.DonHangRepository;
 @Transactional(readOnly = true)
 public class ReportService {
 
-    @Autowired
-    private DonHangRepository donHangRepository;
+    private final DonHangRepository donHangRepository;
 
-    @Autowired
-    private ChiTietDonHangRepository chiTietDonHangRepository;
+    private final ChiTietDonHangRepository chiTietDonHangRepository;
+
+    public ReportService(DonHangRepository donHangRepository,
+                         ChiTietDonHangRepository chiTietDonHangRepository) {
+        this.donHangRepository = donHangRepository;
+        this.chiTietDonHangRepository = chiTietDonHangRepository;
+    }
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -68,7 +72,8 @@ public class ReportService {
             String tenSP = (String) row[1];
             Long soLuongBan = ((Number) row[2]).longValue();
             Integer giaBan = (row.length > 3 && row[3] != null) ? ((Number) row[3]).intValue() : null;
-            dtos.add(new TopSellingBookDTO(maSP, tenSP, soLuongBan, giaBan));
+            Long doanhThuDongGop = (row.length > 4 && row[4] != null) ? ((Number) row[4]).longValue() : null;
+            dtos.add(new TopSellingBookDTO(maSP, tenSP, soLuongBan, giaBan, doanhThuDongGop));
         }
         return dtos;
     }

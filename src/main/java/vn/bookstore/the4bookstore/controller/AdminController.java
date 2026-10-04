@@ -45,25 +45,31 @@ public class AdminController {
     private final TacGiaRepository tacGiaRepository;
     private final SanPhamTacGiaRepository sanPhamTacGiaRepository;
 
-    @Autowired private KhoService khoService;
-    @Autowired private ReportService reportService;
-    @Autowired private OrderService orderService;
-    @Autowired private DonHangRepository donHangRepository;
-    @Autowired private TacGiaService tacGiaService;
-    @Autowired private NhaXuatBanService nhaXuatBanService;
+    
+    private final ReportService reportService;
+    private final OrderService orderService;
+    private final DonHangRepository donHangRepository;
+    
+    
 
-    public AdminController(SanPhamRepository sanPhamRepository,
+        public AdminController(SanPhamRepository sanPhamRepository,
                            DanhMucRepository danhMucRepository,
                            NhaXuatBanRepository nhaXuatBanRepository,
                            NhaCungCapRepository nhaCungCapRepository,
                            TacGiaRepository tacGiaRepository,
-                           SanPhamTacGiaRepository sanPhamTacGiaRepository) {
+                           SanPhamTacGiaRepository sanPhamTacGiaRepository,
+                           ReportService reportService,
+                           OrderService orderService,
+                           DonHangRepository donHangRepository) {
         this.sanPhamRepository = sanPhamRepository;
         this.danhMucRepository = danhMucRepository;
         this.nhaXuatBanRepository = nhaXuatBanRepository;
         this.nhaCungCapRepository = nhaCungCapRepository;
         this.tacGiaRepository = tacGiaRepository;
         this.sanPhamTacGiaRepository = sanPhamTacGiaRepository;
+        this.reportService = reportService;
+        this.orderService = orderService;
+        this.donHangRepository = donHangRepository;
     }
 
     // ==================== DASHBOARD ====================
@@ -345,8 +351,8 @@ public class AdminController {
                     data.put("maSP", sp.getMaSP());
                     data.put("tenSP", sp.getTenSP());
                     data.put("loaiSP", sp.getLoaiSP() != null ? sp.getLoaiSP() : "Sach");
-                    data.put("maDanhMuc", sp.getDanhMuc() != null ? sp.getDanhMuc().getMaDanhMuc() : 0);
-                    data.put("maNXB", sp.getNhaXuatBan() != null ? sp.getNhaXuatBan().getMaNXB() : 0);
+                    data.put("maDanhMuc", sp.getDanhMuc() != null && sp.getDanhMuc().getMaDanhMuc() != null ? sp.getDanhMuc().getMaDanhMuc() : 0);
+                    data.put("maNXB", sp.getNhaXuatBan() != null && sp.getNhaXuatBan().getMaNXB() != null ? sp.getNhaXuatBan().getMaNXB() : 0);
                     data.put("maTacGia", authorId != null ? authorId : 0);
                     data.put("isbn", sp.getISBN() != null ? sp.getISBN() : "");
                     data.put("giaBan", sp.getGiaBan() != null ? sp.getGiaBan() : 0);

@@ -173,7 +173,7 @@
                                     class="relative p-2 text-on-surface-variant hover:text-primary rounded-xl hover:bg-surface-container transition-colors cursor-pointer"
                                     title="Thông báo đơn hàng">
                                 <span class="material-symbols-outlined text-[24px]">notifications</span>
-                                <span id="client-ws-badge" class="hidden absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center bg-error text-white text-[10px] font-bold rounded-full px-1 shadow-sm">0</span>
+                                <span id="client-ws-badge" class="hidden absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center bg-danger text-white text-[10px] font-bold rounded-full px-1 shadow-sm">0</span>
                             </button>
 
                             <!-- Client Notification Dropdown -->
@@ -282,6 +282,7 @@
 
         <!-- Scripts phải nằm trong <header> (th:fragment scope) để Thymeleaf nhúng vào trang -->
         <script th:inline="javascript">
+            window.clientUnreadCount = window.clientUnreadCount || 0;
             window.toggleUserDropdown = function(event) {
                 if (event) event.stopPropagation();
                 const menu = document.getElementById('userDropdownMenu');
@@ -445,7 +446,7 @@
                             stompClient.subscribe('/topic/user/' + currentUserId + '/orders', function (message) {
                                 try {
                                     const noti = JSON.parse(message.body);
-                                    window.clientUnreadCount++;
+                                    window.clientUnreadCount = (window.clientUnreadCount || 0) + 1;
                                     window.clientNotifs.unshift({
                                         maDH: noti.maDH,
                                         tongTien: noti.tongTien,

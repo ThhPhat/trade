@@ -1,6 +1,6 @@
 package vn.bookstore.the4bookstore.repository;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+
 import vn.bookstore.the4bookstore.entity.SanPhamTacGia;
 import vn.bookstore.the4bookstore.entity.SanPhamTacGiaId;
 
@@ -10,7 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
-@Repository
+
 public interface SanPhamTacGiaRepository extends JpaRepository<SanPhamTacGia, SanPhamTacGiaId> {
     List<SanPhamTacGia> findByTacGia_MaTacGia(Integer maTacGia);
     List<SanPhamTacGia> findBySanPham_MaSP(Integer maSP);

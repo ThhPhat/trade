@@ -14,12 +14,15 @@ public class TopSellingBookDTO {
     private String tenSach;
     private Long soLuongBan;
     private Integer giaBan;
+    private Long doanhThuDongGop;
 
     public TopSellingBookDTO(Long sachId, String tenSach, Long soLuongBan) {
         this.sachId = sachId;
         this.tenSach = tenSach;
         this.soLuongBan = soLuongBan;
         this.giaBan = null;
+        this.doanhThuDongGop = null;
     }
+
 }
 

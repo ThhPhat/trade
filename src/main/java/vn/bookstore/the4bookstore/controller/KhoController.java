@@ -17,12 +17,24 @@ import java.util.Map;
 @RequestMapping("/admin/kho")
 public class KhoController {
 
-    @Autowired private KhoService khoService;
-    @Autowired private SanPhamRepository sachRepository;
-    @Autowired private NhaCungCapRepository nhaCungCapRepository;
-    @Autowired private vn.bookstore.the4bookstore.repository.NhanVienRepository nhanVienRepository;
+    private final KhoService khoService;
+    private final SanPhamRepository sachRepository;
+    private final NhaCungCapRepository nhaCungCapRepository;
+    private final vn.bookstore.the4bookstore.repository.NhanVienRepository nhanVienRepository;
 
-    @Autowired private vn.bookstore.the4bookstore.repository.KhoHangRepository khoHangRepository;
+    private final vn.bookstore.the4bookstore.repository.KhoHangRepository khoHangRepository;
+
+    public KhoController(KhoService khoService,
+                         SanPhamRepository sachRepository,
+                         NhaCungCapRepository nhaCungCapRepository,
+                         vn.bookstore.the4bookstore.repository.NhanVienRepository nhanVienRepository,
+                         vn.bookstore.the4bookstore.repository.KhoHangRepository khoHangRepository) {
+        this.khoService = khoService;
+        this.sachRepository = sachRepository;
+        this.nhaCungCapRepository = nhaCungCapRepository;
+        this.nhanVienRepository = nhanVienRepository;
+        this.khoHangRepository = khoHangRepository;
+    }
 
     @GetMapping
     public String listKho(Model model) {

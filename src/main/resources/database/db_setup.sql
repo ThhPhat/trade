@@ -642,12 +642,12 @@ DELIMITER $$
 CREATE PROCEDURE sp_TopSachBanChay(IN p_limit INT)
 BEGIN
     -- Lấy top sách bán chạy nhất
-    SELECT s.masp, s.tensp, SUM(ct.so_luong) as tong_da_ban
+    SELECT s.masp, s.tensp, SUM(ct.so_luong) as tong_da_ban, s.gia_ban, SUM(ct.so_luong * ct.don_gia) as doanh_thu_dong_gop
       FROM san_pham s
       JOIN chi_tiet_don_hang ct ON s.masp = ct.masp
     JOIN don_hang dh ON ct.madh = dh.madh
     WHERE dh.trang_thai = 'DaGiao'
-    GROUP BY s.masp, s.tensp
+    GROUP BY s.masp, s.tensp, s.gia_ban
     ORDER BY tong_da_ban DESC
     LIMIT p_limit;
 END $$
@@ -983,10 +983,15 @@ BEGIN
             LEAVE read_loop;
         END IF;
         
-        -- Cập nhật số lượng tồn kho
+        -- Cập nhật số lượng tồn kho (kho_hang)
         UPDATE kho_hang 
         SET so_luong_ton = so_luong_ton + v_soluong 
         WHERE san_pham_id = v_masp;
+        
+        -- Cập nhật số lượng tồn kho mặt tiền (san_pham)
+        UPDATE san_pham
+        SET so_luong_ton = so_luong_ton + v_soluong
+        WHERE masp = v_masp;
     END LOOP;
     CLOSE cur;
     
@@ -1033,6 +1038,13 @@ BEGIN
         END IF;
         
         -- Cập nhật số lượng tồn kho theo số lượng thực tế kiểm kê
+        -- Tính chênh lệch để cập nhật bảng san_pham
+        SET @chenh_lech = (SELECT so_luong_ton FROM kho_hang WHERE san_pham_id = v_masp LIMIT 1);
+        IF @chenh_lech IS NOT NULL THEN
+            SET @chenh_lech = v_soluong_thucte - @chenh_lech;
+            UPDATE san_pham SET so_luong_ton = so_luong_ton + @chenh_lech WHERE masp = v_masp;
+        END IF;
+
         UPDATE kho_hang 
         SET so_luong_ton = v_soluong_thucte 
         WHERE san_pham_id = v_masp;

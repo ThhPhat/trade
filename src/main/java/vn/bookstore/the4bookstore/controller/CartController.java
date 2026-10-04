@@ -25,20 +25,20 @@ public class CartController {
     private final DonHangService donHangService;
     private final KhachHangRepository khachHangRepository;
     private final TaiKhoanRepository taiKhoanRepository;
-    private final SanPhamRepository sanPhamRepository;
+    
     private final KhuyenMaiRepository khuyenMaiRepository;
 
     public CartController(GioHangService gioHangService,
                           DonHangService donHangService,
                           KhachHangRepository khachHangRepository,
                           TaiKhoanRepository taiKhoanRepository,
-                          SanPhamRepository sanPhamRepository,
+                          
                           KhuyenMaiRepository khuyenMaiRepository) {
         this.gioHangService = gioHangService;
         this.donHangService = donHangService;
         this.khachHangRepository = khachHangRepository;
         this.taiKhoanRepository = taiKhoanRepository;
-        this.sanPhamRepository = sanPhamRepository;
+        
         this.khuyenMaiRepository = khuyenMaiRepository;
     }
 

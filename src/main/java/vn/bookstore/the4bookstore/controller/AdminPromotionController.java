@@ -18,7 +18,7 @@ import vn.bookstore.the4bookstore.repository.DonHangRepository;
 import vn.bookstore.the4bookstore.repository.SanPhamRepository;
 import vn.bookstore.the4bookstore.service.KhuyenMaiService;
 
-import java.nio.charset.StandardCharsets;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -31,16 +31,16 @@ public class AdminPromotionController {
 
     private final KhuyenMaiService khuyenMaiService;
     private final DanhMucRepository danhMucRepository;
-    private final SanPhamRepository sanPhamRepository;
+    
     private final DonHangRepository donHangRepository;
 
     public AdminPromotionController(KhuyenMaiService khuyenMaiService,
                                     DanhMucRepository danhMucRepository,
-                                    SanPhamRepository sanPhamRepository,
+                                    
                                     DonHangRepository donHangRepository) {
         this.khuyenMaiService = khuyenMaiService;
         this.danhMucRepository = danhMucRepository;
-        this.sanPhamRepository = sanPhamRepository;
+        
         this.donHangRepository = donHangRepository;
     }
 

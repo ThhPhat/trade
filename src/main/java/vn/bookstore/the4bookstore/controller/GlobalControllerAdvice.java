@@ -24,19 +24,22 @@ public class GlobalControllerAdvice {
     private final KhachHangRepository khachHangRepository;
     private final TaiKhoanRepository taiKhoanRepository;
 
-    @org.springframework.beans.factory.annotation.Autowired(required = false)
-    private DanhMucRepository danhMucRepository;
+    private final DanhMucRepository danhMucRepository;
 
-    @org.springframework.beans.factory.annotation.Autowired(required = false)
-    private SanPhamRepository sanPhamRepository;
+    private final SanPhamRepository sanPhamRepository;
 
-    @org.springframework.beans.factory.annotation.Autowired(required = false)
-    private vn.bookstore.the4bookstore.service.GioHangService gioHangService;
+    private final vn.bookstore.the4bookstore.service.GioHangService gioHangService;
 
-    public GlobalControllerAdvice(KhachHangRepository khachHangRepository,
-                                  TaiKhoanRepository taiKhoanRepository) {
+        public GlobalControllerAdvice(KhachHangRepository khachHangRepository,
+                                  TaiKhoanRepository taiKhoanRepository,
+                                  @org.springframework.beans.factory.annotation.Autowired(required = false) DanhMucRepository danhMucRepository,
+                                  @org.springframework.beans.factory.annotation.Autowired(required = false) SanPhamRepository sanPhamRepository,
+                                  @org.springframework.beans.factory.annotation.Autowired(required = false) vn.bookstore.the4bookstore.service.GioHangService gioHangService) {
         this.khachHangRepository = khachHangRepository;
         this.taiKhoanRepository = taiKhoanRepository;
+        this.danhMucRepository = danhMucRepository;
+        this.sanPhamRepository = sanPhamRepository;
+        this.gioHangService = gioHangService;
     }
 
     @ModelAttribute("cartItemCount")
