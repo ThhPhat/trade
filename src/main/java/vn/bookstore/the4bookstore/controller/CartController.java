@@ -25,21 +25,27 @@ public class CartController {
     private final DonHangService donHangService;
     private final KhachHangRepository khachHangRepository;
     private final TaiKhoanRepository taiKhoanRepository;
-    
     private final KhuyenMaiRepository khuyenMaiRepository;
+    private final DiaChiGiaoHangRepository diaChiGiaoHangRepository;
+    private final NhaVanChuyenRepository nhaVanChuyenRepository;
+    private final vn.bookstore.the4bookstore.service.VNPayService vnPayService;
 
     public CartController(GioHangService gioHangService,
                           DonHangService donHangService,
                           KhachHangRepository khachHangRepository,
                           TaiKhoanRepository taiKhoanRepository,
-                          
-                          KhuyenMaiRepository khuyenMaiRepository) {
+                          KhuyenMaiRepository khuyenMaiRepository,
+                          DiaChiGiaoHangRepository diaChiGiaoHangRepository,
+                          NhaVanChuyenRepository nhaVanChuyenRepository,
+                          vn.bookstore.the4bookstore.service.VNPayService vnPayService) {
         this.gioHangService = gioHangService;
         this.donHangService = donHangService;
         this.khachHangRepository = khachHangRepository;
         this.taiKhoanRepository = taiKhoanRepository;
-        
         this.khuyenMaiRepository = khuyenMaiRepository;
+        this.diaChiGiaoHangRepository = diaChiGiaoHangRepository;
+        this.nhaVanChuyenRepository = nhaVanChuyenRepository;
+        this.vnPayService = vnPayService;
     }
 
     // ==================== Helper: Lấy TaiKhoan từ Authentication ====================
@@ -130,6 +136,7 @@ public class CartController {
             model.addAttribute("cartCount", cartCount);
             model.addAttribute("isAuthenticated", true);
             model.addAttribute("khachHang", kh);
+            model.addAttribute("diaChiList", diaChiGiaoHangRepository.findByKhachHangOrderByLaMacDinhDescNgayTaoDesc(kh));
         } else {
             List<ChiTietGioHang> cartItems = gioHangService.getSessionCartItems(session);
             int subtotal = gioHangService.calculateSessionSubtotal(session);
@@ -139,7 +146,10 @@ public class CartController {
             model.addAttribute("subtotal", subtotal);
             model.addAttribute("cartCount", cartCount);
             model.addAttribute("isAuthenticated", false);
+            model.addAttribute("diaChiList", List.of());
         }
+
+        model.addAttribute("carriers", nhaVanChuyenRepository.findByTrangThai("HoatDong"));
 
         return "cart/cart";
     }
@@ -240,12 +250,15 @@ public class CartController {
     // ==================== Đặt hàng (Checkout) ====================
 
     @PostMapping("/gio-hang/dat-hang")
-    public String placeOrder(@RequestParam("diaChiGiao") String diaChiGiao,
-                             @RequestParam("soDienThoaiGiao") String soDienThoaiGiao,
+    public String placeOrder(@RequestParam(value = "maDiaChi", required = false) Integer maDiaChi,
+                             @RequestParam(value = "diaChiGiao", required = false) String diaChiGiao,
+                             @RequestParam(value = "soDienThoaiGiao", required = false) String soDienThoaiGiao,
+                             @RequestParam(value = "maNvc", required = false) Integer maNvc,
                              @RequestParam(value = "phuongThuc", defaultValue = "COD") String phuongThuc,
                              @RequestParam(value = "ghiChu", required = false) String ghiChu,
                              @RequestParam(value = "selectedProductIds", required = false) List<Integer> selectedProductIds,
                              @RequestParam(value = "maVoucher", required = false) String maVoucher,
+                             jakarta.servlet.http.HttpServletRequest request,
                              Authentication authentication,
                              RedirectAttributes redirectAttributes) {
         KhachHang kh = getCurrentKhachHang(authentication);
@@ -253,8 +266,38 @@ public class CartController {
             return "redirect:/login";
         }
 
+        String finalDiaChi = diaChiGiao;
+        String finalSoDienThoai = soDienThoaiGiao;
+
+        if (maDiaChi != null) {
+            DiaChiGiaoHang dc = diaChiGiaoHangRepository.findById(maDiaChi).orElse(null);
+            if (dc != null && dc.getKhachHang().getMaKH().equals(kh.getMaKH())) {
+                finalDiaChi = dc.getDiaChiChiTiet();
+                finalSoDienThoai = dc.getSoDienThoai();
+            }
+        }
+
+        if (finalDiaChi == null || finalDiaChi.isBlank()) {
+            finalDiaChi = kh.getDiaChi() != null ? kh.getDiaChi() : "Chưa cung cấp địa chỉ";
+        }
+        if (finalSoDienThoai == null || finalSoDienThoai.isBlank()) {
+            finalSoDienThoai = kh.getSoDienThoai() != null ? kh.getSoDienThoai() : "0900000000";
+        }
+
         try {
-            DonHang donHang = donHangService.createOrder(kh, diaChiGiao, soDienThoaiGiao, phuongThuc, ghiChu, selectedProductIds, maVoucher);
+            DonHang donHang = donHangService.createOrder(kh, finalDiaChi, finalSoDienThoai, phuongThuc, ghiChu, selectedProductIds, maVoucher, maNvc);
+
+            if ("VNPAY".equalsIgnoreCase(phuongThuc)) {
+                String scheme = request.getScheme();
+                String serverName = request.getServerName();
+                int serverPort = request.getServerPort();
+                String portPart = (("http".equals(scheme) && serverPort == 80) || ("https".equals(scheme) && serverPort == 443)) ? "" : (":" + serverPort);
+                String returnUrl = scheme + "://" + serverName + portPart + "/don-hang/vnpay-return";
+                String ipAddr = request.getRemoteAddr();
+                String paymentUrl = vnPayService.createPaymentUrl(donHang.getMaDH(), donHang.getTongTien(), "Thanh toan don hang #" + donHang.getMaDH(), returnUrl, ipAddr);
+                return "redirect:" + paymentUrl;
+            }
+
             redirectAttributes.addFlashAttribute("orderSuccess", true);
             redirectAttributes.addFlashAttribute("maDH", donHang.getMaDH());
             redirectAttributes.addFlashAttribute("successMessage",

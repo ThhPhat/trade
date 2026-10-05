@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import vn.bookstore.the4bookstore.entity.DanhMuc;
 import vn.bookstore.the4bookstore.entity.KhachHang;
 import vn.bookstore.the4bookstore.entity.KhuyenMai;
+import vn.bookstore.the4bookstore.entity.SanPham;
 import vn.bookstore.the4bookstore.entity.TaiKhoan;
 import vn.bookstore.the4bookstore.repository.KhachHangRepository;
 import vn.bookstore.the4bookstore.repository.KhuyenMaiRepository;
@@ -36,6 +37,8 @@ public class HomeController {
     private final VoucherDaLuuRepository voucherDaLuuRepository;
     private final KhachHangRepository khachHangRepository;
     private final TaiKhoanRepository taiKhoanRepository;
+    private final vn.bookstore.the4bookstore.repository.SanPhamRepository sanPhamRepository;
+    private final vn.bookstore.the4bookstore.service.UserInteractionService userInteractionService;
 
     private KhachHang getCurrentKhachHang(Authentication auth) {
         if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getPrincipal())) return null;
@@ -98,6 +101,8 @@ public class HomeController {
         // Section: Săn Voucher - Lấy voucher công khai đang hoạt động
         List<KhuyenMai> publicVouchers = Collections.emptyList();
         Set<Integer> savedVoucherIds = new HashSet<>();
+        boolean isGuest = (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getPrincipal()));
+        KhachHang kh = null;
         try {
             publicVouchers = khuyenMaiRepository.findAll().stream()
                     .filter(km -> "HoatDong".equalsIgnoreCase(km.getTrangThai()))
@@ -105,13 +110,27 @@ public class HomeController {
                     .filter(KhuyenMai::isDangDienRa)
                     .toList();
 
-            KhachHang kh = getCurrentKhachHang(auth);
+            kh = getCurrentKhachHang(auth);
             if (kh != null) {
                 savedVoucherIds.addAll(voucherDaLuuRepository.findSavedVoucherIdsByKhachHang(kh));
             }
         } catch (Exception ignored) {}
         model.addAttribute("publicVouchers", publicVouchers);
         model.addAttribute("savedVoucherIds", savedVoucherIds);
+        model.addAttribute("isGuest", isGuest);
+
+        // --- ĐẶC QUYỀN GUEST: Sản phẩm bán trên 10 sản phẩm (sắp xếp giảm dần) ---
+        List<SanPham> guestTopSold = sanPhamRepository.findTopProductsForGuest();
+        model.addAttribute("guestTopSold", guestTopSold);
+
+        // --- ĐẶC QUYỀN USER: 20 sản phẩm mới nhất, bán chạy, đánh giá cao, yêu thích nhất ---
+        if (!isGuest && kh != null) {
+            model.addAttribute("top20Newest", sanPhamRepository.findTop20Newest(null, org.springframework.data.domain.PageRequest.of(0, 20)).getContent());
+            model.addAttribute("top20BestSelling", sanPhamRepository.findTop20BestSelling(null, org.springframework.data.domain.PageRequest.of(0, 20)).getContent());
+            model.addAttribute("top20HighestRated", sanPhamRepository.findTop20HighestRated(null, org.springframework.data.domain.PageRequest.of(0, 20)).getContent());
+            model.addAttribute("top20MostFavorited", sanPhamRepository.findTop20MostFavorited(null, org.springframework.data.domain.PageRequest.of(0, 20)).getContent());
+            model.addAttribute("recentlyViewed", userInteractionService.getRecentlyViewed(kh));
+        }
 
         return "home/index";
     }

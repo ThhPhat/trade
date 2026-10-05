@@ -18,6 +18,16 @@
                 <span class="text-primary font-semibold truncate max-w-xs" th:text="${sanPham.tenSP}">Tên sản phẩm</span>
             </div>
 
+            <!-- Feedback Notifications -->
+            <div th:if="${successMessage}" class="mb-4 p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm font-semibold flex items-center gap-2.5 shadow-sm">
+                <span class="material-symbols-outlined text-[20px] text-emerald-600">check_circle</span>
+                <span th:text="${successMessage}"></span>
+            </div>
+            <div th:if="${errorMessage}" class="mb-4 p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-sm font-semibold flex items-center gap-2.5 shadow-sm">
+                <span class="material-symbols-outlined text-[20px] text-rose-600">error</span>
+                <span th:text="${errorMessage}"></span>
+            </div>
+
             <!-- Main Product Section -->
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-space-xl mb-space-xl">
 
@@ -44,15 +54,35 @@
 
                 <!-- Product Info (8 cols) -->
                 <div class="lg:col-span-8 flex flex-col gap-space-md">
-                    <!-- Category Badge -->
-                    <div>
+                    <!-- Category Badge & Seller Mini Badge -->
+                    <div class="flex items-center gap-2 flex-wrap">
                         <span th:if="${sanPham.danhMuc != null}"
                               class="inline-flex items-center px-space-sm py-1 rounded-full bg-primary/10 text-primary text-xs font-bold"
                               th:text="${sanPham.danhMuc.tenDanhMuc}">Văn học</span>
+                        
+                        <span th:if="${sanPham.shop != null}" 
+                              class="inline-flex items-center gap-1 px-space-sm py-1 rounded-full bg-amber-500/10 text-amber-700 text-xs font-bold">
+                            <span class="material-symbols-outlined text-[15px]">storefront</span>
+                            <span th:text="${sanPham.shop.tenShop}">The4BookStore Official</span>
+                        </span>
                     </div>
 
                     <!-- Title -->
                     <h1 class="font-headline-xl text-2xl md:text-4xl font-bold text-on-surface tracking-tight leading-tight" th:text="${sanPham.tenSP}">Tên Sản Phẩm</h1>
+
+                    <!-- Rating & Sold Metas -->
+                    <div class="flex items-center gap-space-md text-xs text-on-surface-variant flex-wrap">
+                        <div class="flex items-center gap-1 text-amber-500 font-bold">
+                            <span class="material-symbols-outlined text-[18px] fill-current">star</span>
+                            <span th:text="${avgRating != null ? #numbers.formatDecimal(avgRating, 1, 'POINT', 1, 'COMMA') : '5.0'}">5.0</span>
+                            <span class="text-on-surface-variant font-normal" th:text="'(' + ${reviewCount} + ' đánh giá)'">(0 đánh giá)</span>
+                        </div>
+                        <span class="text-outline-variant">•</span>
+                        <div class="flex items-center gap-1 font-semibold text-on-surface">
+                            <span class="material-symbols-outlined text-[16px] text-primary">shopping_cart_checkout</span>
+                            <span>Đã bán: <strong class="text-primary font-mono" th:text="${sanPham.soLuongDaBan != null ? sanPham.soLuongDaBan : 0}">0</strong></span>
+                        </div>
+                    </div>
 
                     <!-- Authors & Publisher Badges / Links -->
                     <div class="flex flex-wrap items-center gap-space-md text-sm text-on-surface-variant">
@@ -60,14 +90,14 @@
                         <div th:if="${sanPham.danhSachTacGia != null and !sanPham.danhSachTacGia.isEmpty()}" class="flex items-center gap-1.5">
                             <span class="material-symbols-outlined text-[18px] text-primary">person_edit</span>
                             <span>Tác giả: </span>
-                            <span class="font-bold text-primary" th:text="${sanPham.danhSachTacGia}">Matt Haig</span>
+                            <span class="font-bold text-primary" th:text="${sanPham.danhSachTacGia}">Tác giả</span>
                         </div>
 
                         <!-- Publisher -->
                         <div th:if="${sanPham.nhaXuatBan != null}" class="flex items-center gap-1.5">
                             <span class="material-symbols-outlined text-[18px] text-secondary">apartment</span>
                             <span>NXB: </span>
-                            <a th:href="@{/san-pham/sach(nxb=${sanPham.nhaXuatBan.maNXB})}" class="font-semibold text-on-surface hover:text-primary hover:underline" th:text="${sanPham.nhaXuatBan.tenNXB}">NXB Hội Nhà Văn</a>
+                            <a th:href="@{/san-pham/sach(nxb=${sanPham.nhaXuatBan.maNXB})}" class="font-semibold text-on-surface hover:text-primary hover:underline" th:text="${sanPham.nhaXuatBan.tenNXB}">NXB</a>
                         </div>
                     </div>
 
@@ -89,7 +119,7 @@
                              class="flex items-center gap-space-xs">
                             <span class="w-2.5 h-2.5 rounded-full bg-primary"></span>
                             <span class="text-sm font-semibold text-primary">Còn hàng</span>
-                            <span class="text-xs text-on-surface-variant" th:text="'(' + ${sanPham.soLuongTon} + ' sản phẩm)'"></span>
+                            <span class="text-xs text-on-surface-variant" th:text="'(' + ${sanPham.soLuongTon} + ' sản phẩm trong kho)'"></span>
                         </div>
                         <div th:unless="${sanPham.trangThai != 'HetHang' && sanPham.soLuongTon != null && sanPham.soLuongTon > 0}"
                              class="flex items-center gap-space-xs">
@@ -110,14 +140,29 @@
                                 <span th:text="${sanPham.trangThai == 'HetHang' || sanPham.soLuongTon == null || sanPham.soLuongTon <= 0 ? 'Tạm Thời Hết Hàng' : 'Thêm Vào Giỏ Hàng'}">Thêm Vào Giỏ Hàng</span>
                             </button>
                         </div>
-                        <a th:href="@{/san-pham}" class="px-space-xl py-3 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface font-semibold text-sm transition-colors flex items-center gap-space-xs">
+
+                        <!-- Wishlist Toggle Button -->
+                        <button type="button" 
+                                id="btnWishlist"
+                                th:data-masp="${sanPham.maSP}"
+                                onclick="toggleWishlist(this)"
+                                class="px-space-lg py-3 rounded-xl border border-surface-container font-semibold text-sm transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm hover:bg-surface-container"
+                                th:classappend="${isFavorite} ? 'bg-rose-50 text-rose-600 border-rose-200' : 'bg-surface-container-lowest text-on-surface'">
+                            <span class="material-symbols-outlined text-[20px]" 
+                                  id="iconWishlist"
+                                  th:text="${isFavorite ? 'favorite' : 'favorite_border'}"
+                                  th:classappend="${isFavorite ? 'text-rose-600' : 'text-on-surface-variant'}">favorite_border</span>
+                            <span id="textWishlist" th:text="${isFavorite ? 'Đã thích' : 'Yêu thích'}">Yêu thích</span>
+                        </button>
+
+                        <a th:href="@{/san-pham}" class="px-space-xl py-3 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface font-semibold text-sm transition-colors flex items-center justify-center gap-space-xs">
                             <span class="material-symbols-outlined text-[18px]">arrow_back</span>
                             <span>Quay Lại</span>
                         </a>
                     </div>
 
                     <!-- Meta Info Grid -->
-                    <div class="grid grid-cols-2 gap-space-sm mt-space-xs">
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-space-sm mt-space-xs">
                         <div class="bg-surface-container-lowest rounded-xl p-space-md border border-surface-container/60">
                             <p class="text-xs text-on-surface-variant mb-0.5">Danh mục</p>
                             <p class="text-sm font-semibold text-on-surface" th:text="${sanPham.loaiSP == 'Sach' ? 'Sách' : (sanPham.loaiSP == 'VanPhongPham' ? 'Văn Phòng Phẩm' : (sanPham.loaiSP == 'QuaTang' ? 'Quà Tặng & Trang Trí' : sanPham.loaiSP))}">Sách</p>
@@ -128,11 +173,230 @@
                         </div>
                         <div class="bg-surface-container-lowest rounded-xl p-space-md border border-surface-container/60" th:if="${sanPham.nhaXuatBan != null}">
                             <p class="text-xs text-on-surface-variant mb-0.5">Nhà Xuất Bản</p>
-                            <p class="text-sm font-semibold text-on-surface" th:text="${sanPham.nhaXuatBan.tenNXB}">NXB</p>
+                            <p class="text-sm font-semibold text-on-surface truncate" th:text="${sanPham.nhaXuatBan.tenNXB}">NXB</p>
+                        </div>
+                        <div class="bg-surface-container-lowest rounded-xl p-space-md border border-surface-container/60" th:if="${sanPham.shop != null}">
+                            <p class="text-xs text-on-surface-variant mb-0.5">Cửa hàng bán</p>
+                            <a th:href="@{'/shop/' + ${sanPham.shop.slug}}" class="text-sm font-bold text-primary hover:underline truncate block" th:text="${sanPham.shop.tenShop}">Tên Shop</a>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <!-- VENDOR / SHOP INFORMATION CARD -->
+            <section class="mb-space-xl" th:if="${sanPham.shop != null}">
+                <div class="bg-surface-container-lowest rounded-3xl p-space-lg md:p-space-xl border border-surface-container shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-space-lg">
+                    <div class="flex items-center gap-space-md">
+                        <div class="w-16 h-16 rounded-2xl overflow-hidden bg-primary/10 flex items-center justify-center shrink-0 border border-primary/20 shadow-xs">
+                            <img th:if="${sanPham.shop.logo != null and !sanPham.shop.logo.isBlank()}" 
+                                 th:src="${sanPham.shop.logo}" 
+                                 th:alt="${sanPham.shop.tenShop}" 
+                                 class="w-full h-full object-cover"/>
+                            <span th:unless="${sanPham.shop.logo != null and !sanPham.shop.logo.isBlank()}" 
+                                  class="material-symbols-outlined text-[32px] text-primary">storefront</span>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h3 class="font-headline-md text-base md:text-lg font-bold text-on-surface" th:text="${sanPham.shop.tenShop}">The4BookStore Official</h3>
+                                <span th:if="${sanPham.shop.maShop == 1}" class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-700">Gian Hàng Chính Hãng</span>
+                                <span th:unless="${sanPham.shop.maShop == 1}" class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-500/10 text-amber-700">Gian Hàng Đối Tác</span>
+                            </div>
+                            <p class="text-xs text-on-surface-variant mt-1 line-clamp-1" th:text="${sanPham.shop.moTa != null ? sanPham.shop.moTa : 'Chuyên cung cấp ấn phẩm sách chính hãng chọn lọc.'}">Mô tả shop</p>
+                            <div class="flex items-center gap-4 text-xs text-on-surface-variant mt-1.5 flex-wrap">
+                                <span class="flex items-center gap-1" th:if="${sanPham.shop.soDienThoai != null}">
+                                    <span class="material-symbols-outlined text-[14px] text-primary">call</span>
+                                    <span th:text="${sanPham.shop.soDienThoai}">Hotline</span>
+                                </span>
+                                <span class="flex items-center gap-1" th:if="${sanPham.shop.emailShop != null}">
+                                    <span class="material-symbols-outlined text-[14px] text-primary">mail</span>
+                                    <span th:text="${sanPham.shop.emailShop}">Email</span>
+                                </span>
+                                <span class="flex items-center gap-1" th:if="${sanPham.shop.diaChiShop != null}">
+                                    <span class="material-symbols-outlined text-[14px] text-secondary">location_on</span>
+                                    <span class="line-clamp-1 max-w-xs" th:text="${sanPham.shop.diaChiShop}">Địa chỉ</span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-3 shrink-0 w-full md:w-auto">
+                        <a th:href="@{'/shop/' + ${sanPham.shop.slug}}"
+                           class="flex-1 md:flex-initial px-space-lg py-2.5 rounded-xl bg-primary text-on-primary font-bold text-xs hover:bg-primary-container transition-all shadow-sm flex items-center justify-center gap-1.5">
+                            <span class="material-symbols-outlined text-[18px]">storefront</span>
+                            <span>Xem Gian Hàng</span>
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PRODUCT REVIEWS & COMMENTS SECTION -->
+            <section class="mb-space-xl" id="reviews-section">
+                <div class="bg-surface-container-lowest rounded-3xl p-space-lg md:p-space-xl border border-surface-container shadow-sm">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-space-lg border-b border-surface-container gap-4">
+                        <div>
+                            <div class="inline-flex items-center gap-1 text-primary font-bold text-xs mb-1">
+                                <span class="material-symbols-outlined text-[18px]">reviews</span>
+                                <span>Phản Hồi Từ Người Mua Thực Tế</span>
+                            </div>
+                            <h2 class="font-headline-lg text-xl md:text-2xl font-bold text-on-surface">Đánh Giá &amp; Nhận Xét Sản Phẩm</h2>
+                        </div>
+
+                        <!-- Rating Overview Box -->
+                        <div class="flex items-center gap-4 bg-surface-container-low px-5 py-3 rounded-2xl border border-surface-container">
+                            <div class="text-center">
+                                <div class="font-headline-xl text-3xl font-black text-amber-500 font-mono" 
+                                     th:text="${avgRating != null ? #numbers.formatDecimal(avgRating, 1, 'POINT', 1, 'COMMA') : '5.0'}">5.0</div>
+                                <div class="flex items-center text-amber-500 justify-center">
+                                    <span class="material-symbols-outlined text-[16px] fill-current">star</span>
+                                    <span class="material-symbols-outlined text-[16px] fill-current">star</span>
+                                    <span class="material-symbols-outlined text-[16px] fill-current">star</span>
+                                    <span class="material-symbols-outlined text-[16px] fill-current">star</span>
+                                    <span class="material-symbols-outlined text-[16px] fill-current">star</span>
+                                </div>
+                            </div>
+                            <div class="text-xs text-on-surface-variant border-l border-surface-container pl-4">
+                                <p class="font-bold text-on-surface" th:text="${reviewCount} + ' Lượt đánh giá'">0 Lượt đánh giá</p>
+                                <p class="text-[11px] mt-0.5">100% từ người mua đã nhận hàng thành công</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- REVIEW SUBMISSION FORM (ONLY FOR ELIGIBLE CUSTOMERS) -->
+                    <div th:if="${canReview}" class="my-space-lg p-space-lg rounded-2xl bg-primary/5 border border-primary/20">
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="material-symbols-outlined text-primary text-[22px]">rate_review</span>
+                            <h3 class="font-headline-sm text-sm font-bold text-on-surface">Viết Đánh Giá Cho Đơn Hàng Của Bạn</h3>
+                        </div>
+                        <p class="text-xs text-on-surface-variant mb-4">
+                            Chia sẻ cảm nhận sau khi đọc tác phẩm này để nhận được sự đồng cảm và gợi ý cho những độc giả khác nhé! 
+                            <strong class="text-primary">(Yêu cầu tối thiểu 50 ký tự)</strong>
+                        </p>
+
+                        <form th:action="@{/api/danh-gia/submit}" method="post" id="reviewForm" class="space-y-4">
+                            <input type="hidden" name="maSP" th:value="${sanPham.maSP}"/>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <!-- Select Order -->
+                                <div>
+                                    <label class="block text-xs font-semibold text-on-surface mb-1">Chọn đơn hàng đã mua *</label>
+                                    <select name="maDH" required class="w-full bg-surface-container-lowest px-3 py-2 rounded-xl text-xs border border-surface-container focus:ring-1 focus:ring-primary focus:outline-none">
+                                        <option th:each="id : ${eligibleOrderIds}" th:value="${id}" th:text="'Đơn hàng #TB-' + ${id}">Đơn hàng #TB-1</option>
+                                    </select>
+                                </div>
+
+                                <!-- Star Rating selector -->
+                                <div>
+                                    <label class="block text-xs font-semibold text-on-surface mb-1">Mức độ hài lòng của bạn *</label>
+                                    <div class="flex items-center gap-1.5 pt-1" id="starSelector">
+                                        <input type="hidden" name="soSao" id="ratingInput" value="5"/>
+                                        <button type="button" class="star-btn text-amber-500 hover:scale-125 transition-transform" data-star="1">
+                                            <span class="material-symbols-outlined text-[26px]">star</span>
+                                        </button>
+                                        <button type="button" class="star-btn text-amber-500 hover:scale-125 transition-transform" data-star="2">
+                                            <span class="material-symbols-outlined text-[26px]">star</span>
+                                        </button>
+                                        <button type="button" class="star-btn text-amber-500 hover:scale-125 transition-transform" data-star="3">
+                                            <span class="material-symbols-outlined text-[26px]">star</span>
+                                        </button>
+                                        <button type="button" class="star-btn text-amber-500 hover:scale-125 transition-transform" data-star="4">
+                                            <span class="material-symbols-outlined text-[26px]">star</span>
+                                        </button>
+                                        <button type="button" class="star-btn text-amber-500 hover:scale-125 transition-transform" data-star="5">
+                                            <span class="material-symbols-outlined text-[26px]">star</span>
+                                        </button>
+                                        <span class="text-xs font-bold text-amber-600 ml-2" id="starLabel">5 sao (Rất tuyệt vời)</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Comment Content -->
+                            <div>
+                                <div class="flex justify-between items-center mb-1">
+                                    <label class="text-xs font-semibold text-on-surface">Nội dung đánh giá chi tiết *</label>
+                                    <span class="text-xs font-mono" id="charCountLabel">0 / 50 ký tự tối thiểu</span>
+                                </div>
+                                <textarea name="noiDung" id="reviewContent" rows="4" required
+                                          placeholder="Hãy mô tả chất lượng giấy in, nội dung cuốn sách, cảm xúc khi đọc tác phẩm này... (tối thiểu 50 ký tự)"
+                                          class="w-full bg-surface-container-lowest p-3 rounded-2xl text-xs border border-surface-container focus:ring-1 focus:ring-primary focus:outline-none resize-none"></textarea>
+                            </div>
+
+                            <!-- Media URLs -->
+                            <div>
+                                <label class="block text-xs font-semibold text-on-surface mb-1">Đính kèm liên kết Hình ảnh / Video (Tùy chọn)</label>
+                                <input type="text" name="mediaUrl" placeholder="Ví dụ: https://example.com/anh1.jpg, https://example.com/video.mp4"
+                                       class="w-full bg-surface-container-lowest px-3 py-2 rounded-xl text-xs border border-surface-container focus:ring-1 focus:ring-primary focus:outline-none"/>
+                                <p class="text-[11px] text-on-surface-variant mt-1">Hỗ trợ các link ảnh .jpg, .png hoặc video .mp4 (ngăn cách bằng dấu phẩy)</p>
+                            </div>
+
+                            <button type="submit" id="btnSubmitReview" disabled
+                                    class="px-6 py-2.5 rounded-xl bg-primary text-on-primary font-bold text-xs disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary-container transition-all shadow-sm flex items-center gap-1.5 cursor-pointer">
+                                <span class="material-symbols-outlined text-[18px]">send</span>
+                                <span>Gửi Đánh Giá</span>
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Notice for users who haven't purchased -->
+                    <div th:if="${!canReview and isLoggedIn}" class="my-space-md p-4 rounded-2xl bg-surface-container-low border border-surface-container text-xs text-on-surface-variant flex items-center gap-2">
+                        <span class="material-symbols-outlined text-[20px] text-secondary">verified</span>
+                        <span>Chức năng đánh giá chỉ dành cho độc giả đã đặt mua và nhận sản phẩm này thành công trên hệ thống The4BookStore.</span>
+                    </div>
+
+                    <div th:if="${!isLoggedIn}" class="my-space-md p-4 rounded-2xl bg-surface-container-low border border-surface-container text-xs text-on-surface-variant flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[20px] text-primary">login</span>
+                            <span>Đăng nhập và mua sản phẩm để viết bài đánh giá chi tiết.</span>
+                        </div>
+                        <a th:href="@{/login}" class="font-bold text-primary hover:underline">Đăng nhập ngay</a>
+                    </div>
+
+                    <!-- REVIEWS LIST -->
+                    <div class="space-y-4 pt-space-md">
+                        <div th:if="${reviews == null or reviews.isEmpty()}" class="py-8 text-center text-xs text-on-surface-variant">
+                            <span class="material-symbols-outlined text-[40px] text-outline-variant mb-2">comment</span>
+                            <p>Chưa có đánh giá nào cho sản phẩm này. Hãy là người đầu tiên trải nghiệm và chia sẻ!</p>
+                        </div>
+
+                        <div th:each="rv : ${reviews}" class="p-space-md rounded-2xl bg-surface-container-low/40 border border-surface-container/60 space-y-2">
+                            <div class="flex items-center justify-between flex-wrap gap-2">
+                                <div class="flex items-center gap-2.5">
+                                    <div class="w-8 h-8 rounded-full bg-primary/10 text-primary font-bold text-xs flex items-center justify-center">
+                                        <span th:text="${rv.khachHang.hoTen != null ? rv.khachHang.hoTen.substring(0, 1) : 'U'}">U</span>
+                                    </div>
+                                    <div>
+                                        <div class="flex items-center gap-2">
+                                            <span class="font-bold text-xs text-on-surface" th:text="${rv.khachHang.hoTen ?: 'Độc giả'}">Độc giả</span>
+                                            <span class="inline-flex items-center gap-0.5 text-[10px] text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded-full">
+                                                <span class="material-symbols-outlined text-[12px]">verified</span>
+                                                <span>Đã mua hàng</span>
+                                            </span>
+                                        </div>
+                                        <div class="flex items-center text-amber-500 mt-0.5">
+                                            <span th:each="i : ${#numbers.sequence(1, rv.soSao)}" class="material-symbols-outlined text-[14px] fill-current">star</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <span class="text-[11px] text-on-surface-variant font-mono" th:text="${#temporals.format(rv.ngayDanhGia, 'dd/MM/yyyy HH:mm')}">01/01/2026</span>
+                            </div>
+
+                            <!-- Review Text -->
+                            <p class="text-xs text-on-surface leading-relaxed pl-10" th:text="${rv.noiDung}">Nội dung đánh giá...</p>
+
+                            <!-- Media Attachments -->
+                            <div th:if="${rv.mediaList != null and !rv.mediaList.isEmpty()}" class="flex items-center gap-2 pl-10 pt-2 flex-wrap">
+                                <div th:each="m : ${rv.mediaList}">
+                                    <a th:if="${m.loaiMedia == 'IMAGE'}" th:href="${m.url}" target="_blank" class="block w-16 h-16 rounded-xl overflow-hidden border border-surface-container shadow-xs hover:scale-105 transition-transform">
+                                        <img th:src="${m.url}" class="w-full h-full object-cover" alt="Ảnh đánh giá"/>
+                                    </a>
+                                    <a th:if="${m.loaiMedia == 'VIDEO'}" th:href="${m.url}" target="_blank" class="flex items-center justify-center w-16 h-16 rounded-xl bg-surface-container border border-surface-container text-primary hover:scale-105 transition-transform">
+                                        <span class="material-symbols-outlined text-[24px]">smart_display</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
             <!-- Related Products -->
             <div th:if="${!#lists.isEmpty(relatedBooks)}" class="mt-space-xl">
@@ -147,11 +411,125 @@
                 </div>
             </div>
 
-
         </div>
     </main>
 
+    <!-- Toast Notification for Wishlist -->
+    <div id="wishlistToast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 hidden">
+        <div class="px-5 py-3 rounded-2xl shadow-2xl text-xs font-bold flex items-center gap-2 border bg-surface-container-lowest text-on-surface border-surface-container" id="wishlistToastInner">
+            <span class="material-symbols-outlined text-[18px] text-primary" id="wishlistToastIcon">check_circle</span>
+            <span id="wishlistToastText">Đã cập nhật yêu thích</span>
+        </div>
+    </div>
+
     <footer th:replace="~{fragments/common/footer :: common_footer}"></footer>
 
+    <script>
+        // WISHLIST TOGGLE AJAX
+        function toggleWishlist(btn) {
+            const maSP = btn.getAttribute('data-masp');
+            if (!maSP) return;
+
+            fetch('/api/favorites/toggle/' + maSP, { method: 'POST' })
+                .then(res => {
+                    if (res.status === 401) {
+                        showWishlistToast('Vui lòng đăng nhập để yêu thích sản phẩm!', false);
+                        setTimeout(() => window.location.href = '/login', 1200);
+                        return null;
+                    }
+                    return res.json();
+                })
+                .then(data => {
+                    if (!data) return;
+                    if (data.success) {
+                        const icon = document.getElementById('iconWishlist');
+                        const text = document.getElementById('textWishlist');
+                        if (data.isFavorite) {
+                            btn.className = 'px-space-lg py-3 rounded-xl border border-rose-200 bg-rose-50 text-rose-600 font-semibold text-sm transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm';
+                            icon.textContent = 'favorite';
+                            icon.className = 'material-symbols-outlined text-[20px] text-rose-600';
+                            text.textContent = 'Đã thích';
+                            showWishlistToast('Đã thêm vào danh sách yêu thích!', true);
+                        } else {
+                            btn.className = 'px-space-lg py-3 rounded-xl border border-surface-container bg-surface-container-lowest text-on-surface font-semibold text-sm transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm hover:bg-surface-container';
+                            icon.textContent = 'favorite_border';
+                            icon.className = 'material-symbols-outlined text-[20px] text-on-surface-variant';
+                            text.textContent = 'Yêu thích';
+                            showWishlistToast('Đã xóa khỏi danh sách yêu thích!', true);
+                        }
+                    } else {
+                        showWishlistToast(data.message || 'Lỗi xử lý yêu thích!', false);
+                    }
+                })
+                .catch(err => {
+                    console.error('Error toggling wishlist:', err);
+                    showWishlistToast('Không thể kết nối máy chủ!', false);
+                });
+        }
+
+        function showWishlistToast(msg, isSuccess) {
+            const toast = document.getElementById('wishlistToast');
+            const text = document.getElementById('wishlistToastText');
+            const icon = document.getElementById('wishlistToastIcon');
+            if (!toast) return;
+            text.textContent = msg;
+            icon.textContent = isSuccess ? 'check_circle' : 'error';
+            icon.className = isSuccess ? 'material-symbols-outlined text-[18px] text-emerald-600' : 'material-symbols-outlined text-[18px] text-rose-600';
+            toast.classList.remove('hidden');
+            setTimeout(() => toast.classList.add('hidden'), 2500);
+        }
+
+        // REVIEW FORM LIVE CHARACTER COUNTER & STAR SELECTOR
+        (function initReviewForm() {
+            const reviewInput = document.getElementById('reviewContent');
+            const charCountLabel = document.getElementById('charCountLabel');
+            const submitBtn = document.getElementById('btnSubmitReview');
+            const starBtns = document.querySelectorAll('.star-btn');
+            const ratingInput = document.getElementById('ratingInput');
+            const starLabel = document.getElementById('starLabel');
+
+            if (!reviewInput || !submitBtn) return;
+
+            const starTexts = {
+                1: '1 sao (Rất tệ)',
+                2: '2 sao (Chưa hài lòng)',
+                3: '3 sao (Bình thường)',
+                4: '4 sao (Tốt)',
+                5: '5 sao (Rất tuyệt vời)'
+            };
+
+            starBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const star = parseInt(this.getAttribute('data-star'));
+                    if (ratingInput) ratingInput.value = star;
+                    if (starLabel) starLabel.textContent = starTexts[star] || (star + ' sao');
+
+                    starBtns.forEach(b => {
+                        const s = parseInt(b.getAttribute('data-star'));
+                        const icon = b.querySelector('.material-symbols-outlined');
+                        if (s <= star) {
+                            b.className = 'star-btn text-amber-500 hover:scale-125 transition-transform';
+                            icon.textContent = 'star';
+                        } else {
+                            b.className = 'star-btn text-outline-variant hover:scale-125 transition-transform';
+                            icon.textContent = 'star';
+                        }
+                    });
+                });
+            });
+
+            reviewInput.addEventListener('input', function() {
+                const len = this.value.trim().length;
+                charCountLabel.textContent = len + ' / 50 ký tự tối thiểu';
+                if (len >= 50) {
+                    charCountLabel.className = 'text-xs font-mono font-bold text-emerald-600';
+                    submitBtn.disabled = false;
+                } else {
+                    charCountLabel.className = 'text-xs font-mono font-bold text-rose-600';
+                    submitBtn.disabled = true;
+                }
+            });
+        })();
+    </script>
 </body>
 </html>

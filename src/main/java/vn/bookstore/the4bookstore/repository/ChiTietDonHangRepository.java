@@ -10,5 +10,8 @@ public interface ChiTietDonHangRepository extends JpaRepository<ChiTietDonHang, 
 
     @Query(value = "SELECT fn_TongSachDaBan()", nativeQuery = true)
     Long getTotalBooksSold();
+
+    @Query("SELECT DISTINCT ct.donHang.maDH FROM ChiTietDonHang ct WHERE ct.sanPham.maSP = :maSP AND ct.donHang.khachHang.maKH = :maKH AND ct.donHang.trangThai = 'DaGiao'")
+    java.util.List<Integer> findDeliveredOrderIdsByCustomerAndProduct(@org.springframework.data.repository.query.Param("maKH") Integer maKH, @org.springframework.data.repository.query.Param("maSP") Integer maSP);
 }
 

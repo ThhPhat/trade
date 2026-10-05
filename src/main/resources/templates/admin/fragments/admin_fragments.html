@@ -24,7 +24,21 @@
             main > :first-child { margin-top: 0 !important; }
             main > :last-child { margin-bottom: 0 !important; }
         }
-        ::-webkit-scrollbar { display: none; }
+        .admin-sidebar-scroll {
+            scrollbar-width: thin;
+            scrollbar-color: #cbd5e1 transparent;
+        }
+        .admin-sidebar-scroll::-webkit-scrollbar {
+            width: 5px;
+            display: block !important;
+        }
+        .admin-sidebar-scroll::-webkit-scrollbar-thumb {
+            background-color: #94a3b8;
+            border-radius: 9999px;
+        }
+        .admin-sidebar-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
     </style>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <script id="tailwind-config">
@@ -161,8 +175,8 @@
 <body>
 
     <!-- SIDEBAR FRAGMENT -->
-    <aside th:fragment="admin_sidebar(activePage)" class="fixed left-0 top-0 h-full w-64 bg-surface-container-low z-50 flex flex-col justify-between shadow-[0_1px_8px_rgba(0,0,0,0.04)]">
-        <div class="flex flex-col">
+    <aside th:fragment="admin_sidebar(activePage)" class="fixed left-0 top-0 h-screen w-64 bg-surface-container-low z-50 flex flex-col justify-between shadow-[0_1px_8px_rgba(0,0,0,0.04)]">
+        <div class="flex flex-col flex-1 overflow-y-auto min-h-0 admin-sidebar-scroll">
             <!-- Brand Logo Header -->
             <div class="h-16 px-space-md flex items-center gap-space-sm bg-surface-container-low">
                 <a th:href="@{/admin/dashboard}" class="flex items-center gap-space-xs">
@@ -189,13 +203,13 @@
                     <span>Bảng Điều Khiển</span>
                 </a>
 
-                <!-- Products & Inventory -->
-                <a th:href="@{/admin/products}"
-                   th:class="${activePage == 'inventory' || activePage == 'products'} ? 
+                <!-- Quản Lý Gian Hàng (Marketplace) -->
+                <a th:href="@{/admin/shops}"
+                   th:class="${activePage == 'shops' || activePage == 'shop-products'} ? 
                             'flex items-center gap-space-sm px-space-sm py-2.5 rounded-xl transition-colors bg-primary-container text-on-primary font-bold shadow-sm' : 
                             'flex items-center gap-space-sm px-space-sm py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface font-label-md text-label-md transition-colors'">
-                    <span class="material-symbols-outlined text-[20px]">inventory_2</span>
-                    <span>Quản Lý Sản Phẩm</span>
+                    <span class="material-symbols-outlined text-[20px]">store</span>
+                    <span>Quản Lý Gian Hàng</span>
                 </a>
 
                 <!-- Categories -->
@@ -261,6 +275,33 @@
                     <span>Phiếu Kiểm Kê</span>
                 </a>
 
+                <!-- Xử Lý Tranh Chấp (Disputes) -->
+                <a th:href="@{/admin/disputes}"
+                   th:class="${activePage == 'disputes'} ? 
+                            'flex items-center gap-space-sm px-space-sm py-2.5 rounded-xl transition-colors bg-amber-600 text-white font-bold shadow-sm' : 
+                            'flex items-center gap-space-sm px-space-sm py-2.5 rounded-xl text-amber-700 hover:bg-amber-50 font-label-md text-label-md transition-colors'">
+                    <span class="material-symbols-outlined text-[20px]">gavel</span>
+                    <span>Xử Lý Tranh Chấp</span>
+                </a>
+
+                <!-- Nhà Vận Chuyển -->
+                <a th:href="@{/admin/shipping}"
+                   th:class="${activePage == 'shipping'} ? 
+                            'flex items-center gap-space-sm px-space-sm py-2.5 rounded-xl transition-colors bg-primary-container text-on-primary font-bold shadow-sm' : 
+                            'flex items-center gap-space-sm px-space-sm py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface font-label-md text-label-md transition-colors'">
+                    <span class="material-symbols-outlined text-[20px]">local_shipping</span>
+                    <span>Nhà Vận Chuyển</span>
+                </a>
+
+                <!-- Cấu Hình Chiết Khấu Sàn (Chỉ Admin) -->
+                <a sec:authorize="hasRole('ADMIN')" th:href="@{/admin/platform-fees}"
+                   th:class="${activePage == 'platform-fees'} ? 
+                            'flex items-center gap-space-sm px-space-sm py-2.5 rounded-xl transition-colors bg-primary-container text-on-primary font-bold shadow-sm' : 
+                            'flex items-center gap-space-sm px-space-sm py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface font-label-md text-label-md transition-colors'">
+                    <span class="material-symbols-outlined text-[20px]">percent</span>
+                    <span>Chiết Khấu Sàn</span>
+                </a>
+
                 <!-- Vouchers & Promotions -->
                 <a th:href="@{/admin/vouchers}"
                    th:class="${activePage == 'vouchers'} ? 
@@ -291,7 +332,7 @@
         </div>
 
         <!-- Sidebar Footer: Current User & Logout -->
-        <div class="p-space-md border-t border-surface-container">
+        <div class="p-space-md border-t border-surface-container shrink-0 bg-surface-container-low">
             <div class="flex items-center justify-between p-space-xs rounded-xl hover:bg-surface-container transition-colors">
                 <div class="flex items-center gap-space-xs">
                     <img alt="Ảnh đại diện quản trị viên" class="w-9 h-9 rounded-full object-cover ring-2 ring-primary/20" th:src="${userAvatar}"/>

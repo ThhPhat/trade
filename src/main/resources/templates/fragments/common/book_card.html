@@ -55,6 +55,16 @@
                           class="text-on-surface-variant/80">Nhà Xuất Bản</span>
                     <span th:if="${(book.danhSachTacGia == null or book.danhSachTacGia.isEmpty()) and book.nhaXuatBan == null}">The4BookStore Tuyển Chọn</span>
                 </p>
+
+                <div class="flex items-center justify-between gap-1 mt-1.5 text-[11px] text-on-surface-variant">
+                    <a th:if="${book.shop != null}" th:href="@{'/shop/' + ${book.shop.slug}}" class="text-amber-700 hover:text-amber-900 hover:underline font-semibold flex items-center gap-0.5 truncate max-w-[130px]" th:title="${book.shop.tenShop}">
+                        <span class="material-symbols-outlined text-[13px]">storefront</span>
+                        <span th:text="${book.shop.tenShop}">The4BookStore Official</span>
+                    </a>
+                    <span th:if="${book.soLuongDaBan != null and book.soLuongDaBan > 0}" class="text-on-surface-variant font-medium shrink-0 ml-auto">
+                        Đã bán <span class="font-bold text-primary font-mono" th:text="${book.soLuongDaBan}">0</span>
+                    </span>
+                </div>
             </div>
 
             <!-- Price & Buy Action -->

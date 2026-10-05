@@ -35,11 +35,13 @@ class ProductControllerTest {
     @MockitoBean private DanhMucService danhMucService;
     @MockitoBean private TacGiaService tacGiaService;
     @MockitoBean private NhaXuatBanService nhaXuatBanService;
+    @MockitoBean private ShopService shopService;
 
     @MockitoBean private SanPhamRepository sanPhamRepository;
     @MockitoBean private DanhMucRepository danhMucRepository;
     @MockitoBean private TaiKhoanRepository taiKhoanRepository;
     @MockitoBean private KhachHangRepository khachHangRepository;
+    @MockitoBean private UserInteractionService userInteractionService;
     @MockitoBean private PasswordEncoder passwordEncoder;
     @MockitoBean private JwtAuthenticationFilter jwtAuthenticationFilter;
     @MockitoBean private JwtLogoutSuccessHandler jwtLogoutSuccessHandler;
@@ -76,6 +78,8 @@ class ProductControllerTest {
         when(sanPhamService.getCategoriesByLoaiSP("QuaTang")).thenReturn(List.of());
         when(tacGiaService.getAll()).thenReturn(List.of());
         when(nhaXuatBanService.getAll()).thenReturn(List.of());
+        when(userInteractionService.getReviewsForProduct(any())).thenReturn(List.of());
+        when(userInteractionService.getAverageRating(any())).thenReturn(0.0);
     }
 
     @Test

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/common/head :: common_head(${shop.tenShop} + ' - Gian Hàng Sách')}"></head>
+
+<body class="bg-surface font-body-md text-on-surface antialiased min-h-screen flex flex-col">
+
+    <header th:replace="~{fragments/common/navbar :: common_navbar('shop')}"></header>
+
+    <main class="w-full pt-24 pb-16 flex-1 max-w-7xl mx-auto px-4 md:px-8">
+        <!-- Shop Header & Banner -->
+        <div class="rounded-3xl overflow-hidden bg-surface-container-lowest border border-surface-container shadow-sm mb-8">
+            <!-- Banner Section -->
+            <div class="h-44 sm:h-52 md:h-64 w-full relative bg-surface-container-low">
+                <img th:src="${shop.banner != null ? shop.banner : 'https://images.unsplash.com/photo-1507842229451-7f01be45c06b?w=1200'}"
+                     alt="Banner Shop" class="w-full h-full object-cover"/>
+                <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
+            </div>
+
+            <!-- White Info Card Section -->
+            <div class="px-6 pb-6 pt-4 md:px-8 md:pb-8 relative bg-surface-container-lowest">
+                <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                    <div class="flex flex-col sm:flex-row items-start gap-5 relative z-20">
+                        <!-- Logo with prominent white ring (only logo extends into banner) -->
+                        <div class="-mt-14 sm:-mt-16 shrink-0 relative z-20">
+                            <img th:src="${shop.logo != null ? shop.logo : '/images/default-shop.png'}"
+                                 alt="Shop Logo" class="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl md:rounded-3xl object-cover ring-4 ring-surface-container-lowest shadow-xl bg-surface-container-lowest"/>
+                        </div>
+                        
+                        <!-- Shop Info Text (Safely inside the white background) -->
+                        <div class="pt-1 sm:pt-2">
+                            <div class="flex items-center gap-3 flex-wrap">
+                                <h1 class="text-xl sm:text-2xl font-black text-on-surface" th:text="${shop.tenShop}">Tên Gian Hàng</h1>
+                                <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-primary text-on-primary shadow-xs flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-[15px]">verified</span>
+                                    <span>Gian Hàng Xác Thực</span>
+                                </span>
+                            </div>
+                            <p class="text-xs text-on-surface-variant mt-1.5 max-w-2xl leading-relaxed" th:text="${shop.moTa ?: 'Gian hàng sách chọn lọc chính hãng trên The4BookStore'}">Mô tả gian hàng</p>
+                            <div class="flex items-center gap-4 text-xs text-on-surface-variant mt-2.5 flex-wrap">
+                                <span th:if="${shop.diaChiShop}" class="flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-[16px] text-primary">location_on</span>
+                                    <span th:text="${shop.diaChiShop}">Địa chỉ</span>
+                                </span>
+                                <span th:if="${shop.soDienThoai}" class="flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-[16px] text-primary">call</span>
+                                    <span th:text="${shop.soDienThoai}">SĐT</span>
+                                </span>
+                                <span class="flex items-center gap-1 font-semibold text-on-surface">
+                                    <span class="material-symbols-outlined text-[16px] text-primary">menu_book</span>
+                                    <span th:text="${page.totalElements} + ' cuốn sách'">15 cuốn sách</span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Quick Actions -->
+                    <div class="flex items-center gap-3 self-stretch sm:self-auto justify-end shrink-0 pt-2 md:pt-4">
+                        <a th:if="${shop.soDienThoai}" th:href="'tel:' + ${shop.soDienThoai}"
+                           class="px-4 py-2 rounded-xl bg-surface-container hover:bg-surface-container-high text-xs font-bold text-on-surface transition-all flex items-center gap-1.5 shadow-xs">
+                            <span class="material-symbols-outlined text-[16px] text-primary">call</span>
+                            <span>Liên Hệ Shop</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Shop Vouchers -->
+        <div th:if="${vouchers != null and !vouchers.isEmpty()}" class="mb-10">
+            <h2 class="text-base font-bold text-on-surface mb-4 flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary">confirmation_number</span>
+                <span>Mã Giảm Giá Của Gian Hàng</span>
+            </h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                <div th:each="v : ${vouchers}" class="p-4 rounded-2xl bg-surface-container-lowest border border-primary/20 shadow-sm flex items-center justify-between">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="px-2.5 py-0.5 rounded-lg bg-primary/10 text-primary font-bold text-xs" th:text="${v.maCode}">CODE</span>
+                            <span class="text-xs font-bold text-on-surface" th:text="${v.loaiGiam == 'PhanTram' ? 'Giảm ' + v.giaTriGiam + '%' : 'Giảm ' + #numbers.formatDecimal(v.giaTriGiam, 0, 'COMMA', 0, 'POINT') + ' đ'}"></span>
+                        </div>
+                        <div class="text-[11px] text-on-surface-variant mt-1" th:text="'Đơn tối thiểu: ' + ${#numbers.formatDecimal(v.donToiThieu != null ? v.donToiThieu : 0, 0, 'COMMA', 0, 'POINT')} + ' đ'"></div>
+                    </div>
+                    <button type="button" th:data-code="${v.maCode}" onclick="navigator.clipboard.writeText(this.dataset.code); alert('Đã sao chép mã ' + this.dataset.code + '!');"
+                            class="px-3 py-1.5 bg-primary text-on-primary text-xs font-bold rounded-xl hover:bg-primary-container transition-all cursor-pointer">
+                        Lưu Mã
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Shop Books Grid -->
+        <div>
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                <div>
+                    <h2 class="text-lg font-bold text-on-surface flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary">menu_book</span>
+                        <span>Sách Của Gian Hàng</span>
+                    </h2>
+                    <span class="text-xs text-on-surface-variant" th:text="'Tìm thấy ' + ${page.totalElements} + ' cuốn sách' + (${keyword != null and !keyword.isEmpty()} ? ' với từ khóa \'' + ${keyword} + '\'' : '')"></span>
+                </div>
+                <form method="get" th:action="@{'/shop/' + ${shop.slug}}" class="relative flex items-center w-full md:w-80">
+                    <span class="material-symbols-outlined absolute left-3.5 text-on-surface-variant text-[20px] pointer-events-none">search</span>
+                    <input type="text" name="q" th:value="${keyword}" placeholder="Tìm sách trong gian hàng..."
+                           class="w-full pl-10 pr-10 py-2 rounded-xl bg-surface-container-lowest border border-surface-container text-xs text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"/>
+                    <a th:if="${keyword != null and !keyword.isEmpty()}" th:href="@{'/shop/' + ${shop.slug}}"
+                       class="absolute right-3 text-on-surface-variant hover:text-error text-xs flex items-center" title="Xóa tìm kiếm">
+                        <span class="material-symbols-outlined text-[18px]">close</span>
+                    </a>
+                </form>
+            </div>
+
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                <div th:each="book : ${books}">
+                    <div th:replace="~{fragments/common/book_card :: book_card(${book})}"></div>
+                </div>
+            </div>
+
+            <div th:if="${books.isEmpty()}" class="p-16 text-center text-on-surface-variant bg-surface-container-lowest rounded-3xl border border-surface-container">
+                <span class="material-symbols-outlined text-5xl text-on-surface-variant/40 mb-2">menu_book</span>
+                <p th:if="${keyword != null and !keyword.isEmpty()}">Không tìm thấy sách nào phù hợp với từ khóa "<span class="font-semibold text-primary" th:text="${keyword}"></span>" trong gian hàng.</p>
+                <p th:if="${keyword == null or keyword.isEmpty()}">Gian hàng hiện chưa có sách nào đang bán.</p>
+            </div>
+
+            <!-- Pagination -->
+            <div th:if="${page.totalPages > 1}" class="flex items-center justify-center gap-2 mt-8">
+                <a th:if="${page.hasPrevious()}" th:href="@{'/shop/' + ${shop.slug}(q=${keyword}, page=${page.number - 1})}"
+                   class="px-3.5 py-2 rounded-xl bg-surface-container text-xs font-bold hover:bg-surface-container-high transition-all">Trước</a>
+                <span class="text-xs text-on-surface-variant font-medium" th:text="'Trang ' + (${page.number} + 1) + ' / ' + ${page.totalPages}"></span>
+                <a th:if="${page.hasNext()}" th:href="@{'/shop/' + ${shop.slug}(q=${keyword}, page=${page.number + 1})}"
+                   class="px-3.5 py-2 rounded-xl bg-surface-container text-xs font-bold hover:bg-surface-container-high transition-all">Sau</a>
+            </div>
+        </div>
+    </main>
+
+    <footer th:replace="~{fragments/common/footer :: common_footer}"></footer>
+</body>
+</html>

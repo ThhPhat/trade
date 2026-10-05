@@ -32,7 +32,7 @@
             </div>
 
             <!-- Page Header -->
-            <div class="bg-surface-container-lowest rounded-2xl p-space-md md:p-space-lg shadow-sm border border-surface-container flex items-center justify-between mb-space-lg">
+            <div class="bg-surface-container-lowest rounded-2xl p-space-md md:p-space-lg shadow-sm border border-surface-container flex items-center justify-between mb-space-md">
                 <div class="flex items-center gap-space-sm">
                     <span class="material-symbols-outlined text-primary text-[24px]">receipt_long</span>
                     <h1 class="font-headline-md text-base md:text-lg text-on-surface font-bold tracking-tight">Lịch Sử Đơn Hàng</h1>
@@ -45,11 +45,56 @@
                 </div>
             </div>
 
+            <!-- Status Tabs (6 order statuses + ALL) -->
+            <div class="flex items-center gap-2 overflow-x-auto pb-2 mb-space-lg border-b border-surface-container horizontal-scroll-category">
+                <a th:href="@{/don-hang}" 
+                   class="px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1.5"
+                   th:classappend="${currentTab == 'ALL'} ? 'bg-primary text-on-primary shadow-xs' : 'bg-surface-container-low text-on-surface hover:bg-surface-container'">
+                    <span>Tất cả</span>
+                </a>
+                <a th:href="@{/don-hang(trangThai='ChoXuLy')}" 
+                   class="px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1.5"
+                   th:classappend="${currentTab == 'ChoXuLy'} ? 'bg-primary text-on-primary shadow-xs' : 'bg-surface-container-low text-on-surface hover:bg-surface-container'">
+                    <span class="material-symbols-outlined text-[16px]">pending_actions</span>
+                    <span>Đơn hàng mới</span>
+                </a>
+                <a th:href="@{/don-hang(trangThai='DaXacNhan')}" 
+                   class="px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1.5"
+                   th:classappend="${currentTab == 'DaXacNhan'} ? 'bg-primary text-on-primary shadow-xs' : 'bg-surface-container-low text-on-surface hover:bg-surface-container'">
+                    <span class="material-symbols-outlined text-[16px]">check_circle</span>
+                    <span>Đã xác nhận</span>
+                </a>
+                <a th:href="@{/don-hang(trangThai='DangGiao')}" 
+                   class="px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1.5"
+                   th:classappend="${currentTab == 'DangGiao'} ? 'bg-primary text-on-primary shadow-xs' : 'bg-surface-container-low text-on-surface hover:bg-surface-container'">
+                    <span class="material-symbols-outlined text-[16px]">local_shipping</span>
+                    <span>Đang giao</span>
+                </a>
+                <a th:href="@{/don-hang(trangThai='DaGiao')}" 
+                   class="px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1.5"
+                   th:classappend="${currentTab == 'DaGiao'} ? 'bg-primary text-on-primary shadow-xs' : 'bg-surface-container-low text-on-surface hover:bg-surface-container'">
+                    <span class="material-symbols-outlined text-[16px]">task_alt</span>
+                    <span>Đã giao</span>
+                </a>
+                <a th:href="@{/don-hang(trangThai='DaHuy')}" 
+                   class="px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1.5"
+                   th:classappend="${currentTab == 'DaHuy'} ? 'bg-primary text-on-primary shadow-xs' : 'bg-surface-container-low text-on-surface hover:bg-surface-container'">
+                    <span class="material-symbols-outlined text-[16px]">cancel</span>
+                    <span>Đã hủy</span>
+                </a>
+                <a th:href="@{/don-hang(trangThai='TraHangHoanTien')}" 
+                   class="px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1.5"
+                   th:classappend="${currentTab == 'TraHangHoanTien'} ? 'bg-primary text-on-primary shadow-xs' : 'bg-surface-container-low text-on-surface hover:bg-surface-container'">
+                    <span class="material-symbols-outlined text-[16px]">replay</span>
+                    <span>Trả hàng - Hoàn tiền</span>
+                </a>
+            </div>
+
             <!-- Empty State -->
             <div th:if="${donHangs == null or donHangs.isEmpty()}" class="bg-surface-container-lowest rounded-2xl shadow-sm border border-surface-container p-12 text-center flex flex-col items-center justify-center gap-3">
                 <span class="material-symbols-outlined text-[64px] text-outline-variant">inventory_2</span>
-                <div class="text-base font-bold text-on-surface">Bạn chưa có đơn hàng nào</div>
-                <p class="text-xs text-on-surface-variant max-w-sm">Hãy khám phá và mua sắm tại The4BookStore để bắt đầu hành trình đọc sách của bạn!</p>
+                <div class="text-base font-bold text-on-surface">Không tìm thấy đơn hàng nào</div>
+                <p class="text-xs text-on-surface-variant max-w-sm">Không có đơn hàng nào trong trạng thái này. Khám phá các đầu sách hay ngay nhé!</p>
                 <a th:href="@{/}" class="mt-2 px-6 py-2.5 bg-primary text-on-primary font-bold text-xs rounded-xl hover:bg-primary-container transition-all shadow-sm">
                     Khám Phá Sách Ngay
                 </a>
@@ -62,20 +107,27 @@
                     <div class="p-space-md md:p-space-lg flex flex-wrap items-center justify-between gap-space-sm border-b border-surface-container">
                         <div class="flex items-center gap-space-md flex-wrap">
                             <span class="font-headline-sm text-sm font-bold text-on-surface" th:text="'#TB-' + ${dh.maDH}">#TB-1</span>
+                            <span th:if="${dh.shop != null}" class="inline-flex items-center gap-1 text-[11px] text-amber-700 font-bold bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-lg">
+                                <span class="material-symbols-outlined text-[14px]">storefront</span>
+                                <span th:text="${dh.shop.tenShop}">The4BookStore Official</span>
+                            </span>
                             <span class="text-on-surface-variant text-xs" th:text="'Ngày đặt: ' + ${#temporals.format(dh.ngayDat, 'dd/MM/yyyy HH:mm')}">Ngày đặt</span>
-                            <span class="text-on-surface-variant text-xs">•</span>
-                            <span class="text-on-surface-variant text-xs" th:text="'Giao tại: ' + ${dh.diaChiGiao}">Địa chỉ</span>
                         </div>
                         <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold"
-                             th:classappend="${dh.trangThai == 'DaGiao'} ? 'bg-primary/10 text-primary' : (${dh.trangThai == 'DaHuy'} ? 'bg-error/10 text-error' : (${dh.trangThai == 'DangGiao'} ? 'bg-secondary/10 text-secondary' : 'bg-surface-container text-on-surface-variant'))">
+                             th:classappend="${dh.trangThai == 'DaGiao'} ? 'bg-primary/10 text-primary' : (${dh.trangThai == 'DaHuy' or dh.trangThai == 'Huy'} ? 'bg-error/10 text-error' : (${dh.trangThai == 'DangGiao' or dh.trangThai == 'DaLayHang'} ? 'bg-secondary/10 text-secondary' : (${dh.trangThai == 'TraHangHoanTien' or dh.trangThai == 'TranhChap'} ? 'bg-purple-100 text-purple-800' : 'bg-surface-container text-on-surface-variant')))">
                             <span class="w-2 h-2 rounded-full"
-                                  th:classappend="${dh.trangThai == 'DaGiao'} ? 'bg-primary' : (${dh.trangThai == 'DaHuy'} ? 'bg-error' : (${dh.trangThai == 'DangGiao'} ? 'bg-secondary animate-pulse' : 'bg-on-surface-variant'))"></span>
+                                  th:classappend="${dh.trangThai == 'DaGiao'} ? 'bg-primary' : (${dh.trangThai == 'DaHuy'} ? 'bg-error' : (${dh.trangThai == 'DangGiao'} ? 'bg-secondary animate-pulse' : (${dh.trangThai == 'TraHangHoanTien' or dh.trangThai == 'TranhChap'} ? 'bg-purple-600' : 'bg-on-surface-variant')))"></span>
                             <span th:switch="${dh.trangThai}">
-                                <span th:case="'ChoXuLy'">Chờ xử lý</span>
+                                <span th:case="'ChoXuLy'">Đơn hàng mới</span>
+                                <span th:case="'DonHangMoi'">Đơn hàng mới</span>
                                 <span th:case="'DaXacNhan'">Đã xác nhận</span>
+                                <span th:case="'DaLayHang'">Đã lấy hàng</span>
                                 <span th:case="'DangGiao'">Đang giao hàng</span>
                                 <span th:case="'DaGiao'">Đã giao hàng</span>
                                 <span th:case="'DaHuy'">Đã hủy</span>
+                                <span th:case="'Huy'">Đã hủy</span>
+                                <span th:case="'TraHangHoanTien'">Trả hàng - Hoàn tiền</span>
+                                <span th:case="'TranhChap'">Đang khiếu nại (Tranh chấp)</span>
                                 <span th:case="*" th:text="${dh.trangThai}">Trạng thái</span>
                             </span>
                         </div>

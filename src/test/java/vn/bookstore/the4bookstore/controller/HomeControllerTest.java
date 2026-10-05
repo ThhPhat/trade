@@ -12,13 +12,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import vn.bookstore.the4bookstore.entity.DanhMuc;
-import vn.bookstore.the4bookstore.repository.DanhMucRepository;
-import vn.bookstore.the4bookstore.repository.KhachHangRepository;
-import vn.bookstore.the4bookstore.repository.SanPhamRepository;
-import vn.bookstore.the4bookstore.repository.TaiKhoanRepository;
+import vn.bookstore.the4bookstore.repository.*;
 import vn.bookstore.the4bookstore.security.*;
-import vn.bookstore.the4bookstore.service.DanhMucService;
-import vn.bookstore.the4bookstore.service.SanPhamService;
+import vn.bookstore.the4bookstore.service.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,6 +40,9 @@ class HomeControllerTest {
     @MockitoBean private DanhMucRepository danhMucRepository;
     @MockitoBean private TaiKhoanRepository taiKhoanRepository;
     @MockitoBean private KhachHangRepository khachHangRepository;
+    @MockitoBean private KhuyenMaiRepository khuyenMaiRepository;
+    @MockitoBean private VoucherDaLuuRepository voucherDaLuuRepository;
+    @MockitoBean private UserInteractionService userInteractionService;
     @MockitoBean private PasswordEncoder passwordEncoder;
     @MockitoBean private JwtAuthenticationFilter jwtAuthenticationFilter;
     @MockitoBean private JwtLogoutSuccessHandler jwtLogoutSuccessHandler;
@@ -78,6 +77,8 @@ class HomeControllerTest {
         when(sanPhamService.getPreviewByLoaiSP(any())).thenReturn(List.of());
         when(sanPhamService.getCategoriesByLoaiSP(any())).thenReturn(List.of());
         when(danhMucService.getAllActive()).thenReturn(mockCategoryList);
+        when(sanPhamRepository.findTopProductsForGuest()).thenReturn(List.of());
+        when(khuyenMaiRepository.findAll()).thenReturn(List.of());
     }
 
     @Test

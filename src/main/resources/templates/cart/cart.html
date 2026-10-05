@@ -68,13 +68,9 @@
                     <!-- Header Strip with Select All Checkbox -->
                     <div class="bg-surface-container-lowest rounded-2xl p-space-md md:p-space-lg shadow-sm border border-surface-container flex items-center justify-between">
                         <div class="flex items-center gap-space-sm">
-                            <label class="flex items-center gap-2.5 cursor-pointer select-none group">
-                                <span class="relative flex items-center justify-center w-5 h-5 rounded-full border-2 border-primary bg-surface-container-lowest transition-all group-hover:scale-105">
-                                    <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this)"
-                                           class="sr-only peer" />
-                                    <span class="material-symbols-outlined text-[14px] text-white opacity-0 peer-checked:opacity-100 transition-opacity font-bold">check</span>
-                                    <span class="absolute inset-0 rounded-full peer-checked:bg-primary transition-colors -z-0"></span>
-                                </span>
+                            <label class="flex items-center gap-2.5 cursor-pointer select-none">
+                                <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this)"
+                                       class="w-5 h-5 text-primary border-outline-variant rounded-md focus:ring-primary cursor-pointer" checked />
                                 <span class="font-label-md text-xs font-bold text-on-surface">Chọn tất cả</span>
                             </label>
                             <span class="text-outline text-xs">|</span>
@@ -119,70 +115,99 @@
                             </a>
                         </div>
 
-                        <!-- Cart Item Rows (Unchecked by default, Circular Blue Checkbox) -->
+                        <!-- Cart Item Rows -->
                         <article th:each="ct : ${cartItems}" 
-                                 class="cart-item-row p-space-md md:p-space-lg flex flex-col sm:flex-row gap-space-md items-start sm:items-center justify-between"
+                                 th:with="isLocked=${ct.sanPham.trangThaiKhoa == 'BiKhoaBoiAdmin' or ct.sanPham.trangThaiKhoa == 'Khoa' or ct.sanPham.trangThai == 'NgungBan' or (ct.sanPham.shop != null and ct.sanPham.shop.trangThai != 'HoatDong')}, isOutOfStock=${ct.sanPham.soLuongTon <= 0}"
+                                 th:class="${isLocked or isOutOfStock} ? 'cart-item-row p-4 md:p-6 flex flex-col md:flex-row gap-4 items-start md:items-center justify-between bg-surface-container-low/40 opacity-75' : 'cart-item-row p-4 md:p-6 flex flex-col md:flex-row gap-4 items-start md:items-center justify-between bg-surface-container-lowest hover:bg-surface-container-low/20 transition-colors'"
                                  th:data-id="${ct.sanPham.maSP}"
                                  th:data-price="${ct.sanPham.giaBan}"
                                  th:data-qty="${ct.soLuong}"
                                  th:data-title="${ct.sanPham.tenSP}"
-                                 th:data-image="${ct.sanPham.hinhAnh}">
-                            <div class="flex gap-space-md items-start w-full sm:w-auto">
-                                <!-- Circular Blue Checkbox with checkmark -->
-                                <div class="pt-2 sm:pt-6 shrink-0">
-                                    <label class="relative flex items-center justify-center w-5 h-5 rounded-full border-2 border-primary bg-surface-container-lowest cursor-pointer transition-all hover:scale-110">
-                                        <input type="checkbox"
-                                               class="item-checkbox sr-only peer"
-                                               th:value="${ct.sanPham.maSP}"
-                                               onchange="recalculateSelectedCart()" />
-                                        <span class="material-symbols-outlined text-[14px] text-white opacity-0 peer-checked:opacity-100 transition-opacity font-bold">check</span>
-                                        <span class="absolute inset-0 rounded-full peer-checked:bg-primary transition-colors -z-0"></span>
-                                    </label>
+                                 th:data-image="${ct.sanPham.getHinhAnh()}"
+                                 th:data-disabled="${isLocked or isOutOfStock}">
+                            
+                            <div class="flex gap-4 items-start w-full md:w-auto">
+                                <!-- Checkbox -->
+                                <div class="pt-2 md:pt-4 shrink-0">
+                                    <input type="checkbox"
+                                           class="item-checkbox w-5 h-5 text-primary border-outline-variant rounded-md focus:ring-primary cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                                           th:value="${ct.sanPham.maSP}"
+                                           th:disabled="${isLocked or isOutOfStock}"
+                                           th:checked="${!isLocked and !isOutOfStock}"
+                                           onchange="recalculateSelectedCart()" />
                                 </div>
-                                <div class="w-16 h-24 sm:w-20 sm:h-28 shrink-0 rounded-xl overflow-hidden bg-surface-container relative shadow-xs">
+
+                                <!-- Book Image -->
+                                <div class="w-16 h-24 sm:w-20 sm:h-28 shrink-0 rounded-2xl overflow-hidden bg-surface-container relative shadow-sm border border-surface-container">
                                     <img class="w-full h-full object-cover" 
-                                         th:src="${ct.sanPham.hinhAnh != null ? ct.sanPham.hinhAnh : 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=80&w=300'}" 
+                                         th:src="${ct.sanPham.getHinhAnh()}" 
                                          th:alt="${ct.sanPham.tenSP}"/>
                                 </div>
-                                <div class="flex flex-col min-w-0">
-                                    <div class="flex items-center gap-2 mb-1">
-                                        <span class="bg-surface-container px-2.5 py-0.5 rounded-full font-label-sm text-[10px] font-semibold text-on-surface-variant"
+
+                                <!-- Info -->
+                                <div class="flex flex-col min-w-0 flex-1">
+                                    <!-- Shop info link -->
+                                    <div class="flex items-center gap-1.5 text-xs mb-1">
+                                        <span class="material-symbols-outlined text-[15px] text-primary">storefront</span>
+                                        <a th:if="${ct.sanPham.shop != null}" 
+                                           th:href="@{'/shop/' + ${ct.sanPham.shop.slug}}"
+                                           class="font-bold text-primary hover:underline truncate max-w-[200px]"
+                                           th:text="${ct.sanPham.shop.tenShop}">Gian Hàng</a>
+                                        <span th:if="${ct.sanPham.shop == null}" class="font-bold text-primary">The4BookStore Official</span>
+                                        <span class="text-[10px] px-2 py-0.5 rounded-full font-bold bg-primary/10 text-primary">Chính hãng</span>
+                                    </div>
+
+                                    <!-- Category & Stock Status Badges -->
+                                    <div class="flex items-center gap-2 mb-1 flex-wrap">
+                                        <span class="bg-surface-container px-2 py-0.5 rounded-md font-label-sm text-[10px] font-semibold text-on-surface-variant"
                                               th:text="${ct.sanPham.danhMuc?.tenDanhMuc ?: ct.sanPham.loaiSP}">Thể loại</span>
-                                        <span th:if="${ct.sanPham.soLuongTon > 0}" class="text-tertiary font-label-sm text-[11px] font-semibold flex items-center gap-0.5">
+                                        
+                                        <span th:if="${isLocked}" class="bg-error/10 text-error px-2 py-0.5 rounded-md text-[10px] font-bold flex items-center gap-0.5">
+                                            <span class="material-symbols-outlined text-[12px]">block</span>Tạm khóa / Gian hàng ngừng HĐ
+                                        </span>
+                                        <span th:if="${!isLocked and isOutOfStock}" class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded-md text-[10px] font-bold flex items-center gap-0.5">
+                                            <span class="material-symbols-outlined text-[12px]">inventory_2</span>Hết hàng
+                                        </span>
+                                        <span th:if="${!isLocked and !isOutOfStock}" class="text-tertiary font-label-sm text-[11px] font-semibold flex items-center gap-0.5">
                                             <span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>Còn hàng
                                         </span>
-                                        <span th:if="${ct.sanPham.soLuongTon <= 0}" class="text-error font-label-sm text-[11px] font-semibold flex items-center gap-0.5">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-error"></span>Hết hàng
-                                        </span>
                                     </div>
-                                    <h3 class="font-headline-sm text-sm font-bold text-on-surface leading-tight" th:text="${ct.sanPham.tenSP}">Tên sách</h3>
-                                    <span class="text-xs text-on-surface-variant" th:text="${ct.sanPham.nhaXuatBan?.tenNXB ?: 'The4BookStore'}">NXB</span>
+
+                                    <h3 class="font-headline-sm text-sm font-bold text-on-surface leading-tight hover:text-primary transition-colors">
+                                        <a th:href="@{'/san-pham/' + ${ct.sanPham.maSP}}" th:text="${ct.sanPham.tenSP}">Tên sách</a>
+                                    </h3>
+                                    <span class="text-xs text-on-surface-variant mt-0.5" th:text="${ct.sanPham.nhaXuatBan?.tenNXB ?: 'The4BookStore'}">NXB</span>
+
                                     <div class="mt-2 text-primary font-bold font-mono text-sm sm:text-base"
                                          th:text="${#numbers.formatDecimal(ct.sanPham.giaBan, 0, 'POINT', 0, 'COMMA') + ' đ'}">0 đ</div>
                                 </div>
                             </div>
-                            <div class="flex items-center justify-between sm:justify-end gap-space-lg w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-surface-container-low">
-                                <!-- Quantity controller -->
+
+                            <!-- Right Controls: Quantity & Subtotal & Delete -->
+                            <div class="flex items-center justify-between md:justify-end gap-4 w-full md:w-auto pt-3 md:pt-0 border-t md:border-t-0 border-surface-container-low">
+                                <!-- Quantity stepper -->
                                 <div class="flex items-center border border-surface-container rounded-xl bg-surface-container-low overflow-hidden text-xs">
                                     <form th:action="@{/gio-hang/cap-nhat}" method="post" class="inline">
                                         <input type="hidden" name="maSP" th:value="${ct.sanPham.maSP}"/>
                                         <input type="hidden" name="soLuong" th:value="${ct.soLuong - 1}"/>
-                                        <button type="submit" class="px-2.5 py-1 text-on-surface-variant hover:text-on-surface font-bold cursor-pointer">-</button>
+                                        <button type="submit" class="px-2.5 py-1 text-on-surface-variant hover:text-on-surface font-bold cursor-pointer hover:bg-surface-container transition-colors">-</button>
                                     </form>
                                     <span class="px-3 py-1 font-mono font-bold text-on-surface" th:text="${ct.soLuong}">1</span>
                                     <form th:action="@{/gio-hang/cap-nhat}" method="post" class="inline">
                                         <input type="hidden" name="maSP" th:value="${ct.sanPham.maSP}"/>
                                         <input type="hidden" name="soLuong" th:value="${ct.soLuong + 1}"/>
-                                        <button type="submit" class="px-2.5 py-1 text-on-surface-variant hover:text-on-surface font-bold cursor-pointer">+</button>
+                                        <button type="submit" th:disabled="${isLocked or isOutOfStock}" class="px-2.5 py-1 text-on-surface-variant hover:text-on-surface font-bold cursor-pointer hover:bg-surface-container transition-colors disabled:opacity-30 disabled:cursor-not-allowed">+</button>
                                     </form>
                                 </div>
+
                                 <!-- Subtotal per item -->
-                                <span class="font-mono font-semibold text-on-surface text-sm"
+                                <span class="font-mono font-bold text-on-surface text-sm sm:text-base text-right min-w-[80px]"
                                       th:text="${#numbers.formatDecimal(ct.sanPham.giaBan * ct.soLuong, 0, 'POINT', 0, 'COMMA') + ' đ'}">0 đ</span>
+
                                 <!-- Remove button -->
                                 <form th:action="@{/gio-hang/xoa}" method="post" class="inline">
                                     <input type="hidden" name="maSP" th:value="${ct.sanPham.maSP}"/>
-                                    <button type="submit" class="p-2 text-on-surface-variant hover:text-error rounded-xl hover:bg-surface-container-low transition-colors cursor-pointer" title="Xóa cuốn này">
+                                    <button type="submit" class="p-2 text-on-surface-variant hover:text-error rounded-xl hover:bg-error/10 transition-colors cursor-pointer" title="Xóa cuốn này">
                                         <span class="material-symbols-outlined text-[20px]">delete_outline</span>
                                     </button>
                                 </form>
@@ -322,27 +347,88 @@
                     <!-- Hidden input for applied voucher -->
                     <input type="hidden" name="maVoucher" id="modalVoucherCode" value="" />
 
-                    <!-- Customer Details -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div>
-                            <label class="block font-label-md text-xs font-semibold text-on-surface mb-1">Họ và tên người nhận <span class="text-error">*</span></label>
-                            <input name="hoTen" required type="text" 
-                                   th:value="${khachHang?.hoTen}"
-                                   placeholder="Nguyễn Văn A" class="w-full bg-surface-container-low px-3.5 py-2.5 rounded-xl font-body-md text-xs sm:text-sm text-on-surface border border-surface-container focus:outline-none focus:ring-2 focus:ring-primary/30" />
+                    <!-- Delivery Address Section -->
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <label class="block font-label-md text-xs font-semibold text-on-surface">Địa chỉ giao hàng <span class="text-error">*</span></label>
+                            <a th:href="@{/profile/addresses}" target="_blank" class="text-xs text-primary font-bold hover:underline flex items-center gap-0.5">
+                                <span class="material-symbols-outlined text-[14px]">edit_location_alt</span>
+                                <span>Quản lý sổ địa chỉ</span>
+                            </a>
                         </div>
-                        <div>
-                            <label class="block font-label-md text-xs font-semibold text-on-surface mb-1">Số điện thoại <span class="text-error">*</span></label>
-                            <input name="soDienThoaiGiao" required type="tel" 
-                                   th:value="${khachHang?.soDienThoai}"
-                                   placeholder="0912 345 678" pattern="[0-9]{10,11}" class="w-full bg-surface-container-low px-3.5 py-2.5 rounded-xl font-body-md text-xs sm:text-sm text-on-surface border border-surface-container focus:outline-none focus:ring-2 focus:ring-primary/30" />
+
+                        <!-- Saved Address Picker (If user has saved addresses) -->
+                        <div th:if="${diaChiList != null and !diaChiList.isEmpty()}" class="space-y-2">
+                            <div th:each="dc : ${diaChiList}" 
+                                 class="p-3 rounded-2xl border border-surface-container bg-surface-container-low flex items-start gap-2.5 cursor-pointer hover:border-primary/40 transition-colors">
+                                <input type="radio" name="maDiaChi" th:id="'addr_' + ${dc.maDiaChi}" th:value="${dc.maDiaChi}" 
+                                       th:checked="${dc.macDinh}"
+                                       class="mt-1 text-primary focus:ring-primary w-4 h-4 cursor-pointer addr-radio"
+                                       onchange="toggleCustomAddress(false)"/>
+                                <label th:for="'addr_' + ${dc.maDiaChi}" class="flex-1 cursor-pointer text-xs">
+                                    <div class="flex items-center gap-2">
+                                        <strong class="text-on-surface" th:text="${dc.hoTenNguoiNhan}">Người nhận</strong>
+                                        <span class="text-on-surface-variant font-mono" th:text="${dc.soDienThoai}">SĐT</span>
+                                        <span th:if="${dc.macDinh}" class="bg-primary/10 text-primary text-[10px] font-bold px-2 py-0.5 rounded-full">Mặc định</span>
+                                    </div>
+                                    <p class="text-on-surface-variant mt-0.5" th:text="${dc.diaChiChiTiet}">123 Đường...</p>
+                                </label>
+                            </div>
+
+                            <!-- Option to enter custom address -->
+                            <div class="p-3 rounded-2xl border border-surface-container bg-surface-container-low flex items-center gap-2.5 cursor-pointer hover:border-primary/40">
+                                <input type="radio" name="maDiaChi" id="addr_custom" value="" class="text-primary focus:ring-primary w-4 h-4 cursor-pointer addr-radio"
+                                       onchange="toggleCustomAddress(true)"/>
+                                <label for="addr_custom" class="cursor-pointer text-xs font-semibold text-on-surface">
+                                    + Nhập địa chỉ người nhận mới cho đơn hàng này
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Manual Address Inputs (Shown if no saved address OR if custom address option chosen) -->
+                        <div id="customAddressFields" th:classappend="${diaChiList != null and !diaChiList.isEmpty()} ? 'hidden' : ''" class="space-y-3 pt-2">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block font-label-md text-xs font-semibold text-on-surface mb-1">Họ và tên người nhận</label>
+                                    <input name="hoTen" type="text" 
+                                           th:value="${khachHang?.hoTen}"
+                                           placeholder="Nguyễn Văn A" class="w-full bg-surface-container-low px-3.5 py-2.5 rounded-xl font-body-md text-xs sm:text-sm text-on-surface border border-surface-container focus:outline-none focus:ring-2 focus:ring-primary/30" />
+                                </div>
+                                <div>
+                                    <label class="block font-label-md text-xs font-semibold text-on-surface mb-1">Số điện thoại</label>
+                                    <input name="soDienThoaiGiao" type="tel" 
+                                           th:value="${khachHang?.soDienThoai}"
+                                           placeholder="0912 345 678" pattern="[0-9]{10,11}" class="w-full bg-surface-container-low px-3.5 py-2.5 rounded-xl font-body-md text-xs sm:text-sm text-on-surface border border-surface-container focus:outline-none focus:ring-2 focus:ring-primary/30" />
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block font-label-md text-xs font-semibold text-on-surface mb-1">Địa chỉ giao hàng chi tiết</label>
+                                <input name="diaChiGiao" type="text" 
+                                       th:value="${khachHang?.diaChi}"
+                                       placeholder="123 Đường Nguyễn Huệ, Phường Bến Nghé, Quận 1, TP.HCM" class="w-full bg-surface-container-low px-3.5 py-2.5 rounded-xl font-body-md text-xs sm:text-sm text-on-surface border border-surface-container focus:outline-none focus:ring-2 focus:ring-primary/30" />
+                            </div>
                         </div>
                     </div>
 
-                    <div>
-                        <label class="block font-label-md text-xs font-semibold text-on-surface mb-1">Địa chỉ giao hàng chi tiết <span class="text-error">*</span></label>
-                        <input name="diaChiGiao" required type="text" 
-                               th:value="${khachHang?.diaChi}"
-                               placeholder="123 Đường Nguyễn Huệ, Phường Bến Nghé, Quận 1, TP.HCM" class="w-full bg-surface-container-low px-3.5 py-2.5 rounded-xl font-body-md text-xs sm:text-sm text-on-surface border border-surface-container focus:outline-none focus:ring-2 focus:ring-primary/30" />
+                    <!-- Shipping Carrier Selection -->
+                    <div class="pt-2">
+                        <label class="block font-label-md text-xs font-semibold text-on-surface mb-2">Đơn vị vận chuyển liên kết sàn <span class="text-error">*</span></label>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5" th:if="${carriers != null and !carriers.isEmpty()}">
+                            <label th:each="c, stat : ${carriers}" 
+                                   class="flex items-center justify-between p-3 rounded-2xl border border-surface-container hover:border-primary/50 bg-surface-container-low cursor-pointer transition-all">
+                                <div class="flex items-center gap-2.5">
+                                    <input type="radio" name="maNvc" th:value="${c.maNvc}" th:checked="${stat.first}" 
+                                           class="text-primary focus:ring-primary w-4 h-4 cursor-pointer carrier-radio"
+                                           th:data-fee="${c.phiCoBan}"
+                                           onchange="updateShippingFee(this)"/>
+                                    <div>
+                                        <div class="font-bold text-xs text-on-surface" th:text="${c.tenNvc}">GHN</div>
+                                        <div class="text-[10px] text-on-surface-variant" th:text="${c.thoiGianDuKien != null ? c.thoiGianDuKien : '24 - 48 Giờ'}">24h - 48h</div>
+                                    </div>
+                                </div>
+                                <span class="font-mono text-xs font-bold text-primary" th:text="${#numbers.formatDecimal(c.phiCoBan, 0, 'POINT', 0, 'COMMA') + ' đ'}">30.000 đ</span>
+                            </label>
+                        </div>
                     </div>
 
                     <div>
@@ -357,29 +443,32 @@
                         </div>
                     </div>
 
-                    <!-- Payment Method Selection (Only COD and QR Transfer) -->
+                    <!-- Payment Method Selection (COD, VNPay Sandbox, QR Transfer) -->
                     <div class="pt-2">
                         <label class="block font-label-md text-xs font-semibold text-on-surface mb-2">Phương thức thanh toán <span class="text-error">*</span></label>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <label class="flex items-center gap-3 p-3.5 rounded-2xl border-2 border-primary bg-primary/5 cursor-pointer transition-all payment-label">
-                                <input type="radio" name="phuongThuc" value="COD" checked class="text-primary focus:ring-primary w-4 h-4 cursor-pointer" />
-                                <div class="text-left">
-                                    <div class="font-headline-sm text-xs sm:text-sm font-bold text-on-surface flex items-center gap-1.5">
-                                        <span class="material-symbols-outlined text-[18px] text-primary">payments</span>
-                                        <span>Thanh toán khi nhận hàng</span>
-                                    </div>
-                                    <div class="text-[11px] text-on-surface-variant mt-0.5">Thanh toán tiền mặt (COD) khi nhận sách</div>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                            <label class="flex flex-col gap-2 p-3 rounded-2xl border-2 border-primary bg-primary/5 cursor-pointer transition-all payment-label">
+                                <div class="flex items-center gap-2">
+                                    <input type="radio" name="phuongThuc" value="COD" checked class="text-primary focus:ring-primary w-4 h-4 cursor-pointer" />
+                                    <span class="font-bold text-xs text-on-surface">Tiền mặt (COD)</span>
                                 </div>
+                                <div class="text-[10px] text-on-surface-variant">Thanh toán khi nhận sách</div>
                             </label>
-                            <label class="flex items-center gap-3 p-3.5 rounded-2xl border-2 border-surface-container hover:border-outline-variant cursor-pointer transition-all payment-label">
-                                <input type="radio" name="phuongThuc" value="ChuyenKhoan" class="text-primary focus:ring-primary w-4 h-4 cursor-pointer" />
-                                <div class="text-left">
-                                    <div class="font-headline-sm text-xs sm:text-sm font-bold text-on-surface flex items-center gap-1.5">
-                                        <span class="material-symbols-outlined text-[18px] text-secondary">qr_code_scanner</span>
-                                        <span>Chuyển khoản qua mã QR</span>
-                                    </div>
-                                    <div class="text-[11px] text-on-surface-variant mt-0.5">Quét mã QR qua ngân hàng / Ví điện tử</div>
+
+                            <label class="flex flex-col gap-2 p-3 rounded-2xl border-2 border-surface-container hover:border-outline-variant cursor-pointer transition-all payment-label">
+                                <div class="flex items-center gap-2">
+                                    <input type="radio" name="phuongThuc" value="VNPAY" class="text-primary focus:ring-primary w-4 h-4 cursor-pointer" />
+                                    <span class="font-bold text-xs text-on-surface text-blue-700">Cổng VNPAY</span>
                                 </div>
+                                <div class="text-[10px] text-on-surface-variant">ATM / Visa / VNPAY-QR</div>
+                            </label>
+
+                            <label class="flex flex-col gap-2 p-3 rounded-2xl border-2 border-surface-container hover:border-outline-variant cursor-pointer transition-all payment-label">
+                                <div class="flex items-center gap-2">
+                                    <input type="radio" name="phuongThuc" value="ChuyenKhoan" class="text-primary focus:ring-primary w-4 h-4 cursor-pointer" />
+                                    <span class="font-bold text-xs text-on-surface">Chuyển khoản QR</span>
+                                </div>
+                                <div class="text-[10px] text-on-surface-variant">Quét mã QR Ngân hàng / MoMo</div>
                             </label>
                         </div>
                     </div>
@@ -432,9 +521,28 @@
             return new Intl.NumberFormat('vi-VN').format(amount) + ' đ';
         }
 
+        function toggleCustomAddress(show) {
+            const el = document.getElementById('customAddressFields');
+            if (el) {
+                if (show) el.classList.remove('hidden');
+                else el.classList.add('hidden');
+            }
+        }
+
+        function updateShippingFee(radio) {
+            if (!radio) return;
+            const fee = parseInt(radio.getAttribute('data-fee')) || STANDARD_SHIPPING_FEE;
+            recalculateSelectedCart(fee);
+            const modalShipping = document.getElementById('modalShipping');
+            const modalTotal = document.getElementById('modalTotal');
+            const calc = recalculateSelectedCart(fee);
+            if (modalShipping) modalShipping.textContent = (calc.shippingFee === 0) ? 'Miễn Phí' : formatVND(calc.shippingFee);
+            if (modalTotal) modalTotal.textContent = formatVND(calc.finalTotal);
+        }
+
         // Toggle Select All
         function toggleSelectAll(masterCheckbox) {
-            const checkboxes = document.querySelectorAll('.item-checkbox');
+            const checkboxes = document.querySelectorAll('.item-checkbox:not(:disabled)');
             checkboxes.forEach(cb => {
                 cb.checked = masterCheckbox.checked;
             });
@@ -442,32 +550,34 @@
         }
 
         // Recalculate everything based on selected items only
-        function recalculateSelectedCart() {
+        function recalculateSelectedCart(overrideShippingFee) {
             let selectedSubtotal = 0;
             let selectedItemCount = 0;
             let selectedProductIds = [];
             let allChecked = true;
-            let totalRows = 0;
+            let enabledRows = 0;
 
             const rows = document.querySelectorAll('.cart-item-row');
-            totalRows = rows.length;
 
             rows.forEach(row => {
                 const cb = row.querySelector('.item-checkbox');
-                if (cb && cb.checked) {
-                    const price = parseInt(row.getAttribute('data-price')) || 0;
-                    const qty = parseInt(row.getAttribute('data-qty')) || 0;
-                    selectedSubtotal += price * qty;
-                    selectedItemCount += qty;
-                    selectedProductIds.push(cb.value);
-                } else {
-                    allChecked = false;
+                if (cb && !cb.disabled) {
+                    enabledRows++;
+                    if (cb.checked) {
+                        const price = parseInt(row.getAttribute('data-price')) || 0;
+                        const qty = parseInt(row.getAttribute('data-qty')) || 0;
+                        selectedSubtotal += price * qty;
+                        selectedItemCount += qty;
+                        selectedProductIds.push(cb.value);
+                    } else {
+                        allChecked = false;
+                    }
                 }
             });
 
             const masterCheckbox = document.getElementById('selectAllCheckbox');
             if (masterCheckbox) {
-                masterCheckbox.checked = totalRows > 0 && allChecked;
+                masterCheckbox.checked = enabledRows > 0 && allChecked;
             }
 
             // Voucher calculation (only on selected items)
@@ -482,13 +592,22 @@
             }
 
             // Shipping policy (only on selected items)
+            let carrierFee = STANDARD_SHIPPING_FEE;
+            const checkedCarrier = document.querySelector('.carrier-radio:checked');
+            if (checkedCarrier) {
+                carrierFee = parseInt(checkedCarrier.getAttribute('data-fee')) || STANDARD_SHIPPING_FEE;
+            }
+            if (typeof overrideShippingFee === 'number') {
+                carrierFee = overrideShippingFee;
+            }
+
             let shippingFee = 0;
             if (selectedSubtotal === 0) {
                 shippingFee = 0;
             } else if (selectedSubtotal >= FREE_SHIPPING_THRESHOLD) {
                 shippingFee = 0;
             } else {
-                shippingFee = STANDARD_SHIPPING_FEE;
+                shippingFee = carrierFee;
             }
 
             const finalTotal = Math.max(0, selectedSubtotal - discountAmount + shippingFee);

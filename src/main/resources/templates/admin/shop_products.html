@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{admin/fragments/admin_fragments :: admin_head('Sản Phẩm Của Gian Hàng - The4BookStore')}"></head>
+
+<body class="bg-background font-body-md text-on-surface antialiased min-h-screen">
+
+    <aside th:replace="~{admin/fragments/admin_fragments :: admin_sidebar('shops')}"></aside>
+
+    <div class="pl-64">
+        <header th:replace="~{admin/fragments/admin_fragments :: admin_header}"></header>
+
+        <main class="w-full pt-16 px-gutter-desktop py-space-lg bg-background">
+            <div class="flex flex-col w-full">
+                <!-- Breadcrumbs & Back -->
+                <div class="mb-4">
+                    <a th:href="@{/admin/shops}" class="inline-flex items-center gap-1.5 text-xs font-bold text-on-surface-variant hover:text-primary transition-colors">
+                        <span class="material-symbols-outlined text-[16px]">arrow_back</span>
+                        <span>Quay lại Quản lý gian hàng</span>
+                    </a>
+                </div>
+
+                <!-- Shop Header Card -->
+                <div class="bg-surface-container-lowest p-6 rounded-3xl border border-surface-container shadow-sm mb-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                    <div class="flex items-center gap-4">
+                        <img th:src="${shop.logo != null ? shop.logo : '/images/default-shop.png'}" 
+                             class="w-16 h-16 rounded-2xl object-cover ring-2 ring-surface-container shadow-sm"/>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h1 class="text-xl font-bold text-on-surface" th:text="${shop.tenShop}">Tên Gian Hàng</h1>
+                                <span th:switch="${shop.trangThai}">
+                                    <span th:case="'HoatDong'" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700">Đang hoạt động</span>
+                                    <span th:case="'ChoDuyet'" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-700">Chờ duyệt</span>
+                                    <span th:case="*" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-100 text-rose-700">Tạm khóa</span>
+                                </span>
+                            </div>
+                            <p class="text-xs text-on-surface-variant mt-1 flex items-center gap-3">
+                                <span><strong class="text-on-surface">Chủ shop:</strong> <span th:text="${shop.taiKhoan != null ? shop.taiKhoan.tenDangNhap : 'N/A'}"></span></span>
+                                <span>•</span>
+                                <span><strong class="text-on-surface">Liên hệ:</strong> <span th:text="${shop.soDienThoai}"></span></span>
+                                <span>•</span>
+                                <span><strong class="text-on-surface">Chiết khấu sàn:</strong> <span class="text-primary font-bold" th:text="${shop.chietKhauPhanTram != null ? shop.chietKhauPhanTram + '%' : '5.0%'}"></span></span>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <a th:href="@{'/shop/' + ${shop.slug}}" target="_blank" class="px-4 py-2 rounded-xl border border-primary text-primary hover:bg-primary hover:text-white font-bold text-xs transition-all flex items-center gap-1.5">
+                            <span class="material-symbols-outlined text-[16px]">storefront</span>
+                            <span>Xem Trang Gian Hàng</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Read-Only & Policy Notice Banner -->
+                <div class="mb-6 p-4 rounded-2xl bg-amber-50/80 border border-amber-300 text-amber-950 text-xs sm:text-sm flex items-start gap-3 shadow-xs">
+                    <span class="material-symbols-outlined text-amber-600 text-xl shrink-0 mt-0.5">verified_user</span>
+                    <div>
+                        <p class="font-bold text-sm">Chế độ kiểm tra thông tin sản phẩm của gian hàng (Chỉ đọc)</p>
+                        <p class="text-xs text-amber-900/90 mt-0.5">
+                            Theo mô hình vận hành sàn thương mại điện tử, <strong>chỉ chủ gian hàng mới có quyền Thêm mới, Chỉnh sửa thông tin hoặc Xóa/Ngừng bán sản phẩm</strong> của họ. Quản trị viên và Quản lý sàn có quyền kiểm tra chi tiết thông tin và thực hiện <strong>Khóa sản phẩm vi phạm</strong> khi phát hiện nội dung không hợp lệ.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Alerts -->
+                <div th:if="${successMessage}" class="mb-6 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm font-semibold flex items-center gap-2">
+                    <span class="material-symbols-outlined">check_circle</span>
+                    <span th:text="${successMessage}"></span>
+                </div>
+                <div th:if="${errorMessage}" class="mb-6 p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-sm font-semibold flex items-center gap-2">
+                    <span class="material-symbols-outlined">error</span>
+                    <span th:text="${errorMessage}"></span>
+                </div>
+
+                <!-- Search within Shop Products -->
+                <div class="bg-surface-container-lowest p-4 rounded-2xl border border-surface-container mb-6 shadow-sm">
+                    <form th:action="@{'/admin/shops/' + ${shop.maShop} + '/products'}" method="get" class="flex items-center gap-3">
+                        <div class="relative flex-1">
+                            <span class="material-symbols-outlined absolute left-3 top-2.5 text-on-surface-variant text-[18px]">search</span>
+                            <input type="text" name="keyword" th:value="${keyword}" placeholder="Tìm kiếm sản phẩm theo tên sách, tên văn phòng phẩm..."
+                                   class="w-full pl-9 pr-4 py-2 rounded-xl border border-surface-container bg-surface-container-low text-xs focus:ring-2 focus:ring-primary"/>
+                        </div>
+                        <button type="submit" class="px-5 py-2 bg-primary text-on-primary font-bold text-xs rounded-xl hover:bg-primary-container transition-all">
+                            Tìm kiếm
+                        </button>
+                        <a th:if="${keyword != null and !keyword.isBlank()}" th:href="@{'/admin/shops/' + ${shop.maShop} + '/products'}" class="px-4 py-2 bg-surface-container text-on-surface font-bold text-xs rounded-xl hover:bg-surface-container-high transition-all">
+                            Xóa lọc
+                        </a>
+                    </form>
+                </div>
+
+                <!-- Products Table -->
+                <div class="bg-surface-container-lowest rounded-3xl border border-surface-container shadow-sm overflow-hidden">
+                    <div class="p-4 bg-surface-container-low/70 border-b border-surface-container flex items-center justify-between">
+                        <div class="text-xs font-bold text-on-surface uppercase tracking-wider flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[18px] text-primary">inventory_2</span>
+                            <span>Danh sách sản phẩm thuộc gian hàng (<span th:text="${page.totalElements}">0</span>)</span>
+                        </div>
+                    </div>
+
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-surface-container-low text-on-surface-variant uppercase font-bold text-[11px] border-b border-surface-container">
+                            <tr>
+                                <th class="p-4">Sản phẩm</th>
+                                <th class="p-4">Danh mục</th>
+                                <th class="p-4">Tác giả / NXB</th>
+                                <th class="p-4">Đơn giá</th>
+                                <th class="p-4">Kho / Đã bán</th>
+                                <th class="p-4">Trạng thái bán</th>
+                                <th class="p-4">Kiểm duyệt sàn</th>
+                                <th class="p-4 text-right">Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-surface-container">
+                            <tr th:each="p : ${products}" class="hover:bg-surface-container-low/50 transition-colors">
+                                <!-- Info & Image -->
+                                <td class="p-4">
+                                    <div class="flex items-center gap-3">
+                                        <img th:src="${p.hinhAnh != null and !p.hinhAnh.isEmpty() ? p.hinhAnh : 'https://lh3.googleusercontent.com/aida-public/AB6AXuAJxhxEUoGYZXYaOldMaT7d3dcCRrYvCD-3AWG8q4nOBMKeBIhtPi1dKb9NiDZHTXWMxMULBn3rsm5dU8_IVOjwK8Bnkg8xf-IGsBbsQoLtc5D6EWqcU1KfQ1LzI9jMW8JHZBBy9sHF_7t1onS8pagaubUOfOqYifnPkQMRgKeMgWgWQ71XMqmHdC9fJzuMiB3aqbLZt8bE5qj4HVtt62KzVUKztkjut685dS6dOCMbTJ_WPnz-9N7y'}" 
+                                             class="w-12 h-16 rounded-lg object-cover ring-1 ring-surface-container shadow-2xs"/>
+                                        <div class="max-w-xs">
+                                            <div class="font-bold text-on-surface text-sm line-clamp-1" th:text="${p.tenSP}">Tên sản phẩm</div>
+                                            <div class="text-[11px] text-on-surface-variant font-mono mt-0.5" th:if="${p.ISBN != null}" th:text="'ISBN: ' + ${p.ISBN}"></div>
+                                            <div class="text-[11px] text-outline mt-0.5" th:text="'Mã SP: #' + ${p.maSP}"></div>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <!-- Category -->
+                                <td class="p-4">
+                                    <span class="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-surface-container text-on-surface" 
+                                          th:text="${p.danhMuc != null ? p.danhMuc.tenDanhMuc : 'Chưa phân loại'}">
+                                    </span>
+                                </td>
+
+                                <!-- Author / Publisher -->
+                                <td class="p-4 text-on-surface-variant">
+                                    <div class="font-medium text-on-surface" th:text="${p.danhSachTacGia != null and !p.danhSachTacGia.isEmpty() ? p.danhSachTacGia : 'N/A'}">Tác giả</div>
+                                    <div class="text-[11px] text-outline mt-0.5" th:text="${p.nhaXuatBan != null ? p.nhaXuatBan.tenNXB : 'N/A'}">NXB</div>
+                                </td>
+
+                                <!-- Price -->
+                                <td class="p-4 font-mono font-bold text-primary text-sm" 
+                                    th:text="${#numbers.formatDecimal(p.giaBan, 0, 'POINT', 0, 'COMMA') + ' đ'}">
+                                </td>
+
+                                <!-- Stock / Sold -->
+                                <td class="p-4">
+                                    <div class="font-semibold text-on-surface" th:text="'Tồn: ' + ${p.soLuongTon}">0</div>
+                                    <div class="text-[11px] text-on-surface-variant mt-0.5" th:text="'Đã bán: ' + ${p.soLuongDaBan != null ? p.soLuongDaBan : 0}">Đã bán: 0</div>
+                                </td>
+
+                                <!-- Business Status -->
+                                <td class="p-4">
+                                    <span th:switch="${p.trangThai}">
+                                        <span th:case="'DangBan'" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700">Đang bán</span>
+                                        <span th:case="'HetHang'" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-700">Hết hàng</span>
+                                        <span th:case="*" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-700">Ngừng bán</span>
+                                    </span>
+                                </td>
+
+                                <!-- Platform Moderation Lock Status -->
+                                <td class="p-4">
+                                    <span th:if="${p.trangThaiKhoa == 'Khoa'}" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-600 text-white flex items-center gap-1 w-fit">
+                                        <span class="material-symbols-outlined text-[12px]">lock</span>
+                                        <span>Bị Khóa</span>
+                                    </span>
+                                    <span th:unless="${p.trangThaiKhoa == 'Khoa'}" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1 w-fit">
+                                        <span class="material-symbols-outlined text-[12px]">check</span>
+                                        <span>Bình thường</span>
+                                    </span>
+                                </td>
+
+                                <!-- Actions (Read-Only Detail + Moderation Lock) -->
+                                <td class="p-4 text-right">
+                                    <div class="inline-flex items-center gap-1.5">
+                                        <!-- Xem chi tiết sản phẩm (Modal chỉ đọc) -->
+                                        <button type="button" th:onclick="'openViewDetailModal(' + ${p.maSP} + ')'"
+                                                class="px-3 py-1.5 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface font-bold text-xs transition-all flex items-center gap-1 shadow-2xs"
+                                                title="Xem chi tiết đầy đủ sản phẩm">
+                                            <span class="material-symbols-outlined text-[15px] text-primary">visibility</span>
+                                            <span>Chi tiết</span>
+                                        </button>
+
+                                        <!-- Khóa vi phạm / Mở khóa -->
+                                        <form th:if="${p.trangThaiKhoa != 'Khoa'}" th:action="@{'/admin/products/' + ${p.maSP} + '/lock'}" method="post"
+                                              onsubmit="return confirm('Bạn có chắc muốn KHÓA sản phẩm này do vi phạm quy định sàn?');">
+                                            <input type="hidden" name="returnUrl" th:value="@{'/admin/shops/' + ${shop.maShop} + '/products'}"/>
+                                            <button type="submit" class="px-2.5 py-1.5 rounded-xl bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 font-bold text-xs transition-all flex items-center gap-1"
+                                                    title="Khóa sản phẩm vi phạm">
+                                                <span class="material-symbols-outlined text-[15px]">gavel</span>
+                                                <span>Khóa</span>
+                                            </button>
+                                        </form>
+
+                                        <form th:if="${p.trangThaiKhoa == 'Khoa'}" th:action="@{'/admin/products/' + ${p.maSP} + '/unlock'}" method="post">
+                                            <input type="hidden" name="returnUrl" th:value="@{'/admin/shops/' + ${shop.maShop} + '/products'}"/>
+                                            <button type="submit" class="px-2.5 py-1.5 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 font-bold text-xs transition-all flex items-center gap-1"
+                                                    title="Mở khóa sản phẩm">
+                                                <span class="material-symbols-outlined text-[15px]">lock_open</span>
+                                                <span>Mở</span>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <tr th:if="${products.isEmpty()}">
+                                <td colspan="8" class="p-8 text-center text-on-surface-variant">
+                                    <div class="flex flex-col items-center justify-center gap-2">
+                                        <span class="material-symbols-outlined text-4xl text-outline">menu_book</span>
+                                        <p class="font-medium">Gian hàng này chưa có sản phẩm nào hoặc không khớp từ khóa tìm kiếm.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <!-- Pagination -->
+                    <div th:if="${page.totalPages > 1}" class="p-4 border-t border-surface-container flex items-center justify-between">
+                        <div class="text-xs text-on-surface-variant">
+                            Trang <span class="font-bold text-on-surface" th:text="${page.number + 1}">1</span> / <span th:text="${page.totalPages}">1</span>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <a th:if="${page.hasPrevious()}" 
+                               th:href="@{'/admin/shops/' + ${shop.maShop} + '/products'(page=${page.number - 1}, keyword=${keyword})}"
+                               class="px-3 py-1.5 rounded-xl border border-surface-container text-xs font-bold hover:bg-surface-container transition-all">Trước</a>
+                            <a th:if="${page.hasNext()}" 
+                               th:href="@{'/admin/shops/' + ${shop.maShop} + '/products'(page=${page.number + 1}, keyword=${keyword})}"
+                               class="px-3 py-1.5 rounded-xl border border-surface-container text-xs font-bold hover:bg-surface-container transition-all">Sau</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- READ-ONLY PRODUCT DETAIL MODAL -->
+    <div id="productDetailModal" class="fixed inset-0 z-50 hidden bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-surface-container-lowest w-full max-w-2xl rounded-3xl p-6 shadow-2xl border border-surface-container max-h-[90vh] flex flex-col">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between pb-4 border-b border-surface-container shrink-0">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary text-2xl">info</span>
+                    <div>
+                        <h2 class="text-lg font-bold text-on-surface">Thông Tin Chi Tiết Sản Phẩm</h2>
+                        <p class="text-xs text-on-surface-variant">Chế độ xem chỉ đọc - Quản trị viên hệ thống</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeViewDetailModal()" class="p-2 rounded-xl text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all">
+                    <span class="material-symbols-outlined text-xl">close</span>
+                </button>
+            </div>
+
+            <!-- Modal Content (Scrollable) -->
+            <div class="flex-1 overflow-y-auto py-4 space-y-4 pr-1">
+                <div class="flex flex-col sm:flex-row gap-4 items-start">
+                    <img id="modalImg" src="" alt="Ảnh sản phẩm" class="w-28 h-36 rounded-xl object-cover ring-1 ring-surface-container shadow-xs shrink-0"/>
+                    <div class="flex-1">
+                        <span id="modalTypeBadge" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-primary/10 text-primary">Sách</span>
+                        <h3 id="modalTitle" class="text-base font-bold text-on-surface mt-1 leading-snug">Tên sản phẩm</h3>
+                        
+                        <div class="mt-2 grid grid-cols-2 gap-2 text-xs">
+                            <div class="p-2 rounded-xl bg-surface-container-low">
+                                <span class="text-on-surface-variant text-[11px] block">Gian hàng sở hữu</span>
+                                <strong id="modalShop" class="text-primary font-bold">The4BookStore Official</strong>
+                            </div>
+                            <div class="p-2 rounded-xl bg-surface-container-low">
+                                <span class="text-on-surface-variant text-[11px] block">Đơn giá niêm yết</span>
+                                <strong id="modalPrice" class="text-emerald-600 font-mono font-extrabold text-sm">0 đ</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                    <div class="p-2.5 rounded-xl border border-surface-container bg-surface-container-lowest">
+                        <span class="text-on-surface-variant text-[11px] block">Danh mục</span>
+                        <strong id="modalCat" class="text-on-surface">Văn học</strong>
+                    </div>
+                    <div class="p-2.5 rounded-xl border border-surface-container bg-surface-container-lowest">
+                        <span class="text-on-surface-variant text-[11px] block">Tác giả</span>
+                        <strong id="modalAuthor" class="text-on-surface truncate block">N/A</strong>
+                    </div>
+                    <div class="p-2.5 rounded-xl border border-surface-container bg-surface-container-lowest">
+                        <span class="text-on-surface-variant text-[11px] block">Nhà xuất bản</span>
+                        <strong id="modalPub" class="text-on-surface truncate block">N/A</strong>
+                    </div>
+                    <div class="p-2.5 rounded-xl border border-surface-container bg-surface-container-lowest">
+                        <span class="text-on-surface-variant text-[11px] block">Mã ISBN</span>
+                        <strong id="modalIsbn" class="text-on-surface font-mono">N/A</strong>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-3 gap-2 text-xs">
+                    <div class="p-2.5 rounded-xl bg-surface-container-low">
+                        <span class="text-on-surface-variant text-[11px] block">Tồn kho hiện tại</span>
+                        <strong id="modalStock" class="text-on-surface text-sm font-bold">0</strong>
+                    </div>
+                    <div class="p-2.5 rounded-xl bg-surface-container-low">
+                        <span class="text-on-surface-variant text-[11px] block">Số lượng đã bán</span>
+                        <strong id="modalSold" class="text-primary text-sm font-bold">0</strong>
+                    </div>
+                    <div class="p-2.5 rounded-xl bg-surface-container-low">
+                        <span class="text-on-surface-variant text-[11px] block">Ngày đăng bán</span>
+                        <strong id="modalDate" class="text-on-surface text-[11px] font-semibold">N/A</strong>
+                    </div>
+                </div>
+
+                <div class="p-3.5 rounded-2xl bg-surface-container-low border border-surface-container">
+                    <span class="text-xs font-bold text-on-surface block mb-1">Mô tả sản phẩm</span>
+                    <p id="modalDesc" class="text-xs text-on-surface-variant leading-relaxed whitespace-pre-line">Chưa có mô tả.</p>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="pt-4 border-t border-surface-container flex items-center justify-between shrink-0">
+                <span class="text-xs text-outline italic">Chỉ gian hàng mới có quyền chỉnh sửa sản phẩm này</span>
+                <button type="button" onclick="closeViewDetailModal()" class="px-5 py-2 rounded-xl bg-primary text-on-primary font-bold text-xs hover:bg-primary-container transition-all">
+                    Đóng cửa sổ
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script to load product details into modal -->
+    <script>
+        function openViewDetailModal(id) {
+            fetch('/admin/products/' + id + '/json')
+                .then(r => r.json())
+                .then(data => {
+                    document.getElementById('modalTitle').textContent = data.tenSP || 'N/A';
+                    document.getElementById('modalShop').textContent = data.tenShop || 'The4BookStore Official';
+                    document.getElementById('modalPrice').textContent = (data.giaBan ? data.giaBan.toLocaleString('vi-VN') : '0') + ' đ';
+                    document.getElementById('modalCat').textContent = data.tenDanhMuc || 'Chưa phân loại';
+                    document.getElementById('modalAuthor').textContent = data.tenTacGia || 'N/A';
+                    document.getElementById('modalPub').textContent = data.tenNXB || 'N/A';
+                    document.getElementById('modalIsbn').textContent = data.isbn || 'Không có';
+                    document.getElementById('modalStock').textContent = data.soLuongTon != null ? data.soLuongTon : '0';
+                    document.getElementById('modalSold').textContent = data.soLuongDaBan != null ? data.soLuongDaBan : '0';
+                    document.getElementById('modalDate').textContent = data.ngayTao || 'N/A';
+                    document.getElementById('modalDesc').textContent = data.moTa && !data.moTa.startsWith('http') ? data.moTa : 'Chưa có mô tả chi tiết cho sản phẩm này.';
+                    document.getElementById('modalTypeBadge').textContent = data.loaiSP === 'Sach' ? 'Sách' : (data.loaiSP === 'VanPhongPham' ? 'Văn Phòng Phẩm' : 'Quà Tặng');
+                    
+                    const imgUrl = data.hinhAnh || (data.moTa && data.moTa.startsWith('http') ? data.moTa : 'https://lh3.googleusercontent.com/aida-public/AB6AXuAJxhxEUoGYZXYaOldMaT7d3dcCRrYvCD-3AWG8q4nOBMKeBIhtPi1dKb9NiDZHTXWMxMULBn3rsm5dU8_IVOjwK8Bnkg8xf-IGsBbsQoLtc5D6EWqcU1KfQ1LzI9jMW8JHZBBy9sHF_7t1onS8pagaubUOfOqYifnPkQMRgKeMgWgWQ71XMqmHdC9fJzuMiB3aqbLZt8bE5qj4HVtt62KzVUKztkjut685dS6dOCMbTJ_WPnz-9N7y');
+                    document.getElementById('modalImg').src = imgUrl;
+
+                    document.getElementById('productDetailModal').classList.remove('hidden');
+                })
+                .catch(err => {
+                    alert('Không thể tải thông tin sản phẩm: ' + err);
+                });
+        }
+
+        function closeViewDetailModal() {
+            document.getElementById('productDetailModal').classList.add('hidden');
+        }
+
+        document.getElementById('productDetailModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeViewDetailModal();
+            }
+        });
+    </script>
+</body>
+</html>

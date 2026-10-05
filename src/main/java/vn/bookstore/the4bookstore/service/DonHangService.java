@@ -23,6 +23,8 @@ public class DonHangService {
     private final KhuyenMaiRepository khuyenMaiRepository;
     private final VoucherDaLuuRepository voucherDaLuuRepository;
     private final SimpMessagingTemplate messagingTemplate;
+    private final ShopRepository shopRepository;
+    private final NhaVanChuyenRepository nhaVanChuyenRepository;
 
     public DonHangService(DonHangRepository donHangRepository,
                           ChiTietDonHangRepository chiTietDonHangRepository,
@@ -31,7 +33,9 @@ public class DonHangService {
                           GioHangService gioHangService,
                           KhuyenMaiRepository khuyenMaiRepository,
                           VoucherDaLuuRepository voucherDaLuuRepository,
-                          SimpMessagingTemplate messagingTemplate) {
+                          SimpMessagingTemplate messagingTemplate,
+                          ShopRepository shopRepository,
+                          NhaVanChuyenRepository nhaVanChuyenRepository) {
         this.donHangRepository = donHangRepository;
         this.chiTietDonHangRepository = chiTietDonHangRepository;
         this.sanPhamRepository = sanPhamRepository;
@@ -40,6 +44,8 @@ public class DonHangService {
         this.khuyenMaiRepository = khuyenMaiRepository;
         this.voucherDaLuuRepository = voucherDaLuuRepository;
         this.messagingTemplate = messagingTemplate;
+        this.shopRepository = shopRepository;
+        this.nhaVanChuyenRepository = nhaVanChuyenRepository;
     }
 
     /**
@@ -63,6 +69,15 @@ public class DonHangService {
                                String soDienThoaiGiao, String phuongThuc, String ghiChu,
                                List<Integer> selectedProductIds,
                                String maVoucher) {
+        return createOrder(khachHang, diaChiGiao, soDienThoaiGiao, phuongThuc, ghiChu, selectedProductIds, maVoucher, null);
+    }
+
+    @Transactional
+    public DonHang createOrder(KhachHang khachHang, String diaChiGiao,
+                               String soDienThoaiGiao, String phuongThuc, String ghiChu,
+                               List<Integer> selectedProductIds,
+                               String maVoucher,
+                               Integer maNvc) {
 
         // 1. Lấy giỏ hàng
         List<ChiTietGioHang> allCartItems = gioHangService.getCartItems(khachHang);
@@ -91,6 +106,14 @@ public class DonHangService {
             SanPham sp = sanPhamRepository.findByIdWithLock(maSP)
                     .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm mã: " + maSP));
 
+            boolean isProductLocked = "BiKhoaBoiAdmin".equalsIgnoreCase(sp.getTrangThaiKhoa())
+                    || "Khoa".equalsIgnoreCase(sp.getTrangThaiKhoa())
+                    || "NgungBan".equalsIgnoreCase(sp.getTrangThai());
+            boolean isShopLocked = sp.getShop() != null && !"HoatDong".equalsIgnoreCase(sp.getShop().getTrangThai());
+            if (isProductLocked || isShopLocked) {
+                throw new RuntimeException("Sản phẩm \"" + sp.getTenSP() + "\" hiện đang tạm ngừng kinh doanh hoặc gian hàng đang bị tạm khóa, vui lòng bỏ chọn sản phẩm này để đặt hàng!");
+            }
+
             if (sp.getSoLuongTon() < ct.getSoLuong()) {
                 throw new RuntimeException("Sản phẩm \"" + sp.getTenSP() + "\" không đủ số lượng tồn kho (chỉ còn " 
                         + sp.getSoLuongTon() + " cuốn)!");
@@ -98,9 +121,40 @@ public class DonHangService {
             lockedProducts.add(sp);
         }
 
+        // Xác định Shop của đơn hàng
+        Shop shop = null;
+        for (SanPham sp : lockedProducts) {
+            if (sp.getShop() != null) {
+                shop = sp.getShop();
+                break;
+            }
+        }
+        if (shop == null) {
+            shop = shopRepository.findById(1).orElse(null);
+        }
+
+        // Xác định Nhà Vận Chuyển
+        NhaVanChuyen nvc = null;
+        if (maNvc != null) {
+            nvc = nhaVanChuyenRepository.findById(maNvc).orElse(null);
+        }
+        if (nvc == null) {
+            nvc = nhaVanChuyenRepository.findAll().stream()
+                    .filter(c -> "HoatDong".equalsIgnoreCase(c.getTrangThai()))
+                    .findFirst().orElse(null);
+        }
+        int phiVanChuyen = (nvc != null && nvc.getPhiCoBan() != null) ? nvc.getPhiCoBan() : 30000;
+        java.math.BigDecimal chietKhauApp = (shop != null && shop.getChietKhauPhanTram() != null) ? shop.getChietKhauPhanTram() : new java.math.BigDecimal("10.00");
+
         // 3. Tạo đơn hàng
         DonHang donHang = new DonHang();
         donHang.setKhachHang(khachHang);
+        donHang.setShop(shop);
+        donHang.setNhaVanChuyen(nvc);
+        donHang.setPhiVanChuyen(phiVanChuyen);
+        donHang.setChietKhauAppPhanTram(chietKhauApp);
+        donHang.setPhuongThucThanhToan(phuongThuc != null ? phuongThuc : "COD");
+        donHang.setTrangThaiThanhToan("VNPAY".equalsIgnoreCase(phuongThuc) ? "ChuaThanhToan" : "ChoThanhToan");
         donHang.setNgayDat(LocalDateTime.now());
         donHang.setDiaChiGiao(diaChiGiao);
         donHang.setSoDienThoaiGiao(soDienThoaiGiao);
@@ -127,8 +181,9 @@ public class DonHangService {
             chiTietDonHangRepository.save(ctDH);
             chiTietList.add(ctDH);
 
-            // 5. Trừ tồn kho
+            // 5. Trừ tồn kho & cộng số lượng đã bán
             sp.setSoLuongTon(sp.getSoLuongTon() - ctGH.getSoLuong());
+            sp.setSoLuongDaBan((sp.getSoLuongDaBan() != null ? sp.getSoLuongDaBan() : 0) + ctGH.getSoLuong());
             sanPhamRepository.save(sp);
 
             tongTien += sp.getGiaBan() * ctGH.getSoLuong();
@@ -193,6 +248,10 @@ public class DonHangService {
         }
 
         int finalTotal = Math.max(0, tongTien - tienGiam);
+        int tienPhiSan = (int) Math.round(tongTien * (chietKhauApp.doubleValue() / 100.0));
+        int tienThucNhan = Math.max(0, finalTotal - tienPhiSan);
+        donHang.setTienPhiSan(tienPhiSan);
+        donHang.setTienThucNhanShop(tienThucNhan);
         donHang.setTongTien(finalTotal);
         donHang.setTienGiam(tienGiam);
         donHang.setKhuyenMai(khuyenMai);
@@ -268,11 +327,16 @@ public class DonHangService {
             throw new RuntimeException("Chỉ có thể hủy đơn hàng ở trạng thái 'Chờ xử lý'!");
         }
 
-        // Hoàn lại tồn kho
+        // Hoàn lại tồn kho và số lượng đã bán
         if (donHang.getChiTietDonHangs() != null) {
             for (ChiTietDonHang ct : donHang.getChiTietDonHangs()) {
                 if (ct.getSanPham() != null && ct.getSoLuong() != null) {
                     sanPhamRepository.increaseStock(ct.getSanPham().getMaSP(), ct.getSoLuong());
+                    SanPham sp = sanPhamRepository.findById(ct.getSanPham().getMaSP()).orElse(null);
+                    if (sp != null && sp.getSoLuongDaBan() != null) {
+                        sp.setSoLuongDaBan(Math.max(0, sp.getSoLuongDaBan() - ct.getSoLuong()));
+                        sanPhamRepository.save(sp);
+                    }
                 }
             }
         }

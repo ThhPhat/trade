@@ -5,8 +5,20 @@
     <!-- Common Storefront Navigation Fragment -->
     <header th:fragment="common_navbar(activePage)" class="fixed top-0 inset-x-0 z-50 bg-surface-container-lowest/95 backdrop-blur-md shadow-[0_1px_8px_rgba(0,0,0,0.04)]">
         <!-- Top Announce Bar -->
-        <div class="bg-primary px-space-md py-1 text-center text-xs font-semibold text-on-primary tracking-wide">
-            <span>✨ Ưu đãi đặc biệt: Miễn phí vận chuyển hỏa tốc toàn quốc cho đơn hàng từ 350.000 đ!</span>
+        <div class="bg-primary px-space-md py-1 text-xs font-semibold text-on-primary tracking-wide">
+            <div class="max-w-7xl mx-auto flex items-center justify-between">
+                <span>✨ Ưu đãi đặc biệt: Miễn phí vận chuyển hỏa tốc toàn quốc cho đơn hàng từ 350.000 đ!</span>
+                <div class="flex items-center gap-4 text-[11px]">
+                    <a sec:authorize="hasAnyRole('VENDOR', 'ADMIN')" th:href="@{/vendor/dashboard}" class="hover:underline flex items-center gap-1 font-bold">
+                        <span class="material-symbols-outlined text-[14px]">storefront</span>
+                        <span>Kênh Người Bán</span>
+                    </a>
+                    <a sec:authorize="!hasRole('VENDOR') and !hasRole('ADMIN')" th:href="@{/vendor/register}" class="hover:underline flex items-center gap-1 font-bold">
+                        <span class="material-symbols-outlined text-[14px]">store</span>
+                        <span>Kênh Người Bán / Mở Shop</span>
+                    </a>
+                </div>
+            </div>
         </div>
 
         <div class="h-16 max-w-7xl mx-auto px-space-md md:px-margin-desktop flex items-center justify-between py-2">
@@ -147,7 +159,7 @@
                         <span class="material-symbols-outlined text-on-surface-variant text-[20px]">search</span>
                         <input name="q"
                                class="w-full bg-transparent border-0 text-on-surface placeholder:text-on-surface-variant focus:outline-none font-body-md text-xs md:text-sm py-2"
-                               placeholder="Tìm kiếm theo Tên sách, Tác giả hoặc mã ISBN..."
+                               placeholder="Tìm kiếm tên sách, tác giả, gian hàng..."
                                type="text"/>
                         <button type="submit" class="hidden">Tìm</button>
                     </form>
@@ -242,29 +254,55 @@
                                         <p class="font-label-sm text-[11px] text-on-surface-variant uppercase tracking-wider font-semibold">Tài khoản</p>
                                         <p class="font-headline-sm text-xs font-bold text-primary truncate" th:text="${userDisplayName}">User</p>
                                     </div>
-                                    <a th:href="@{/profile}" class="flex items-center gap-2.5 px-4 py-2.5 font-label-md text-xs text-on-surface hover:bg-surface-container-low transition-colors">
+                                    <a th:href="@{/profile}" class="flex items-center gap-2.5 px-4 py-2 font-label-md text-xs text-on-surface hover:bg-surface-container-low transition-colors">
                                         <span class="material-symbols-outlined text-[18px] text-primary">person</span>
                                         <span>Hồ sơ cá nhân</span>
                                     </a>
-                                    <a th:href="@{/profile#orders-section}" class="flex items-center gap-2.5 px-4 py-2.5 font-label-md text-xs text-on-surface hover:bg-surface-container-low transition-colors">
+                                    <a th:href="@{/profile/addresses}" class="flex items-center gap-2.5 px-4 py-2 font-label-md text-xs text-on-surface hover:bg-surface-container-low transition-colors">
+                                        <span class="material-symbols-outlined text-[18px] text-primary">location_on</span>
+                                        <span>Sổ địa chỉ nhận hàng</span>
+                                    </a>
+                                    <a th:href="@{/profile/favorites}" class="flex items-center gap-2.5 px-4 py-2 font-label-md text-xs text-on-surface hover:bg-surface-container-low transition-colors">
+                                        <span class="material-symbols-outlined text-[18px] text-rose-500">favorite</span>
+                                        <span>Sách yêu thích</span>
+                                    </a>
+                                    <a th:href="@{/profile/recently-viewed}" class="flex items-center gap-2.5 px-4 py-2 font-label-md text-xs text-on-surface hover:bg-surface-container-low transition-colors">
+                                        <span class="material-symbols-outlined text-[18px] text-amber-500">history</span>
+                                        <span>Sách đã xem gần đây</span>
+                                    </a>
+                                    <a th:href="@{/profile#orders-section}" class="flex items-center gap-2.5 px-4 py-2 font-label-md text-xs text-on-surface hover:bg-surface-container-low transition-colors">
                                         <span class="material-symbols-outlined text-[18px] text-on-surface-variant">receipt_long</span>
                                         <span>Đơn mua của tôi</span>
                                     </a>
-                                    <a th:href="@{/profile#voucher-section}" class="flex items-center gap-2.5 px-4 py-2.5 font-label-md text-xs text-on-surface hover:bg-surface-container-low transition-colors">
-                                        <span class="material-symbols-outlined text-[18px] text-secondary">account_balance_wallet</span>
-                                        <span>Ví Voucher của tôi</span>
+                                    
+                                    <div class="h-[1px] bg-surface-container my-1"></div>
+
+                                    <!-- Kênh người bán / Đăng ký shop -->
+                                    <a sec:authorize="hasAnyRole('VENDOR', 'ADMIN')" th:href="@{/vendor/dashboard}" class="flex items-center gap-2.5 px-4 py-2 font-label-md text-xs font-semibold text-emerald-600 hover:bg-emerald-50 transition-colors">
+                                        <span class="material-symbols-outlined text-[18px] text-emerald-600">storefront</span>
+                                        <span>Kênh Người Bán</span>
                                     </a>
-                                    <a th:href="@{/san-voucher}" class="flex items-center gap-2.5 px-4 py-2.5 font-label-md text-xs text-on-surface hover:bg-surface-container-low transition-colors">
-                                        <span class="material-symbols-outlined text-[18px] text-primary">confirmation_number</span>
-                                        <span>Săn Khuyến Mãi</span>
+                                    <a sec:authorize="!hasRole('VENDOR') and !hasRole('ADMIN')" th:href="@{/vendor/register}" class="flex items-center gap-2.5 px-4 py-2 font-label-md text-xs text-emerald-600 hover:bg-emerald-50 transition-colors">
+                                        <span class="material-symbols-outlined text-[18px] text-emerald-600">store</span>
+                                        <span>Đăng Ký Mở Shop</span>
                                     </a>
-                                    <a sec:authorize="hasAnyRole('ADMIN', 'QUANLY')" th:href="@{/admin/dashboard}" class="flex items-center gap-2.5 px-4 py-2.5 font-label-md text-xs text-on-surface hover:bg-surface-container-low transition-colors">
+
+                                    <!-- Quản trị sàn -->
+                                    <a sec:authorize="hasAnyRole('ADMIN', 'QUANLY', 'MANAGER')" th:href="@{/admin/dashboard}" class="flex items-center gap-2.5 px-4 py-2 font-label-md text-xs text-on-surface hover:bg-surface-container-low transition-colors">
                                         <span class="material-symbols-outlined text-[18px] text-primary">admin_panel_settings</span>
-                                        <span>Trang Quản Trị</span>
+                                        <span>Trang Quản Trị Sàn</span>
                                     </a>
-                                    <a sec:authorize="hasRole('NHANVIENKHO')" th:href="@{/admin/kho}" class="flex items-center gap-2.5 px-4 py-2.5 font-label-md text-xs text-on-surface hover:bg-surface-container-low transition-colors">
-                                        <span class="material-symbols-outlined text-[18px] text-primary">warehouse</span>
-                                        <span>Quản Lý Kho</span>
+                                    <a sec:authorize="hasAnyRole('ADMIN', 'QUANLY', 'MANAGER')" th:href="@{/admin/shops}" class="flex items-center gap-2.5 px-4 py-2 font-label-md text-xs text-on-surface hover:bg-surface-container-low transition-colors">
+                                        <span class="material-symbols-outlined text-[18px] text-primary">store</span>
+                                        <span>Quản Lý Gian Hàng</span>
+                                    </a>
+                                    <a sec:authorize="hasAnyRole('ADMIN', 'QUANLY', 'MANAGER')" th:href="@{/admin/disputes}" class="flex items-center gap-2.5 px-4 py-2 font-label-md text-xs text-amber-600 hover:bg-surface-container-low transition-colors">
+                                        <span class="material-symbols-outlined text-[18px] text-amber-600">gavel</span>
+                                        <span>Xử Lý Tranh Chấp</span>
+                                    </a>
+                                    <a sec:authorize="hasRole('ADMIN')" th:href="@{/admin/platform-fees}" class="flex items-center gap-2.5 px-4 py-2 font-label-md text-xs text-on-surface hover:bg-surface-container-low transition-colors">
+                                        <span class="material-symbols-outlined text-[18px] text-primary">percent</span>
+                                        <span>Cấu Hình Chiết Khấu Sàn</span>
                                     </a>
                                     <div class="h-[1px] bg-surface-container my-1"></div>
                                     <form th:action="@{/logout}" method="post">

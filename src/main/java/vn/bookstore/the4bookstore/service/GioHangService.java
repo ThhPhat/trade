@@ -44,6 +44,19 @@ public class GioHangService {
                 });
     }
 
+    public void validateProductAvailable(SanPham sp) {
+        if (sp == null) {
+            throw new RuntimeException("Sản phẩm không tồn tại!");
+        }
+        boolean isProductLocked = "BiKhoaBoiAdmin".equalsIgnoreCase(sp.getTrangThaiKhoa())
+                || "Khoa".equalsIgnoreCase(sp.getTrangThaiKhoa())
+                || "NgungBan".equalsIgnoreCase(sp.getTrangThai());
+        boolean isShopLocked = sp.getShop() != null && !"HoatDong".equalsIgnoreCase(sp.getShop().getTrangThai());
+        if (isProductLocked || isShopLocked) {
+            throw new RuntimeException("Sản phẩm \"" + sp.getTenSP() + "\" hiện đang tạm ngừng kinh doanh hoặc gian hàng đang bị tạm khóa!");
+        }
+    }
+
     /**
      * Thêm sản phẩm vào giỏ hàng. Nếu đã có thì tăng số lượng.
      */
@@ -53,6 +66,8 @@ public class GioHangService {
 
         SanPham sp = sanPhamRepository.findById(maSP)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm: " + maSP));
+
+        validateProductAvailable(sp);
 
         GioHang gioHang = getOrCreateCart(khachHang);
         Optional<ChiTietGioHang> existingItem = chiTietGioHangRepository
@@ -197,6 +212,8 @@ public class GioHangService {
 
         SanPham sp = sanPhamRepository.findById(maSP)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm: " + maSP));
+
+        validateProductAvailable(sp);
 
         List<ChiTietGioHang> items = getSessionCartItems(session);
         Optional<ChiTietGioHang> existing = items.stream()

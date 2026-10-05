@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{admin/fragments/admin_fragments :: admin_head('Nhập / Xuất Dữ Liệu Hệ Thống - The4BookStore')}"></head>
+
+<body class="bg-background font-body-md text-on-surface antialiased min-h-screen">
+
+    <aside th:replace="~{admin/fragments/admin_fragments :: admin_sidebar('import-export')}"></aside>
+
+    <div class="pl-64">
+        <header th:replace="~{admin/fragments/admin_fragments :: admin_header}"></header>
+
+        <main class="w-full pt-16 px-gutter-desktop py-space-lg bg-background">
+            <div class="flex flex-col w-full">
+                <!-- Page Title -->
+                <div class="flex items-center justify-between mb-8">
+                    <div>
+                        <div class="text-xs uppercase font-bold text-on-surface-variant tracking-wider mb-1">HỆ THỐNG / DỮ LIỆU</div>
+                        <h1 class="text-2xl font-bold text-on-surface">Trung Tâm Nhập &amp; Xuất Dữ Liệu Sàn</h1>
+                        <p class="text-xs text-on-surface-variant mt-1">Xuất dữ liệu báo cáo sang định dạng CSV/Excel và nhập sản phẩm hàng loạt nhanh chóng.</p>
+                    </div>
+                </div>
+
+                <!-- Alerts -->
+                <div th:if="${successMessage}" class="mb-6 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm font-semibold flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[20px]">check_circle</span>
+                    <span th:text="${successMessage}"></span>
+                </div>
+                <div th:if="${errorMessage}" class="mb-6 p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-sm font-semibold flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[20px]">error</span>
+                    <span th:text="${errorMessage}"></span>
+                </div>
+
+                <!-- System Stats Overview -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+                    <div class="p-5 rounded-2xl bg-surface-container-lowest border border-surface-container shadow-sm flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                            <span class="material-symbols-outlined text-2xl">menu_book</span>
+                        </div>
+                        <div>
+                            <span class="text-[11px] font-bold text-on-surface-variant uppercase">Sản Phẩm Trong DB</span>
+                            <div class="text-xl font-black text-on-surface mt-0.5" th:text="${totalProducts}">0</div>
+                        </div>
+                    </div>
+                    <div class="p-5 rounded-2xl bg-surface-container-lowest border border-surface-container shadow-sm flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                            <span class="material-symbols-outlined text-2xl">receipt_long</span>
+                        </div>
+                        <div>
+                            <span class="text-[11px] font-bold text-on-surface-variant uppercase">Đơn Hàng Ghi Nhận</span>
+                            <div class="text-xl font-black text-on-surface mt-0.5" th:text="${totalOrders}">0</div>
+                        </div>
+                    </div>
+                    <div class="p-5 rounded-2xl bg-surface-container-lowest border border-surface-container shadow-sm flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
+                            <span class="material-symbols-outlined text-2xl">group</span>
+                        </div>
+                        <div>
+                            <span class="text-[11px] font-bold text-on-surface-variant uppercase">Tài Khoản Hệ Thống</span>
+                            <div class="text-xl font-black text-on-surface mt-0.5" th:text="${totalUsers}">0</div>
+                        </div>
+                    </div>
+                    <div class="p-5 rounded-2xl bg-surface-container-lowest border border-surface-container shadow-sm flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+                            <span class="material-symbols-outlined text-2xl">storefront</span>
+                        </div>
+                        <div>
+                            <span class="text-[11px] font-bold text-on-surface-variant uppercase">Gian Hàng Đăng Ký</span>
+                            <div class="text-xl font-black text-on-surface mt-0.5" th:text="${totalShops}">0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECTION 1: XUẤT DỮ LIỆU -->
+                <div class="mb-10">
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="material-symbols-outlined text-primary text-[22px]">download</span>
+                        <h2 class="text-lg font-bold text-on-surface">Xuất Dữ Liệu Hệ Thống (Export CSV / Excel)</h2>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <!-- Card 1: Sản phẩm -->
+                        <div class="p-5 rounded-3xl bg-surface-container-lowest border border-surface-container shadow-sm flex flex-col justify-between hover:border-primary/40 transition-all">
+                            <div>
+                                <div class="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-3">
+                                    <span class="material-symbols-outlined text-[20px]">auto_stories</span>
+                                </div>
+                                <h3 class="font-bold text-sm text-on-surface">Danh Sách Sách &amp; SP</h3>
+                                <p class="text-xs text-on-surface-variant mt-1 leading-relaxed">Xuất toàn bộ danh mục sản phẩm, mã ISBN, tồn kho, giá bán, danh mục và tên gian hàng sở hữu.</p>
+                            </div>
+                            <div class="mt-4 pt-4 border-t border-surface-container">
+                                <a th:href="@{/admin/import-export/export/products}"
+                                   class="w-full py-2 bg-primary text-on-primary font-bold text-xs rounded-xl hover:bg-primary-container transition-all flex items-center justify-center gap-1.5 shadow-xs">
+                                    <span class="material-symbols-outlined text-[16px]">file_download</span>
+                                    <span>Tải CSV Sản Phẩm</span>
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Card 2: Đơn hàng -->
+                        <div class="p-5 rounded-3xl bg-surface-container-lowest border border-surface-container shadow-sm flex flex-col justify-between hover:border-emerald-500/40 transition-all">
+                            <div>
+                                <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-3">
+                                    <span class="material-symbols-outlined text-[20px]">shopping_cart_checkout</span>
+                                </div>
+                                <h3 class="font-bold text-sm text-on-surface">Danh Sách Đơn Hàng</h3>
+                                <p class="text-xs text-on-surface-variant mt-1 leading-relaxed">Xuất dữ liệu lịch sử đặt hàng, khách hàng, số điện thoại, đơn vị vận chuyển, trạng thái giao &amp; thanh toán.</p>
+                            </div>
+                            <div class="mt-4 pt-4 border-t border-surface-container">
+                                <a th:href="@{/admin/import-export/export/orders}"
+                                   class="w-full py-2 bg-emerald-600 text-white font-bold text-xs rounded-xl hover:bg-emerald-700 transition-all flex items-center justify-center gap-1.5 shadow-xs">
+                                    <span class="material-symbols-outlined text-[16px]">file_download</span>
+                                    <span>Tải CSV Đơn Hàng</span>
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Card 3: Người dùng -->
+                        <div class="p-5 rounded-3xl bg-surface-container-lowest border border-surface-container shadow-sm flex flex-col justify-between hover:border-purple-500/40 transition-all">
+                            <div>
+                                <div class="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center mb-3">
+                                    <span class="material-symbols-outlined text-[20px]">manage_accounts</span>
+                                </div>
+                                <h3 class="font-bold text-sm text-on-surface">Danh Sách Tài Khoản</h3>
+                                <p class="text-xs text-on-surface-variant mt-1 leading-relaxed">Xuất dữ liệu toàn bộ tài khoản đăng ký, email, vai trò (Admin, Manager, Vendor, User) và trạng thái tài khoản.</p>
+                            </div>
+                            <div class="mt-4 pt-4 border-t border-surface-container">
+                                <a th:href="@{/admin/import-export/export/users}"
+                                   class="w-full py-2 bg-purple-600 text-white font-bold text-xs rounded-xl hover:bg-purple-700 transition-all flex items-center justify-center gap-1.5 shadow-xs">
+                                    <span class="material-symbols-outlined text-[16px]">file_download</span>
+                                    <span>Tải CSV Tài Khoản</span>
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Card 4: Gian hàng -->
+                        <div class="p-5 rounded-3xl bg-surface-container-lowest border border-surface-container shadow-sm flex flex-col justify-between hover:border-amber-500/40 transition-all">
+                            <div>
+                                <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center mb-3">
+                                    <span class="material-symbols-outlined text-[20px]">store</span>
+                                </div>
+                                <h3 class="font-bold text-sm text-on-surface">Danh Sách Gian Hàng</h3>
+                                <p class="text-xs text-on-surface-variant mt-1 leading-relaxed">Xuất toàn bộ danh sách đối tác gian hàng sách, chủ shop, tỷ lệ chiết khấu sàn và ngày đăng ký.</p>
+                            </div>
+                            <div class="mt-4 pt-4 border-t border-surface-container">
+                                <a th:href="@{/admin/import-export/export/shops}"
+                                   class="w-full py-2 bg-amber-600 text-white font-bold text-xs rounded-xl hover:bg-amber-700 transition-all flex items-center justify-center gap-1.5 shadow-xs">
+                                    <span class="material-symbols-outlined text-[16px]">file_download</span>
+                                    <span>Tải CSV Gian Hàng</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECTION 2: NHẬP SẢN PHẨM HÀNG LOẠT -->
+                <div>
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="material-symbols-outlined text-primary text-[22px]">upload_file</span>
+                        <h2 class="text-lg font-bold text-on-surface">Nhập Sản Phẩm Hàng Loạt Từ File CSV (Import Products)</h2>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <!-- Upload Form -->
+                        <div class="lg:col-span-2 p-6 rounded-3xl bg-surface-container-lowest border border-surface-container shadow-sm">
+                            <h3 class="font-bold text-sm text-on-surface mb-2">Tải File Dữ Liệu Lên Hệ Thống</h3>
+                            <p class="text-xs text-on-surface-variant mb-4">Chọn tệp định dạng chuẩn <code>.csv</code> (mã hóa UTF-8). Hệ thống sẽ tự động cập nhật tồn kho nếu sản phẩm đã tồn tại hoặc tạo mới nếu chưa có.</p>
+
+                            <form th:action="@{/admin/import-export/import/products}" method="post" enctype="multipart/form-data" class="space-y-4">
+                                <div class="border-2 border-dashed border-surface-container rounded-2xl p-6 text-center hover:border-primary/50 transition-colors bg-surface-container-low/40">
+                                    <span class="material-symbols-outlined text-4xl text-on-surface-variant/60 mb-2">cloud_upload</span>
+                                    <div class="text-xs font-semibold text-on-surface">Kéo thả file CSV vào đây hoặc click để chọn file</div>
+                                    <p class="text-[11px] text-on-surface-variant mt-1">Dung lượng tối đa: 10MB • Định dạng cho phép: .csv</p>
+                                    <input type="file" name="file" accept=".csv" required class="mt-4 block w-full text-xs text-on-surface file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-primary/10 file:text-primary hover:file:bg-primary hover:file:text-on-primary file:cursor-pointer"/>
+                                </div>
+
+                                <div class="flex items-center justify-between pt-2">
+                                    <a th:href="@{/admin/import-export/sample/products}"
+                                       class="inline-flex items-center gap-1.5 text-xs text-primary font-bold hover:underline">
+                                        <span class="material-symbols-outlined text-[16px]">description</span>
+                                        <span>Tải File Mẫu (sample_products.csv)</span>
+                                    </a>
+                                    <button type="submit" class="px-6 py-2.5 bg-primary text-on-primary font-bold text-xs rounded-xl hover:bg-primary-container transition-all flex items-center gap-1.5 shadow-sm">
+                                        <span class="material-symbols-outlined text-[16px]">publish</span>
+                                        <span>Bắt Đầu Nhập Sách</span>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Guide and Format Specifications -->
+                        <div class="p-6 rounded-3xl bg-surface-container-lowest border border-surface-container shadow-sm">
+                            <h3 class="font-bold text-sm text-on-surface mb-3 flex items-center gap-1.5">
+                                <span class="material-symbols-outlined text-primary text-[18px]">info</span>
+                                <span>Cấu Trúc Các Cột Trong File CSV</span>
+                            </h3>
+                            <ul class="text-xs text-on-surface-variant space-y-2.5 divide-y divide-surface-container/60">
+                                <li class="pt-2"><strong class="text-on-surface">1. ISBN:</strong> Mã định danh sách (nếu có, để đối soát sản phẩm trùng).</li>
+                                <li class="pt-2"><strong class="text-on-surface">2. TenSP (*):</strong> Tên sách hoặc văn phòng phẩm (Bắt buộc).</li>
+                                <li class="pt-2"><strong class="text-on-surface">3. GiaBan (*):</strong> Đơn giá bán (VNĐ, kiểu số nguyên).</li>
+                                <li class="pt-2"><strong class="text-on-surface">4. SoLuongTon (*):</strong> Số lượng tồn kho ban đầu (số nguyên).</li>
+                                <li class="pt-2"><strong class="text-on-surface">5. LoaiSP:</strong> <code>Sach</code>, <code>VanPhongPham</code> hoặc <code>QuaTang</code>.</li>
+                                <li class="pt-2"><strong class="text-on-surface">6. MaDanhMuc:</strong> Mã danh mục (ID số nguyên trong hệ thống).</li>
+                                <li class="pt-2"><strong class="text-on-surface">7. MaNXB:</strong> Mã Nhà xuất bản liên kết.</li>
+                                <li class="pt-2"><strong class="text-on-surface">8. MoTa:</strong> Tóm tắt giới thiệu nội dung cuốn sách.</li>
+                            </ul>
+                            <div class="mt-4 p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-[11px] leading-relaxed">
+                                💡 <strong>Mẹo:</strong> Hãy mở file mẫu bằng Excel, nhập liệu và chọn <em>Save As &rarr; CSV UTF-8 (Comma delimited) (*.csv)</em> để giữ đúng nguyên vẹn dấu tiếng Việt.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

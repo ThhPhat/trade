@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/common/head :: common_head('Kênh Người Bán - The4BookStore')}"></head>
+
+<body class="bg-surface font-body-md text-on-surface antialiased min-h-screen flex flex-col">
+
+    <header th:replace="~{fragments/common/navbar :: common_navbar('vendor')}"></header>
+
+    <main class="w-full pt-28 pb-16 flex-1 max-w-7xl mx-auto px-4 md:px-8">
+        <!-- Shop Header Bar -->
+        <div class="bg-surface-container-lowest p-6 rounded-3xl shadow-sm border border-surface-container mb-8 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-4">
+                <img th:src="${shop.logo != null ? shop.logo : '/images/default-shop.png'}" alt="Shop Logo" class="w-16 h-16 rounded-2xl object-cover ring-2 ring-primary/20 shadow-sm"/>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h1 class="text-xl font-bold text-on-surface" th:text="${shop.tenShop}">Tên Shop</h1>
+                        <span th:switch="${shop.trangThai}">
+                            <span th:case="'HoatDong'" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700">Đang hoạt động</span>
+                            <span th:case="'ChoDuyet'" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-700">Chờ duyệt</span>
+                            <span th:case="*" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-100 text-rose-700">Tạm khóa</span>
+                        </span>
+                    </div>
+                    <p class="text-xs text-on-surface-variant mt-1" th:text="${shop.diaChiShop}">Địa chỉ shop</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <a th:if="${shop.trangThai == 'HoatDong'}" th:href="@{'/shop/' + ${shop.slug}}" target="_blank" class="px-4 py-2 text-xs font-bold border border-primary text-primary hover:bg-primary hover:text-white rounded-xl transition-all flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-[16px]">visibility</span>
+                    <span>Xem Trang Gian Hàng</span>
+                </a>
+                <span th:if="${shop.trangThai == 'ChoDuyet'}" class="px-3 py-2 text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200 rounded-xl flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-[16px]">hourglass_empty</span>
+                    <span>Chờ Quản trị duyệt</span>
+                </span>
+                <a th:href="@{/vendor/profile}" class="px-4 py-2 text-xs font-bold bg-surface-container text-on-surface hover:bg-surface-container-high rounded-xl transition-all flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-[16px]">settings</span>
+                    <span>Cài Đặt Shop</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Pending Approval Banner -->
+        <div th:if="${shop.trangThai == 'ChoDuyet'}" class="mb-6 p-4 rounded-2xl bg-amber-50 border border-amber-300 text-amber-900 text-sm flex items-start gap-3 shadow-sm">
+            <span class="material-symbols-outlined text-amber-600 text-2xl shrink-0">hourglass_top</span>
+            <div>
+                <p class="font-bold text-base">Gian hàng đang chờ Quản trị viên duyệt hồ sơ</p>
+                <p class="text-xs text-amber-800 mt-1">Hồ sơ đăng ký gian hàng của bạn đã được ghi nhận. Ban Quản trị sàn The4BookStore đang kiểm tra và xét duyệt. Sau khi được duyệt, gian hàng của bạn sẽ kích hoạt chính thức và người mua có thể xem sản phẩm cũng như đặt hàng!</p>
+            </div>
+        </div>
+
+        <!-- Alert messages -->
+        <div th:if="${successMessage}" class="mb-6 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm font-semibold flex items-center gap-2">
+            <span class="material-symbols-outlined">check_circle</span>
+            <span th:text="${successMessage}"></span>
+        </div>
+
+        <!-- KPI Financial Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-surface-container-lowest p-6 rounded-3xl border border-surface-container shadow-sm">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-bold uppercase text-on-surface-variant">Doanh Thu Thực Nhận</span>
+                    <span class="p-2 rounded-xl bg-emerald-50 text-emerald-600 material-symbols-outlined">payments</span>
+                </div>
+                <div class="text-2xl font-black text-emerald-600" th:text="${#numbers.formatDecimal(stats.totalRevenue, 0, 'COMMA', 0, 'POINT')} + ' đ'">0 đ</div>
+                <p class="text-[11px] text-on-surface-variant mt-1">Tổng tiền từ đơn hàng hoàn thành (đã trừ phí sàn)</p>
+            </div>
+
+            <div class="bg-surface-container-lowest p-6 rounded-3xl border border-surface-container shadow-sm">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-bold uppercase text-on-surface-variant">Chiết Khấu Sàn Đã Nộp</span>
+                    <span class="p-2 rounded-xl bg-amber-50 text-amber-600 material-symbols-outlined">receipt_long</span>
+                </div>
+                <div class="text-2xl font-black text-amber-600" th:text="${#numbers.formatDecimal(stats.platformFee, 0, 'COMMA', 0, 'POINT')} + ' đ'">0 đ</div>
+                <p class="text-[11px] text-on-surface-variant mt-1" th:text="'Phí sàn áp dụng: ' + ${shop.chietKhauPhanTram != null ? shop.chietKhauPhanTram : '5.0'} + '%'"></p>
+            </div>
+
+            <div class="bg-surface-container-lowest p-6 rounded-3xl border border-surface-container shadow-sm">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-bold uppercase text-on-surface-variant">Quy Mô Kho Sách</span>
+                    <span class="p-2 rounded-xl bg-blue-50 text-blue-600 material-symbols-outlined">menu_book</span>
+                </div>
+                <div class="text-2xl font-black text-blue-600" th:text="${stats.totalBooks} + ' đầu sách'">0 đầu sách</div>
+                <a th:href="@{/vendor/products/add}" class="inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline mt-1">
+                    <span>+ Đăng thêm sách mới</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- 7-Status Order Pipeline Management -->
+        <div class="bg-surface-container-lowest p-6 rounded-3xl border border-surface-container shadow-sm mb-8">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-base font-bold text-on-surface flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">local_shipping</span>
+                    <span>Quy Trình Quản Lý Đơn Hàng (7 Trạng Thái)</span>
+                </h2>
+                <a th:href="@{/vendor/orders}" class="text-xs font-bold text-primary hover:underline flex items-center gap-0.5">
+                    <span>Xem tất cả</span>
+                    <span class="material-symbols-outlined text-sm">chevron_right</span>
+                </a>
+            </div>
+
+            <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
+                <a th:href="@{/vendor/orders(status='DonHangMoi')}" class="p-4 rounded-2xl bg-surface-container-low hover:bg-surface-container transition-all text-center group border border-surface-container">
+                    <div class="text-xl font-bold text-primary" th:text="${stats.newOrders}">0</div>
+                    <div class="text-xs text-on-surface-variant font-medium mt-1">Đơn Mới</div>
+                </a>
+                <a th:href="@{/vendor/orders(status='DaXacNhan')}" class="p-4 rounded-2xl bg-surface-container-low hover:bg-surface-container transition-all text-center group border border-surface-container">
+                    <div class="text-xl font-bold text-blue-600" th:text="${stats.confirmedOrders}">0</div>
+                    <div class="text-xs text-on-surface-variant font-medium mt-1">Đã Xác Nhận</div>
+                </a>
+                <a th:href="@{/vendor/orders(status='DaLayHang')}" class="p-4 rounded-2xl bg-surface-container-low hover:bg-surface-container transition-all text-center group border border-surface-container">
+                    <div class="text-xl font-bold text-indigo-600" th:text="${stats.pickedUpOrders}">0</div>
+                    <div class="text-xs text-on-surface-variant font-medium mt-1">Đã Lấy Hàng</div>
+                </a>
+                <a th:href="@{/vendor/orders(status='DangGiao')}" class="p-4 rounded-2xl bg-surface-container-low hover:bg-surface-container transition-all text-center group border border-surface-container">
+                    <div class="text-xl font-bold text-amber-600" th:text="${stats.shippingOrders}">0</div>
+                    <div class="text-xs text-on-surface-variant font-medium mt-1">Đang Giao</div>
+                </a>
+                <a th:href="@{/vendor/orders(status='DaGiao')}" class="p-4 rounded-2xl bg-surface-container-low hover:bg-surface-container transition-all text-center group border border-surface-container">
+                    <div class="text-xl font-bold text-emerald-600" th:text="${stats.completedOrders}">0</div>
+                    <div class="text-xs text-on-surface-variant font-medium mt-1">Đã Giao</div>
+                </a>
+                <a th:href="@{/vendor/orders(status='DaHuy')}" class="p-4 rounded-2xl bg-surface-container-low hover:bg-surface-container transition-all text-center group border border-surface-container">
+                    <div class="text-xl font-bold text-rose-600" th:text="${stats.cancelledOrders}">0</div>
+                    <div class="text-xs text-on-surface-variant font-medium mt-1">Đã Hủy</div>
+                </a>
+                <a th:href="@{/vendor/orders(status='TraHangHoanTien')}" class="p-4 rounded-2xl bg-surface-container-low hover:bg-surface-container transition-all text-center group border border-surface-container">
+                    <div class="text-xl font-bold text-purple-600" th:text="${stats.returnRefundOrders}">0</div>
+                    <div class="text-xs text-on-surface-variant font-medium mt-1">Trả Hàng</div>
+                </a>
+            </div>
+        </div>
+
+        <!-- Quick Access Menu Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <a th:href="@{/vendor/products}" class="p-6 rounded-3xl bg-surface-container-lowest border border-surface-container hover:shadow-md transition-all flex items-center gap-4 group">
+                <span class="p-3 rounded-2xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white transition-all material-symbols-outlined">library_books</span>
+                <div>
+                    <h3 class="font-bold text-sm text-on-surface">Quản Lý Sách</h3>
+                    <p class="text-xs text-on-surface-variant">Thêm, sửa, cập nhật kho</p>
+                </div>
+            </a>
+            <a th:href="@{/vendor/orders}" class="p-6 rounded-3xl bg-surface-container-lowest border border-surface-container hover:shadow-md transition-all flex items-center gap-4 group">
+                <span class="p-3 rounded-2xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white transition-all material-symbols-outlined">orders</span>
+                <div>
+                    <h3 class="font-bold text-sm text-on-surface">Quản Lý Đơn Hàng</h3>
+                    <p class="text-xs text-on-surface-variant">Xử lý 7 trạng thái đơn</p>
+                </div>
+            </a>
+            <a th:href="@{/vendor/promotions}" class="p-6 rounded-3xl bg-surface-container-lowest border border-surface-container hover:shadow-md transition-all flex items-center gap-4 group">
+                <span class="p-3 rounded-2xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white transition-all material-symbols-outlined">confirmation_number</span>
+                <div>
+                    <h3 class="font-bold text-sm text-on-surface">Voucher Của Shop</h3>
+                    <p class="text-xs text-on-surface-variant">Tạo mã giảm giá riêng</p>
+                </div>
+            </a>
+            <a th:href="@{/vendor/profile}" class="p-6 rounded-3xl bg-surface-container-lowest border border-surface-container hover:shadow-md transition-all flex items-center gap-4 group">
+                <span class="p-3 rounded-2xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white transition-all material-symbols-outlined">store</span>
+                <div>
+                    <h3 class="font-bold text-sm text-on-surface">Hồ Sơ &amp; Banner</h3>
+                    <p class="text-xs text-on-surface-variant">Trang trí trang chủ shop</p>
+                </div>
+            </a>
+        </div>
+    </main>
+
+    <footer th:replace="~{fragments/common/footer :: common_footer}"></footer>
+</body>
+</html>

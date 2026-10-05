@@ -24,4 +24,10 @@ public interface KhuyenMaiRepository extends JpaRepository<KhuyenMai, Integer> {
            "AND (:loaiGiam IS NULL OR :loaiGiam = '' OR km.loaiGiam = :loaiGiam) " +
            "ORDER BY km.maKM DESC")
     List<KhuyenMai> searchPromotions(@Param("keyword") String keyword, @Param("loaiGiam") String loaiGiam);
+
+    List<KhuyenMai> findByShop_MaShopOrderByMaKMDesc(Integer maShop);
+
+    List<KhuyenMai> findByPhamViOrderByMaKMDesc(String phamVi);
+
+    List<KhuyenMai> findByPhamViAndLoaiKhuyenMaiOrderByMaKMDesc(String phamVi, String loaiKhuyenMai);
 }

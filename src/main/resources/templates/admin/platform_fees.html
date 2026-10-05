@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{admin/fragments/admin_fragments :: admin_head('Cấu Hình Chiết Khấu Sàn - Super Admin')}"></head>
+
+<body class="bg-background font-body-md text-on-surface antialiased min-h-screen">
+
+    <aside th:replace="~{admin/fragments/admin_fragments :: admin_sidebar('platform-fees')}"></aside>
+
+    <div class="pl-64">
+        <header th:replace="~{admin/fragments/admin_fragments :: admin_header}"></header>
+
+        <main class="w-full pt-16 px-gutter-desktop py-space-lg bg-background">
+            <div class="flex flex-col w-full max-w-2xl">
+                <!-- Title -->
+                <div class="mb-8">
+                    <div class="text-xs uppercase font-bold text-on-surface-variant tracking-wider mb-1">SUPER ADMIN / CẤU HÌNH HỆ THỐNG</div>
+                    <h1 class="text-2xl font-bold text-on-surface flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary">percent</span>
+                        <span>Cấu Hình Tỷ Lệ Chiết Khấu Sàn (Platform Commission)</span>
+                    </h1>
+                    <p class="text-xs text-on-surface-variant mt-1">Đặc quyền Super Admin: Thiết lập tỷ lệ hoa hồng mặc định mà sàn tự động khấu trừ trên mỗi đơn hàng thành công của các gian hàng.</p>
+                </div>
+
+                <!-- Alerts -->
+                <div th:if="${successMessage}" class="mb-6 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm font-semibold flex items-center gap-2">
+                    <span class="material-symbols-outlined">check_circle</span>
+                    <span th:text="${successMessage}"></span>
+                </div>
+                <div th:if="${errorMessage}" class="mb-6 p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-sm font-semibold flex items-center gap-2">
+                    <span class="material-symbols-outlined">error</span>
+                    <span th:text="${errorMessage}"></span>
+                </div>
+
+                <!-- Configuration Box -->
+                <div class="bg-surface-container-lowest p-8 rounded-3xl border border-surface-container shadow-sm space-y-6">
+                    <form th:action="@{/admin/platform-fees/save}" method="post" class="space-y-6">
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-on-surface-variant mb-2">Tỷ Lệ Chiết Khấu Sàn Mặc Định (%)</label>
+                            <div class="relative max-w-xs">
+                                <input type="number" step="0.1" min="0" max="50" name="defaultRate" th:value="${defaultRate}" required
+                                       class="w-full px-4 py-3 rounded-2xl border border-surface-container bg-surface-container-low text-xl font-black text-primary focus:ring-2 focus:ring-primary"/>
+                                <span class="absolute right-4 top-3 text-lg font-bold text-on-surface-variant">%</span>
+                            </div>
+                            <p class="text-xs text-on-surface-variant mt-2">
+                                Khi một shop mới đăng ký, tỷ lệ chiết khấu mặc định này sẽ tự động được áp dụng. Admin cũng có thể điều chỉnh tỷ lệ ưu đãi riêng cho từng shop trong mục <strong>Quản lý gian hàng</strong>.
+                            </p>
+                        </div>
+
+                        <div class="p-4 rounded-2xl bg-surface-container-low text-xs text-on-surface-variant space-y-2 border border-surface-container">
+                            <div class="font-bold text-on-surface flex items-center gap-1.5">
+                                <span class="material-symbols-outlined text-sm text-primary">calculate</span>
+                                <span>Công thức khấu trừ tài chính tự động khi đơn giao thành công:</span>
+                            </div>
+                            <div class="font-mono bg-white p-2.5 rounded-xl border border-surface-container text-primary">
+                                Tiền Phí Sàn = Giá Trị Đơn Hàng × (Tỷ Lệ Chiết Khấu / 100)<br/>
+                                Tiền Shop Thực Nhận = Giá Trị Đơn Hàng - Tiền Phí Sàn
+                            </div>
+                        </div>
+
+                        <button type="submit" class="px-6 py-3 bg-primary text-on-primary font-bold text-xs rounded-xl hover:bg-primary-container shadow-sm transition-all flex items-center gap-2">
+                            <span class="material-symbols-outlined text-lg">save</span>
+                            <span>Lưu Cấu Hình Chiết Khấu</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

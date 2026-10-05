@@ -175,4 +175,55 @@ class AdminControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(view().name("admin/dashboard"));
     }
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    void testAdminProductsRedirectsToShops() throws Exception {
+        mockMvc.perform(get("/admin/products"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/admin/shops"))
+                .andExpect(flash().attributeExists("infoMessage"));
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    void testAdminCannotAddProductDirectly() throws Exception {
+        mockMvc.perform(post("/admin/products/save").with(csrf()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/admin/shops"))
+                .andExpect(flash().attributeExists("errorMessage"));
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    void testAdminCannotDeleteProductDirectly() throws Exception {
+        mockMvc.perform(post("/admin/products/delete/1").with(csrf()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/admin/shops"))
+                .andExpect(flash().attributeExists("errorMessage"));
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    void testAdminGetProductJsonReturnsShopInfo() throws Exception {
+        vn.bookstore.the4bookstore.entity.Shop shop = new vn.bookstore.the4bookstore.entity.Shop();
+        shop.setMaShop(1);
+        shop.setTenShop("Gian Hàng Chính Hãng");
+
+        vn.bookstore.the4bookstore.entity.SanPham sp = new vn.bookstore.the4bookstore.entity.SanPham();
+        sp.setMaSP(1);
+        sp.setTenSP("Đắc Nhân Tâm");
+        sp.setShop(shop);
+        sp.setGiaBan(120000);
+        sp.setSoLuongTon(50);
+        sp.setSoLuongDaBan(100);
+
+        when(sanPhamRepository.findById(1)).thenReturn(Optional.of(sp));
+
+        mockMvc.perform(get("/admin/products/1/json"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.tenSP").value("Đắc Nhân Tâm"))
+                .andExpect(jsonPath("$.tenShop").value("Gian Hàng Chính Hãng"))
+                .andExpect(jsonPath("$.maShop").value(1));
+    }
 }

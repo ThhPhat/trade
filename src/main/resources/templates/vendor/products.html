@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/common/head :: common_head('Quản Lý Sách - Kênh Người Bán')}"></head>
+
+<body class="bg-surface font-body-md text-on-surface antialiased min-h-screen flex flex-col">
+
+    <header th:replace="~{fragments/common/navbar :: common_navbar('vendor')}"></header>
+
+    <main class="w-full pt-28 pb-16 flex-1 max-w-7xl mx-auto px-4 md:px-8">
+        <div class="flex items-center justify-between mb-6">
+            <div>
+                <nav class="text-xs text-on-surface-variant flex items-center gap-1 mb-1">
+                    <a th:href="@{/vendor/dashboard}" class="hover:underline">Kênh người bán</a>
+                    <span class="material-symbols-outlined text-xs">chevron_right</span>
+                    <span class="text-primary font-semibold">Danh sách sách của shop</span>
+                </nav>
+                <h1 class="text-2xl font-bold text-on-surface">Quản Lý Sách Của Shop</h1>
+            </div>
+            <a th:href="@{/vendor/products/add}" class="px-5 py-2.5 bg-primary text-on-primary font-bold text-xs rounded-xl hover:bg-primary-container shadow-sm transition-all flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-lg">add</span>
+                <span>Đăng Bán Sách Mới</span>
+            </a>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="bg-surface-container-lowest p-4 rounded-2xl border border-surface-container mb-6">
+            <form th:action="@{/vendor/products}" method="get" class="flex items-center gap-3">
+                <input type="text" name="keyword" th:value="${keyword}" placeholder="Tìm theo tên sách hoặc ISBN..."
+                       class="flex-1 px-4 py-2.5 rounded-xl border border-surface-container bg-surface-container-low text-xs focus:outline-none focus:ring-2 focus:ring-primary"/>
+                <button type="submit" class="px-5 py-2.5 bg-primary text-on-primary font-bold text-xs rounded-xl hover:bg-primary-container transition-all">Tìm kiếm</button>
+            </form>
+        </div>
+
+        <!-- Table -->
+        <div class="bg-surface-container-lowest rounded-3xl border border-surface-container shadow-sm overflow-hidden">
+            <table class="w-full text-left text-xs">
+                <thead class="bg-surface-container-low text-on-surface-variant uppercase font-bold text-[11px] border-b border-surface-container">
+                    <tr>
+                        <th class="p-4">Hình ảnh</th>
+                        <th class="p-4">Tên sách</th>
+                        <th class="p-4">Danh mục</th>
+                        <th class="p-4">Giá bán</th>
+                        <th class="p-4">Tồn kho</th>
+                        <th class="p-4">Đã bán</th>
+                        <th class="p-4">Trạng thái sàn</th>
+                        <th class="p-4 text-right">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-surface-container">
+                    <tr th:each="sp : ${products}" class="hover:bg-surface-container-low/50 transition-colors">
+                        <td class="p-4">
+                            <img th:src="${sp.getHinhAnh()}" class="w-12 h-16 object-cover rounded-lg shadow-sm border border-surface-container"/>
+                        </td>
+                        <td class="p-4 font-bold text-on-surface">
+                            <div th:text="${sp.tenSP}">Tên sách</div>
+                            <div class="text-[11px] text-on-surface-variant font-normal" th:text="'ISBN: ' + (${sp.ISBN != null ? sp.ISBN : 'N/A'})">ISBN</div>
+                        </td>
+                        <td class="p-4 text-on-surface-variant" th:text="${sp.danhMuc != null ? sp.danhMuc.tenDanhMuc : 'N/A'}">Danh mục</td>
+                        <td class="p-4 font-bold text-primary" th:text="${#numbers.formatDecimal(sp.giaBan, 0, 'COMMA', 0, 'POINT')} + ' đ'">Giá</td>
+                        <td class="p-4" th:text="${sp.soLuongTon}">0</td>
+                        <td class="p-4 font-semibold text-emerald-600" th:text="${sp.soLuongDaBan != null ? sp.soLuongDaBan : 0}">0</td>
+                        <td class="p-4">
+                            <span th:if="${sp.trangThaiKhoa == 'BiKhoaBoiAdmin'}" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-700">Bị Sàn Khóa</span>
+                            <span th:unless="${sp.trangThaiKhoa == 'BiKhoaBoiAdmin'}" th:switch="${sp.trangThai}">
+                                <span th:case="'DangBan'" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700">Đang bán</span>
+                                <span th:case="*" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 text-gray-700">Ngừng bán</span>
+                            </span>
+                        </td>
+                        <td class="p-4 text-right">
+                            <div class="inline-flex items-center gap-2">
+                                <a th:href="@{'/vendor/products/edit/' + ${sp.maSP}}" class="p-1.5 rounded-lg bg-surface-container text-primary hover:bg-primary hover:text-white transition-all" title="Chỉnh sửa">
+                                    <span class="material-symbols-outlined text-sm">edit</span>
+                                </a>
+                                <form th:action="@{'/vendor/products/delete/' + ${sp.maSP}}" method="post" onsubmit="return confirm('Bạn có chắc muốn ngừng bán cuốn sách này?');">
+                                    <button type="submit" class="p-1.5 rounded-lg bg-surface-container text-rose-600 hover:bg-rose-600 hover:text-white transition-all cursor-pointer" title="Ngừng bán">
+                                        <span class="material-symbols-outlined text-sm">block</span>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr th:if="${products.isEmpty()}">
+                        <td colspan="8" class="p-8 text-center text-on-surface-variant">Shop chưa có sản phẩm nào. Hãy nhấn nút đăng sách mới!</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <footer th:replace="~{fragments/common/footer :: common_footer}"></footer>
+</body>
+</html>

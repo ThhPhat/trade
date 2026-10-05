@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/common/head :: common_head('Sổ Địa Chỉ Giao Hàng - The4BookStore')}"></head>
+
+<body class="bg-surface font-body-md text-on-surface antialiased min-h-screen flex flex-col">
+
+    <header th:replace="~{fragments/common/navbar :: common_navbar('profile')}"></header>
+
+    <main class="w-full pt-28 pb-16 flex-1 max-w-5xl mx-auto px-4">
+        <div class="flex items-center justify-between mb-8 pb-4 border-b border-surface-container">
+            <div>
+                <nav class="text-xs text-on-surface-variant flex items-center gap-1 mb-1">
+                    <a th:href="@{/profile}" class="hover:underline">Hồ sơ cá nhân</a>
+                    <span class="material-symbols-outlined text-xs">chevron_right</span>
+                    <span class="text-primary font-semibold">Sổ địa chỉ nhận hàng</span>
+                </nav>
+                <h1 class="text-2xl font-bold text-on-surface">Địa Chỉ Nhận Hàng Của Bạn</h1>
+            </div>
+            <button type="button" onclick="document.getElementById('addAddressModal').classList.remove('hidden')"
+                    class="px-5 py-2.5 bg-primary text-on-primary font-bold text-xs rounded-xl hover:bg-primary-container shadow-sm transition-all flex items-center gap-1.5 cursor-pointer">
+                <span class="material-symbols-outlined text-lg">add_location_alt</span>
+                <span>Thêm Địa Chỉ Mới</span>
+            </button>
+        </div>
+
+        <!-- Alerts -->
+        <div th:if="${successMessage}" class="mb-6 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm font-semibold flex items-center gap-2">
+            <span class="material-symbols-outlined">check_circle</span>
+            <span th:text="${successMessage}"></span>
+        </div>
+        <div th:if="${errorMessage}" class="mb-6 p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-sm font-semibold flex items-center gap-2">
+            <span class="material-symbols-outlined">error</span>
+            <span th:text="${errorMessage}"></span>
+        </div>
+
+        <!-- Address Cards List -->
+        <div class="space-y-4">
+            <div th:each="addr : ${addresses}" class="p-6 rounded-3xl bg-surface-container-lowest border border-surface-container shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div class="space-y-1">
+                    <div class="flex items-center gap-3">
+                        <strong class="text-sm font-bold text-on-surface" th:text="${addr.tenNguoiNhan}">Người nhận</strong>
+                        <span class="text-xs text-on-surface-variant" th:text="${addr.soDienThoai}">0901234567</span>
+                        <span th:if="${addr.laMacDinh}" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-primary/10 text-primary border border-primary/20">Mặc định</span>
+                    </div>
+                    <p class="text-xs text-on-surface-variant" th:text="${addr.getDiaChiDayDu()}">Địa chỉ đầy đủ</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <form th:if="${!addr.laMacDinh}" th:action="@{'/profile/addresses/set-default/' + ${addr.maDiaChi}}" method="post">
+                        <button type="submit" class="px-3.5 py-1.5 rounded-xl border border-surface-container text-xs font-semibold hover:bg-surface-container-low transition-all">Thiết lập mặc định</button>
+                    </form>
+                    <form th:action="@{'/profile/addresses/delete/' + ${addr.maDiaChi}}" method="post" onsubmit="return confirm('Bạn có chắc muốn xóa địa chỉ này?');">
+                        <button type="submit" class="p-2 rounded-xl text-rose-600 hover:bg-rose-50 transition-all cursor-pointer" title="Xóa địa chỉ">
+                            <span class="material-symbols-outlined text-sm">delete</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div th:if="${addresses.isEmpty()}" class="p-16 text-center text-on-surface-variant bg-surface-container-lowest rounded-3xl border border-surface-container">
+                <span class="material-symbols-outlined text-4xl text-on-surface-variant/40 mb-2">location_off</span>
+                <p>Bạn chưa lưu địa chỉ nhận hàng nào. Hãy thêm địa chỉ để thanh toán nhanh hơn!</p>
+            </div>
+        </div>
+
+        <!-- Add Address Modal -->
+        <div id="addAddressModal" class="hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+            <div class="bg-surface-container-lowest rounded-3xl p-6 md:p-8 max-w-lg w-full shadow-2xl border border-surface-container">
+                <div class="flex items-center justify-between mb-6 pb-3 border-b border-surface-container">
+                    <h2 class="text-base font-bold text-on-surface">Thêm Địa Chỉ Mới</h2>
+                    <button type="button" onclick="document.getElementById('addAddressModal').classList.add('hidden')" class="text-on-surface-variant hover:text-on-surface">
+                        <span class="material-symbols-outlined">close</span>
+                    </button>
+                </div>
+
+                <form th:action="@{/profile/addresses/add}" method="post" class="space-y-4 text-xs">
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block font-bold text-on-surface-variant mb-1">Họ và Tên Người Nhận <span class="text-error">*</span></label>
+                            <input type="text" name="tenNguoiNhan" required placeholder="Nguyễn Văn A"
+                                   class="w-full px-3.5 py-2.5 rounded-xl border border-surface-container bg-surface-container-low focus:ring-2 focus:ring-primary"/>
+                        </div>
+                        <div>
+                            <label class="block font-bold text-on-surface-variant mb-1">Số Điện Thoại <span class="text-error">*</span></label>
+                            <input type="tel" name="soDienThoai" required placeholder="0901234567"
+                                   class="w-full px-3.5 py-2.5 rounded-xl border border-surface-container bg-surface-container-low focus:ring-2 focus:ring-primary"/>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-2">
+                        <div>
+                            <label class="block font-bold text-on-surface-variant mb-1">Tỉnh / Thành <span class="text-error">*</span></label>
+                            <input type="text" name="tinhThanh" required placeholder="Hồ Chí Minh"
+                                   class="w-full px-3 py-2 rounded-xl border border-surface-container bg-surface-container-low focus:ring-2 focus:ring-primary"/>
+                        </div>
+                        <div>
+                            <label class="block font-bold text-on-surface-variant mb-1">Quận / Huyện</label>
+                            <input type="text" name="quanHuyen" placeholder="TP. Thủ Đức"
+                                   class="w-full px-3 py-2 rounded-xl border border-surface-container bg-surface-container-low focus:ring-2 focus:ring-primary"/>
+                        </div>
+                        <div>
+                            <label class="block font-bold text-on-surface-variant mb-1">Phường / Xã</label>
+                            <input type="text" name="phuongXa" placeholder="Linh Trung"
+                                   class="w-full px-3 py-2 rounded-xl border border-surface-container bg-surface-container-low focus:ring-2 focus:ring-primary"/>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block font-bold text-on-surface-variant mb-1">Địa Chỉ Chi Tiết (Số nhà, Tên đường) <span class="text-error">*</span></label>
+                        <input type="text" name="diaChiChiTiet" required placeholder="Số 1 Võ Văn Ngân"
+                               class="w-full px-3.5 py-2.5 rounded-xl border border-surface-container bg-surface-container-low focus:ring-2 focus:ring-primary"/>
+                    </div>
+
+                    <div class="flex items-center gap-2 pt-2">
+                        <input type="checkbox" name="laMacDinh" id="cbDefault" value="true" class="rounded text-primary focus:ring-primary"/>
+                        <label for="cbDefault" class="text-xs text-on-surface cursor-pointer">Đặt làm địa chỉ nhận hàng mặc định</label>
+                    </div>
+
+                    <div class="pt-4 border-t border-surface-container flex items-center justify-end gap-2">
+                        <button type="button" onclick="document.getElementById('addAddressModal').classList.add('hidden')"
+                                class="px-4 py-2 rounded-xl bg-surface-container text-on-surface font-semibold hover:bg-surface-container-high transition-all">Hủy</button>
+                        <button type="submit" class="px-5 py-2 rounded-xl bg-primary text-on-primary font-bold hover:bg-primary-container shadow-sm transition-all">Lưu Địa Chỉ</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <footer th:replace="~{fragments/common/footer :: common_footer}"></footer>
+</body>
+</html>

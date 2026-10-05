@@ -71,6 +71,16 @@ public class KhuyenMai {
     @Column(nullable = false)
     private Integer gioiHanMoiKhachHang = 1;
 
+    @Column(name = "loai_khuyen_mai", nullable = false, length = 30)
+    private String loaiKhuyenMai = "GIAM_GIA_SAN_PHAM"; // GIAM_GIA_SAN_PHAM, MIEN_PHI_VAN_CHUYEN
+
+    @Column(name = "pham_vi", nullable = false, length = 20)
+    private String phamVi = "TOAN_SAN"; // TOAN_SAN, SHOP
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ma_shop")
+    private Shop shop;
+
     /**
      * Trạng thái tính toán tự động dựa trên thời gian và số lượng:
      * - "VoHieuHoa": Admin chủ động tắt

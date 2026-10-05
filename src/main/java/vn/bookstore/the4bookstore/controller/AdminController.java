@@ -26,6 +26,8 @@ import vn.bookstore.the4bookstore.service.ReportService;
 import vn.bookstore.the4bookstore.service.OrderService;
 import vn.bookstore.the4bookstore.service.TacGiaService;
 import vn.bookstore.the4bookstore.service.NhaXuatBanService;
+import vn.bookstore.the4bookstore.repository.ShopRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -50,7 +52,8 @@ public class AdminController {
     private final OrderService orderService;
     private final DonHangRepository donHangRepository;
     
-    
+    @Autowired(required = false)
+    private ShopRepository shopRepository;
 
         public AdminController(SanPhamRepository sanPhamRepository,
                            DanhMucRepository danhMucRepository,
@@ -214,128 +217,23 @@ public class AdminController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // ==================== QUẢN LÝ SẢN PHẨM (CRUD) ====================
+    // ==================== QUẢN LÝ SẢN PHẨM (CHUYỂN HƯỚNG VỀ GIAN HÀNG) ====================
     @GetMapping({"/products", "/books"})
-    public String inventory(
-            @RequestParam(required = false) String loaiSP,
-            @RequestParam(required = false) Integer danhMuc,
-            @RequestParam(required = false) String stock,
-            @RequestParam(required = false) String q,
-            Model model) {
-
-        long totalBooksCount = sanPhamRepository.count();
-        long lowStock = sanPhamRepository.countLowStock();
-        long outOfStock = sanPhamRepository.countOutOfStock();
-        
-        List<DanhMuc> categories = danhMucRepository.findAll();
-
-        // Still retrieving all to apply Java-side filters, but with optimized graph fetch.
-        List<SanPham> allProducts = sanPhamRepository.findAll();
-
-        List<SanPham> filtered = allProducts.stream()
-                .filter(p -> loaiSP == null || loaiSP.isBlank() || loaiSP.equalsIgnoreCase("all") || loaiSP.equalsIgnoreCase(p.getLoaiSP()))
-                .filter(p -> danhMuc == null || danhMuc == 0 || (p.getDanhMuc() != null && p.getDanhMuc().getMaDanhMuc().equals(danhMuc)))
-                .filter(p -> {
-                    if ("in_stock".equalsIgnoreCase(stock)) return p.getSoLuongTon() != null && p.getSoLuongTon() > 5;
-                    if ("low_stock".equalsIgnoreCase(stock)) return p.getSoLuongTon() != null && p.getSoLuongTon() > 0 && p.getSoLuongTon() <= 5;
-                    if ("out_of_stock".equalsIgnoreCase(stock)) return p.getSoLuongTon() == null || p.getSoLuongTon() == 0;
-                    return true;
-                })
-                .filter(p -> {
-                    if (q == null || q.isBlank()) return true;
-                    String kw = q.trim().toLowerCase();
-                    return (p.getTenSP() != null && p.getTenSP().toLowerCase().contains(kw)) ||
-                           (p.getISBN() != null && p.getISBN().toLowerCase().contains(kw));
-                })
-                .toList();
-
-        model.addAttribute("books", filtered);
-        model.addAttribute("totalBooks", totalBooksCount);
-        model.addAttribute("categories", categories);
-        model.addAttribute("authors", tacGiaRepository.findAll());
-        model.addAttribute("publishers", nhaXuatBanRepository.findAll());
-        model.addAttribute("lowStockCount", lowStock);
-        model.addAttribute("outOfStockCount", outOfStock);
-        model.addAttribute("selectedLoaiSP", loaiSP != null ? loaiSP : "all");
-        model.addAttribute("selectedDanhMuc", danhMuc != null ? danhMuc : 0);
-        model.addAttribute("selectedStock", stock != null ? stock : "all");
-        model.addAttribute("searchQuery", q != null ? q : "");
-
-        return "admin/inventory";
+    public String inventory(RedirectAttributes ra) {
+        ra.addFlashAttribute("infoMessage", "Sản phẩm hiện được quản lý theo từng Gian hàng riêng biệt. Vui lòng chọn gian hàng để xem danh sách sản phẩm.");
+        return "redirect:/admin/shops";
     }
 
     @PostMapping({"/products/save", "/books/save"})
-    public String saveProduct(@RequestParam(value = "maSP", required = false) Integer maSP,
-                              @RequestParam("tenSP") String tenSP,
-                              @RequestParam(value = "loaiSP", defaultValue = "Sach") String loaiSP,
-                              @RequestParam(value = "ISBN", required = false) String isbn,
-                              @RequestParam("maDanhMuc") Integer maDanhMuc,
-                              @RequestParam(value = "maNXB", required = false) Integer maNXB,
-                              @RequestParam(value = "maTacGia", required = false) Integer maTacGia,
-                              @RequestParam(value = "soLuongTon", defaultValue = "0") Integer soLuongTon,
-                              @RequestParam(value = "giaBan", defaultValue = "0") Integer giaBan,
-                              @RequestParam(value = "trangThai", defaultValue = "DangBan") String trangThai,
-                              @RequestParam(value = "moTa", required = false) String moTa,
-                              RedirectAttributes ra) {
-        try {
-            SanPham product;
-            if (maSP != null && maSP > 0) {
-                product = sanPhamRepository.findById(maSP).orElse(new SanPham());
-                ra.addFlashAttribute("successMessage", "Cập nhật sản phẩm thành công!");
-            } else {
-                product = new SanPham();
-                product.setNgayTao(LocalDateTime.now());
-                nhaCungCapRepository.findAll().stream().findFirst().ifPresent(product::setNhaCungCap);
-                ra.addFlashAttribute("successMessage", "Thêm mới sản phẩm thành công!");
-            }
-
-            product.setTenSP(tenSP.trim());
-            product.setLoaiSP(loaiSP != null && !loaiSP.isBlank() ? loaiSP : "Sach");
-            product.setISBN(isbn != null && !isbn.isBlank() ? isbn.trim() : null);
-            product.setSoLuongTon(soLuongTon != null ? soLuongTon : 0);
-            product.setGiaBan(giaBan != null ? giaBan : 0);
-            product.setTrangThai(trangThai != null ? trangThai : "DangBan");
-            product.setMoTa(moTa != null ? moTa.trim() : null);
-            danhMucRepository.findById(maDanhMuc).ifPresent(product::setDanhMuc);
-
-            if (maNXB != null && maNXB > 0) {
-                nhaXuatBanRepository.findById(maNXB).ifPresent(product::setNhaXuatBan);
-            } else {
-                product.setNhaXuatBan(null);
-            }
-
-            SanPham savedProduct = sanPhamRepository.save(product);
-
-            if (maTacGia != null && maTacGia > 0) {
-                sanPhamTacGiaRepository.deleteBySanPhamId(savedProduct.getMaSP());
-                tacGiaRepository.findById(maTacGia).ifPresent(author -> {
-                    SanPhamTacGia sptg = new SanPhamTacGia(savedProduct, author, 1);
-                    sanPhamTacGiaRepository.save(sptg);
-                });
-            }
-
-        } catch (Exception e) {
-            ra.addFlashAttribute("errorMessage", "Lỗi lưu sản phẩm: " + (e.getMessage() != null && e.getMessage().contains("ISBN") ? "Mã ISBN đã tồn tại!" : e.getMessage()));
-        }
-        return "redirect:/admin/products";
+    public String saveProduct(RedirectAttributes ra) {
+        ra.addFlashAttribute("errorMessage", "Quản trị viên chỉ có quyền xem thông tin và khóa sản phẩm vi phạm. Quyền Thêm mới hoặc Chỉnh sửa sản phẩm thuộc về từng Gian hàng!");
+        return "redirect:/admin/shops";
     }
 
     @PostMapping({"/products/delete/{id}", "/books/delete/{id}"})
     public String deleteProduct(@PathVariable("id") Integer id, RedirectAttributes ra) {
-        if (sanPhamRepository.existsById(id)) {
-            try {
-                sanPhamTacGiaRepository.deleteBySanPhamId(id);
-                sanPhamRepository.deleteById(id);
-                ra.addFlashAttribute("successMessage", "Đã xóa sản phẩm thành công!");
-            } catch (Exception e) {
-                sanPhamRepository.findById(id).ifPresent(sp -> {
-                    sp.setTrangThai("NgungBan");
-                    sanPhamRepository.save(sp);
-                });
-                ra.addFlashAttribute("warningMessage", "Sản phẩm đã có dữ liệu liên kết nên được chuyển sang trạng thái 'Ngừng Bán'!");
-            }
-        }
-        return "redirect:/admin/products";
+        ra.addFlashAttribute("errorMessage", "Quản trị viên không có quyền xóa sản phẩm của gian hàng. Vui lòng sử dụng tính năng 'Khóa sản phẩm vi phạm' nếu có vi phạm.");
+        return "redirect:/admin/shops";
     }
 
     @GetMapping("/products/{id}/json")
@@ -352,13 +250,22 @@ public class AdminController {
                     data.put("tenSP", sp.getTenSP());
                     data.put("loaiSP", sp.getLoaiSP() != null ? sp.getLoaiSP() : "Sach");
                     data.put("maDanhMuc", sp.getDanhMuc() != null && sp.getDanhMuc().getMaDanhMuc() != null ? sp.getDanhMuc().getMaDanhMuc() : 0);
+                    data.put("tenDanhMuc", sp.getDanhMuc() != null ? sp.getDanhMuc().getTenDanhMuc() : "Chưa phân loại");
                     data.put("maNXB", sp.getNhaXuatBan() != null && sp.getNhaXuatBan().getMaNXB() != null ? sp.getNhaXuatBan().getMaNXB() : 0);
+                    data.put("tenNXB", sp.getNhaXuatBan() != null ? sp.getNhaXuatBan().getTenNXB() : "Chưa cập nhật");
                     data.put("maTacGia", authorId != null ? authorId : 0);
+                    data.put("tenTacGia", sp.getDanhSachTacGia() != null && !sp.getDanhSachTacGia().isBlank() ? sp.getDanhSachTacGia() : "Chưa cập nhật");
+                    data.put("maShop", sp.getShop() != null ? sp.getShop().getMaShop() : 1);
+                    data.put("tenShop", sp.getShop() != null ? sp.getShop().getTenShop() : "The4BookStore Official");
+                    data.put("hinhAnh", sp.getHinhAnh() != null ? sp.getHinhAnh() : "");
                     data.put("isbn", sp.getISBN() != null ? sp.getISBN() : "");
                     data.put("giaBan", sp.getGiaBan() != null ? sp.getGiaBan() : 0);
                     data.put("soLuongTon", sp.getSoLuongTon() != null ? sp.getSoLuongTon() : 0);
+                    data.put("soLuongDaBan", sp.getSoLuongDaBan() != null ? sp.getSoLuongDaBan() : 0);
                     data.put("trangThai", sp.getTrangThai() != null ? sp.getTrangThai() : "DangBan");
+                    data.put("trangThaiKhoa", sp.getTrangThaiKhoa() != null ? sp.getTrangThaiKhoa() : "BinhThuong");
                     data.put("moTa", sp.getMoTa() != null ? sp.getMoTa() : "");
+                    data.put("ngayTao", sp.getNgayTao() != null ? sp.getNgayTao().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")) : "");
                     return ResponseEntity.ok(data);
                 })
                 .orElse(ResponseEntity.notFound().build());
@@ -629,11 +536,5 @@ public class AdminController {
             return map;
         }).toList();
         return ResponseEntity.ok(notifs);
-    }
-
-    @GetMapping({"/import-export", "/users"})
-    public String placeholderFeatures(RedirectAttributes redirectAttributes) {
-        redirectAttributes.addFlashAttribute("infoMessage", "Chức năng đang được hoàn thiện!");
-        return "redirect:/admin/dashboard";
     }
 }

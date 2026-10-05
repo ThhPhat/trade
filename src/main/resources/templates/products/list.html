@@ -173,8 +173,50 @@
                 </div>
             </form>
 
+            <!-- Gian Hàng Phù Hợp (Khi tìm kiếm theo tên shop) -->
+            <div th:if="${matchedShops != null and !matchedShops.isEmpty()}" class="mb-space-lg">
+                <div class="flex items-center gap-2 mb-3">
+                    <span class="material-symbols-outlined text-primary text-[22px]">storefront</span>
+                    <h2 class="font-headline-md text-base font-bold text-on-surface">Gian Hàng Phù Hợp</h2>
+                    <span class="text-xs text-on-surface-variant font-medium" th:text="'(' + ${#lists.size(matchedShops)} + ' gian hàng)'"></span>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div th:each="shop : ${matchedShops}" class="p-4 sm:p-5 rounded-2xl bg-surface-container-lowest border border-primary/20 shadow-sm flex items-center justify-between gap-4 hover:border-primary transition-all">
+                        <div class="flex items-center gap-3.5 min-w-0">
+                            <img th:src="${shop.logo != null ? shop.logo : '/images/default-shop.png'}"
+                                 alt="Shop Logo" class="w-14 h-14 rounded-2xl object-cover ring-2 ring-primary/20 bg-white shrink-0"/>
+                            <div class="min-w-0">
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    <h3 class="font-bold text-sm text-on-surface truncate" th:text="${shop.tenShop}">Tên Gian Hàng</h3>
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-primary/10 text-primary flex items-center gap-0.5">
+                                        <span class="material-symbols-outlined text-[12px]">verified</span>
+                                        <span>Đối tác</span>
+                                    </span>
+                                </div>
+                                <p class="text-xs text-on-surface-variant line-clamp-1 mt-0.5" th:text="${shop.moTa ?: 'Gian hàng sách uy tín liên kết sàn The4BookStore'}">Mô tả</p>
+                                <div class="flex items-center gap-3 text-[11px] text-on-surface-variant mt-1">
+                                    <span th:if="${shop.diaChiShop}" class="flex items-center gap-0.5 truncate max-w-[180px]">
+                                        <span class="material-symbols-outlined text-[13px] text-primary">location_on</span>
+                                        <span th:text="${shop.diaChiShop}">Địa chỉ</span>
+                                    </span>
+                                    <span th:if="${shop.soDienThoai}" class="flex items-center gap-0.5">
+                                        <span class="material-symbols-outlined text-[13px] text-primary">call</span>
+                                        <span th:text="${shop.soDienThoai}">SĐT</span>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <a th:href="@{'/shop/' + ${shop.slug}}"
+                           class="shrink-0 px-4 py-2 bg-primary text-on-primary font-label-md text-xs font-bold rounded-xl hover:bg-primary-container transition-all shadow-sm flex items-center gap-1">
+                            <span>Vào Gian Hàng</span>
+                            <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
             <!-- Product Grid -->
-            <div th:if="${#lists.isEmpty(products)}" class="text-center py-16">
+            <div th:if="${#lists.isEmpty(products) and (matchedShops == null or #lists.isEmpty(matchedShops))}" class="text-center py-16">
                 <span class="material-symbols-outlined text-[64px] text-on-surface-variant">search_off</span>
                 <h3 class="font-headline-lg text-lg font-bold text-on-surface mt-space-md mb-space-xs">Không tìm thấy sản phẩm</h3>
                 <p class="text-on-surface-variant text-sm">Thử từ khóa khác hoặc điều chỉnh lại bộ lọc</p>

@@ -12,8 +12,14 @@ import vn.bookstore.the4bookstore.entity.DanhMuc;
 import vn.bookstore.the4bookstore.entity.SanPham;
 import vn.bookstore.the4bookstore.service.DanhMucService;
 import vn.bookstore.the4bookstore.service.SanPhamService;
+import vn.bookstore.the4bookstore.entity.KhachHang;
+import vn.bookstore.the4bookstore.entity.TaiKhoan;
+import vn.bookstore.the4bookstore.repository.KhachHangRepository;
+import vn.bookstore.the4bookstore.repository.TaiKhoanRepository;
 import vn.bookstore.the4bookstore.service.TacGiaService;
 import vn.bookstore.the4bookstore.service.NhaXuatBanService;
+import vn.bookstore.the4bookstore.service.UserInteractionService;
+import org.springframework.security.core.Authentication;
 
 @Controller
 @RequiredArgsConstructor
@@ -21,8 +27,21 @@ import vn.bookstore.the4bookstore.service.NhaXuatBanService;
 public class ProductController {
 
     private final SanPhamService sanPhamService;
-        private final TacGiaService tacGiaService;
+    private final TacGiaService tacGiaService;
     private final NhaXuatBanService nhaXuatBanService;
+    private final UserInteractionService userInteractionService;
+    private final KhachHangRepository khachHangRepository;
+    private final TaiKhoanRepository taiKhoanRepository;
+    private final vn.bookstore.the4bookstore.service.ShopService shopService;
+
+    private KhachHang getCurrentKhachHang(Authentication auth) {
+        if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getPrincipal())) return null;
+        TaiKhoan tk = taiKhoanRepository.findByEmail(auth.getName())
+                .or(() -> taiKhoanRepository.findByTenDangNhap(auth.getName()))
+                .orElse(null);
+        if (tk == null) return null;
+        return khachHangRepository.findByTaiKhoan(tk).orElse(null);
+    }
 
     // CẤP 0: Landing page — Tất cả sản phẩm (hoặc hiển thị kết quả nếu người dùng tìm kiếm / lọc)
     @GetMapping
@@ -82,6 +101,11 @@ public class ProductController {
         if (isFiltering) {
             int pageSize = 12;
             Page<SanPham> productPage = sanPhamService.searchAndFilter(loaiSP, q, danhMuc, tacGia, nxb, sort, page, pageSize);
+            List<vn.bookstore.the4bookstore.entity.Shop> matchedShops = List.of();
+            if (q != null && !q.isBlank()) {
+                matchedShops = shopService.searchActiveShops(q);
+            }
+            model.addAttribute("matchedShops",    matchedShops);
             model.addAttribute("products",        productPage.getContent());
             model.addAttribute("currentPage",     productPage.getNumber());
             model.addAttribute("totalPages",      productPage.getTotalPages());
@@ -105,7 +129,7 @@ public class ProductController {
     }
 
     // CẤP 1 — Danh mục Sách
-    @GetMapping("/san-pham/sach")
+    @GetMapping("/sach")
     public String sachList(
             @RequestParam(defaultValue = "") String q,
             @RequestParam(required = false) Integer danhMuc,
@@ -124,6 +148,11 @@ public class ProductController {
 
         int pageSize = 12;
         Page<SanPham> productPage = sanPhamService.searchAndFilter("Sach", q, validDanhMuc, tacGia, nxb, sort, page, pageSize);
+        List<vn.bookstore.the4bookstore.entity.Shop> matchedShops = List.of();
+        if (q != null && !q.isBlank()) {
+            matchedShops = shopService.searchActiveShops(q);
+        }
+        model.addAttribute("matchedShops",    matchedShops);
         model.addAttribute("products",        productPage.getContent());
         model.addAttribute("currentPage",     productPage.getNumber());
         model.addAttribute("totalPages",      productPage.getTotalPages());
@@ -146,7 +175,7 @@ public class ProductController {
     }
 
     // CẤP 1 — Danh mục Văn phòng phẩm
-    @GetMapping("/san-pham/van-phong-pham")
+    @GetMapping("/van-phong-pham")
     public String vppList(
             @RequestParam(defaultValue = "") String q,
             @RequestParam(required = false) Integer danhMuc,
@@ -158,7 +187,7 @@ public class ProductController {
     }
 
     // CẤP 1 — Danh mục Quà tặng & Trang trí
-    @GetMapping("/san-pham/qua-tang")
+    @GetMapping("/qua-tang")
     public String quaTangList(
             @RequestParam(defaultValue = "") String q,
             @RequestParam(required = false) Integer danhMuc,
@@ -170,20 +199,47 @@ public class ProductController {
     }
 
     // Chi tiết sản phẩm
-    @GetMapping("/{id}")
-    public String productDetail(@PathVariable Integer id, Model model, RedirectAttributes ra) {
+    @GetMapping("/{id:[0-9]+}")
+    public String productDetail(@PathVariable Integer id, Authentication auth, Model model, RedirectAttributes ra) {
         Optional<SanPham> opt = sanPhamService.getById(id);
         if (opt.isEmpty()) {
             if (ra != null) ra.addFlashAttribute("errorMessage", "Sản phẩm không tồn tại!");
             return "redirect:/san-pham";
         }
         SanPham sanPham = opt.get();
-        if ("NgungBan".equalsIgnoreCase(sanPham.getTrangThai()) || "Khoa".equalsIgnoreCase(sanPham.getTrangThai())) {
-            if (ra != null) ra.addFlashAttribute("errorMessage", "Sản phẩm này đã ngừng kinh doanh hoặc tạm khóa!");
+        boolean isProductLocked = "BiKhoaBoiAdmin".equalsIgnoreCase(sanPham.getTrangThaiKhoa())
+                || "Khoa".equalsIgnoreCase(sanPham.getTrangThaiKhoa())
+                || "NgungBan".equalsIgnoreCase(sanPham.getTrangThai());
+        boolean isShopLocked = sanPham.getShop() != null && !"HoatDong".equalsIgnoreCase(sanPham.getShop().getTrangThai());
+
+        if (isProductLocked || isShopLocked) {
+            if (ra != null) ra.addFlashAttribute("errorMessage", "Sản phẩm này hiện đang tạm ngừng kinh doanh hoặc gian hàng đang bị tạm khóa!");
             return "redirect:/san-pham";
         }
+
+        KhachHang kh = getCurrentKhachHang(auth);
+        boolean isFavorite = false;
+        List<Integer> eligibleOrderIds = List.of();
+
+        if (kh != null) {
+            userInteractionService.recordView(kh, id);
+            isFavorite = userInteractionService.isFavorite(kh, id);
+            eligibleOrderIds = userInteractionService.getEligibleOrderIdsForReview(kh, id);
+        }
+
+        List<vn.bookstore.the4bookstore.entity.DanhGia> reviews = userInteractionService.getReviewsForProduct(sanPham);
+        Double avgRating = userInteractionService.getAverageRating(sanPham);
+
         model.addAttribute("sanPham", sanPham);
         model.addAttribute("relatedBooks", sanPhamService.getRelatedBooks(sanPham, 4));
+        model.addAttribute("isFavorite", isFavorite);
+        model.addAttribute("reviews", reviews);
+        model.addAttribute("reviewCount", reviews.size());
+        model.addAttribute("avgRating", avgRating);
+        model.addAttribute("eligibleOrderIds", eligibleOrderIds);
+        model.addAttribute("canReview", !eligibleOrderIds.isEmpty());
+        model.addAttribute("isLoggedIn", kh != null);
+
         return "products/detail";
     }
 
@@ -199,6 +255,11 @@ public class ProductController {
 
         int pageSize = 12;
         Page<SanPham> productPage = sanPhamService.searchAndFilter(loaiSP, q, validDanhMuc, sort, page, pageSize);
+        List<vn.bookstore.the4bookstore.entity.Shop> matchedShops = List.of();
+        if (q != null && !q.isBlank()) {
+            matchedShops = shopService.searchActiveShops(q);
+        }
+        model.addAttribute("matchedShops",    matchedShops);
         model.addAttribute("products",        productPage.getContent());
         model.addAttribute("currentPage",     productPage.getNumber());
         model.addAttribute("totalPages",      productPage.getTotalPages());

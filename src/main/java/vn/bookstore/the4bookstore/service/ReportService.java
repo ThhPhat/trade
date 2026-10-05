@@ -4,7 +4,9 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -97,5 +99,25 @@ public class ReportService {
     public Long getTotalBooksSold() {
         Long total = chiTietDonHangRepository.getTotalBooksSold();
         return total != null ? total : 0L;
+    }
+
+    public List<Map<String, Object>> getShopMonthlyRevenue(Integer maShop) {
+        String sql = "CALL sp_DoanhThuShopTheoThang(:maShop)";
+        Query query = entityManager.createNativeQuery(sql);
+        query.setParameter("maShop", maShop);
+        List<Object[]> results = query.getResultList();
+
+        List<Map<String, Object>> list = new ArrayList<>();
+        for (Object[] row : results) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("nam", row[0]);
+            map.put("thang", row[1]);
+            map.put("tongDonHang", row[2]);
+            map.put("tongDoanhThu", row[3]);
+            map.put("tongPhiSan", row[4]);
+            map.put("thucNhanShop", row[5]);
+            list.add(map);
+        }
+        return list;
     }
 }

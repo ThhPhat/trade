@@ -179,12 +179,11 @@
                                         </td>
 
                                         <td class="py-3 px-space-md text-center">
-                                            <a th:href="@{'/admin/products?danhMuc=' + ${cat.maDanhMuc}}" 
-                                               class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-label-sm font-bold bg-surface-container hover:bg-surface-container-high text-on-surface transition-colors"
-                                               title="Xem các sản phẩm thuộc danh mục này">
+                                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-label-sm font-bold bg-surface-container text-on-surface"
+                                                  title="Số lượng sản phẩm thuộc danh mục này">
                                                 <span class="material-symbols-outlined text-[15px] text-primary">inventory_2</span>
                                                 <span th:text="(${productCounts[cat.maDanhMuc]} ?: 0) + ' SP'">12 SP</span>
-                                            </a>
+                                            </span>
                                         </td>
 
                                         <td class="py-3 px-space-md text-center">

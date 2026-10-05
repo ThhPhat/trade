@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/common/head :: common_head('Mã Giảm Giá Của Shop - Kênh Người Bán')}"></head>
+
+<body class="bg-surface font-body-md text-on-surface antialiased min-h-screen flex flex-col">
+
+    <header th:replace="~{fragments/common/navbar :: common_navbar('vendor')}"></header>
+
+    <main class="w-full pt-28 pb-16 flex-1 max-w-7xl mx-auto px-4 md:px-8">
+        <div class="flex items-center justify-between mb-6">
+            <div>
+                <nav class="text-xs text-on-surface-variant flex items-center gap-1 mb-1">
+                    <a th:href="@{/vendor/dashboard}" class="hover:underline">Kênh người bán</a>
+                    <span class="material-symbols-outlined text-xs">chevron_right</span>
+                    <span class="text-primary font-semibold">Khuyến mãi của shop</span>
+                </nav>
+                <h1 class="text-2xl font-bold text-on-surface">Chương Trình Khuyến Mãi Của Shop</h1>
+            </div>
+        </div>
+
+        <!-- Alerts -->
+        <div th:if="${successMessage}" class="mb-6 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm font-semibold flex items-center gap-2">
+            <span class="material-symbols-outlined">check_circle</span>
+            <span th:text="${successMessage}"></span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Create Promo Form -->
+            <div class="lg:col-span-1 bg-surface-container-lowest p-6 rounded-3xl border border-surface-container shadow-sm h-fit">
+                <h2 class="text-sm font-bold uppercase tracking-wider text-on-surface mb-4 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">add_circle</span>
+                    <span>Tạo Voucher Mới Cho Shop</span>
+                </h2>
+
+                <form th:action="@{/vendor/promotions/create}" method="post" class="space-y-4 text-xs">
+                    <div>
+                        <label class="block font-bold text-on-surface-variant mb-1">Tên Chương Trình <span class="text-error">*</span></label>
+                        <input type="text" name="tenKM" required placeholder="Ví dụ: Giảm 20k Cho Đơn Đầu"
+                               class="w-full px-3.5 py-2.5 rounded-xl border border-surface-container bg-surface-container-low focus:ring-2 focus:ring-primary"/>
+                    </div>
+
+                    <div>
+                        <label class="block font-bold text-on-surface-variant mb-1">Mã Voucher (Code) <span class="text-error">*</span></label>
+                        <input type="text" name="maCode" required placeholder="SHOP20K" style="text-transform:uppercase"
+                               class="w-full px-3.5 py-2.5 rounded-xl border border-surface-container bg-surface-container-low font-bold text-primary focus:ring-2 focus:ring-primary"/>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block font-bold text-on-surface-variant mb-1">Loại Giảm</label>
+                            <select name="loaiGiam" class="w-full px-3 py-2 rounded-xl border border-surface-container bg-surface-container-low focus:ring-2 focus:ring-primary">
+                                <option value="TienCoDinh">Giảm tiền (VNĐ)</option>
+                                <option value="PhanTram">Giảm phần trăm (%)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block font-bold text-on-surface-variant mb-1">Giá Trị Giảm <span class="text-error">*</span></label>
+                            <input type="number" name="giaTriGiam" required min="1" placeholder="20000"
+                                   class="w-full px-3 py-2 rounded-xl border border-surface-container bg-surface-container-low focus:ring-2 focus:ring-primary font-bold text-primary"/>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block font-bold text-on-surface-variant mb-1">Đơn Tối Thiểu (đ)</label>
+                            <input type="number" name="donToiThieu" min="0" value="0"
+                                   class="w-full px-3 py-2 rounded-xl border border-surface-container bg-surface-container-low focus:ring-2 focus:ring-primary"/>
+                        </div>
+                        <div>
+                            <label class="block font-bold text-on-surface-variant mb-1">Số Lượng Mã</label>
+                            <input type="number" name="soLuongToiDa" min="1" value="100"
+                                   class="w-full px-3 py-2 rounded-xl border border-surface-container bg-surface-container-low focus:ring-2 focus:ring-primary"/>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block font-bold text-on-surface-variant mb-1">Bắt Đầu</label>
+                            <input type="datetime-local" name="ngayBatDau" required
+                                   class="w-full px-2.5 py-2 rounded-xl border border-surface-container bg-surface-container-low text-[11px]"/>
+                        </div>
+                        <div>
+                            <label class="block font-bold text-on-surface-variant mb-1">Kết Thúc</label>
+                            <input type="datetime-local" name="ngayKetThuc" required
+                                   class="w-full px-2.5 py-2 rounded-xl border border-surface-container bg-surface-container-low text-[11px]"/>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="w-full py-3 bg-primary text-on-primary font-bold rounded-xl hover:bg-primary-container shadow-sm transition-all mt-2">
+                        Phát Hành Voucher
+                    </button>
+                </form>
+            </div>
+
+            <!-- List Promos -->
+            <div class="lg:col-span-2 space-y-4">
+                <div class="bg-surface-container-lowest p-6 rounded-3xl border border-surface-container shadow-sm">
+                    <h2 class="text-sm font-bold uppercase tracking-wider text-on-surface mb-4">Danh Sách Voucher Hiện Có</h2>
+                    <div class="divide-y divide-surface-container">
+                        <div th:each="km : ${promotions}" class="py-4 flex items-center justify-between">
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <span class="px-2.5 py-1 rounded-lg bg-primary/10 text-primary font-bold text-xs" th:text="${km.maCode}">VOUCHER</span>
+                                    <h3 class="font-bold text-xs text-on-surface" th:text="${km.tenKM}">Tên KM</h3>
+                                </div>
+                                <div class="text-xs text-on-surface-variant mt-1">
+                                    <span>Giảm: </span>
+                                    <strong class="text-primary" th:text="${km.loaiGiam == 'PhanTram' ? km.giaTriGiam + '%' : #numbers.formatDecimal(km.giaTriGiam, 0, 'COMMA', 0, 'POINT') + ' đ'}"></strong>
+                                    <span th:if="${km.donToiThieu != null}" th:text="' | Đơn tối thiểu: ' + ${#numbers.formatDecimal(km.donToiThieu, 0, 'COMMA', 0, 'POINT')} + ' đ'"></span>
+                                </div>
+                                <div class="text-[11px] text-on-surface-variant/80 mt-0.5" th:text="'HSD: ' + ${#temporals.format(km.ngayKetThuc, 'dd/MM/yyyy HH:mm')}">HSD</div>
+                            </div>
+                            <div class="text-right">
+                                <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700">Hoạt Động</span>
+                                <div class="text-[11px] text-on-surface-variant mt-1" th:text="'Đã dùng: ' + ${km.soLuongDaDung} + '/' + ${km.soLuongToiDa != null ? km.soLuongToiDa : '∞'}">Đã dùng</div>
+                            </div>
+                        </div>
+                        <div th:if="${promotions.isEmpty()}" class="py-8 text-center text-xs text-on-surface-variant">
+                            Shop chưa tạo mã khuyến mãi nào.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer th:replace="~{fragments/common/footer :: common_footer}"></footer>
+</body>
+</html>

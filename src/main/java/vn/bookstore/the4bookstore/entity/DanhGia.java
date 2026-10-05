@@ -32,4 +32,7 @@ public class DanhGia {
     private LocalDateTime ngayDanhGia = LocalDateTime.now();
     @Column(nullable = false, length = 20)
     private String trangThai = "HienThi";
+
+    @OneToMany(mappedBy = "danhGia", cascade = CascadeType.ALL, orphanRemoval = true)
+    private java.util.List<DanhGiaMedia> mediaList = new java.util.ArrayList<>();
 }

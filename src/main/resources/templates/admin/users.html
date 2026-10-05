@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{admin/fragments/admin_fragments :: admin_head('Quản Lý Người Dùng & Tài Khoản - The4BookStore')}"></head>
+
+<body class="bg-background font-body-md text-on-surface antialiased min-h-screen">
+
+    <aside th:replace="~{admin/fragments/admin_fragments :: admin_sidebar('users')}"></aside>
+
+    <div class="pl-64">
+        <header th:replace="~{admin/fragments/admin_fragments :: admin_header}"></header>
+
+        <main class="w-full pt-16 px-gutter-desktop py-space-lg bg-background">
+            <div class="flex flex-col w-full">
+                <!-- Page Title -->
+                <div class="flex items-center justify-between mb-8">
+                    <div>
+                        <div class="text-xs uppercase font-bold text-on-surface-variant tracking-wider mb-1">HỆ THỐNG / PHÂN QUYỀN</div>
+                        <h1 class="text-2xl font-bold text-on-surface">Quản Lý Tất Cả Người Dùng &amp; Tài Khoản</h1>
+                        <p class="text-xs text-on-surface-variant mt-1">Quản lý tài khoản khách hàng, chủ gian hàng, quản lý và nhân sự vận hành trên sàn.</p>
+                    </div>
+                </div>
+
+                <!-- Alerts -->
+                <div th:if="${successMessage}" class="mb-6 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm font-semibold flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[20px]">check_circle</span>
+                    <span th:text="${successMessage}"></span>
+                </div>
+                <div th:if="${errorMessage}" class="mb-6 p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-sm font-semibold flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[20px]">error</span>
+                    <span th:text="${errorMessage}"></span>
+                </div>
+
+                <!-- Stats Overview -->
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
+                    <div class="p-4 rounded-2xl bg-surface-container-lowest border border-surface-container shadow-sm">
+                        <span class="text-[11px] font-bold text-on-surface-variant uppercase">Tổng Tài Khoản</span>
+                        <div class="text-2xl font-black text-on-surface mt-1" th:text="${totalAccounts}">0</div>
+                    </div>
+                    <div class="p-4 rounded-2xl bg-surface-container-lowest border border-surface-container shadow-sm">
+                        <span class="text-[11px] font-bold text-primary uppercase">Khách Hàng (User)</span>
+                        <div class="text-2xl font-black text-primary mt-1" th:text="${totalUsers}">0</div>
+                    </div>
+                    <div class="p-4 rounded-2xl bg-surface-container-lowest border border-surface-container shadow-sm">
+                        <span class="text-[11px] font-bold text-emerald-600 uppercase">Chủ Shop (Vendor)</span>
+                        <div class="text-2xl font-black text-emerald-600 mt-1" th:text="${totalVendors}">0</div>
+                    </div>
+                    <div class="p-4 rounded-2xl bg-surface-container-lowest border border-surface-container shadow-sm">
+                        <span class="text-[11px] font-bold text-purple-600 uppercase">Quản Trị &amp; Vận Hành</span>
+                        <div class="text-2xl font-black text-purple-600 mt-1" th:text="${totalStaff}">0</div>
+                    </div>
+                    <div class="p-4 rounded-2xl bg-surface-container-lowest border border-surface-container shadow-sm">
+                        <span class="text-[11px] font-bold text-rose-600 uppercase">Tài Khoản Bị Khóa</span>
+                        <div class="text-2xl font-black text-rose-600 mt-1" th:text="${totalLocked}">0</div>
+                    </div>
+                </div>
+
+                <!-- Search and Filter Bar -->
+                <div class="bg-surface-container-lowest p-4 rounded-2xl border border-surface-container mb-6 shadow-sm">
+                    <form th:action="@{/admin/users}" method="get" class="flex flex-col sm:flex-row items-center gap-3">
+                        <div class="relative flex-1 w-full">
+                            <span class="material-symbols-outlined absolute left-3 top-2.5 text-on-surface-variant text-[18px]">search</span>
+                            <input type="text" name="keyword" th:value="${keyword}" placeholder="Tìm theo tên đăng nhập hoặc email..."
+                                   class="w-full pl-9 pr-4 py-2 rounded-xl border border-surface-container bg-surface-container-low text-xs focus:outline-none focus:ring-2 focus:ring-primary"/>
+                        </div>
+                        <select name="role" class="w-full sm:w-48 px-3 py-2 rounded-xl border border-surface-container bg-surface-container-low text-xs focus:outline-none focus:ring-2 focus:ring-primary">
+                            <option value="">-- Tất cả vai trò --</option>
+                            <option value="USER" th:selected="${selectedRole == 'USER'}">USER (Khách hàng)</option>
+                            <option value="VENDOR" th:selected="${selectedRole == 'VENDOR'}">VENDOR (Người bán)</option>
+                            <option value="MANAGER" th:selected="${selectedRole == 'MANAGER'}">MANAGER (Quản lý)</option>
+                            <option value="NHANVIENKHO" th:selected="${selectedRole == 'NHANVIENKHO'}">NHANVIENKHO (Thủ kho)</option>
+                            <option value="ADMIN" th:selected="${selectedRole == 'ADMIN'}">ADMIN (Quản trị viên)</option>
+                        </select>
+                        <div class="flex items-center gap-2 w-full sm:w-auto">
+                            <button type="submit" class="flex-1 sm:flex-none px-5 py-2 bg-primary text-on-primary font-bold text-xs rounded-xl hover:bg-primary-container transition-all">Lọc Dữ Liệu</button>
+                            <a th:href="@{/admin/users}" class="px-3.5 py-2 rounded-xl bg-surface-container text-xs font-semibold text-on-surface hover:bg-surface-container-high transition-all">Đặt lại</a>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Users Table -->
+                <div class="bg-surface-container-lowest rounded-3xl border border-surface-container shadow-sm overflow-hidden">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-surface-container-low text-on-surface-variant uppercase font-bold text-[11px] border-b border-surface-container">
+                            <tr>
+                                <th class="p-4">Tài Khoản</th>
+                                <th class="p-4">Hồ Sơ Liên Kết</th>
+                                <th class="p-4">Hình Thức</th>
+                                <th class="p-4">Vai Trò (Role)</th>
+                                <th class="p-4">Trạng Thái</th>
+                                <th class="p-4">Ngày Tạo</th>
+                                <th class="p-4 text-right">Thao Tác</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-surface-container">
+                            <tr th:each="u : ${users}" class="hover:bg-surface-container-low/40 transition-colors">
+                                <td class="p-4">
+                                    <div class="font-bold text-on-surface text-sm" th:text="'@' + ${u.tenDangNhap}">@username</div>
+                                    <div class="text-[11px] text-on-surface-variant" th:text="${u.email}">user@example.com</div>
+                                    <div class="text-[10px] text-on-surface-variant/70 font-mono" th:text="'ID: #' + ${u.maTaiKhoan}">#1</div>
+                                </td>
+                                <td class="p-4">
+                                    <!-- Khách Hàng -->
+                                    <div th:if="${customerProfiles[u.maTaiKhoan] != null}">
+                                        <div class="font-semibold text-on-surface" th:text="${customerProfiles[u.maTaiKhoan].hoTen}">Họ Tên</div>
+                                        <div class="text-[11px] text-on-surface-variant" th:text="${customerProfiles[u.maTaiKhoan].soDienThoai ?: 'Chưa cập nhật SĐT'}">SĐT</div>
+                                    </div>
+                                    <!-- Gian hàng (Shop) nếu là VENDOR -->
+                                    <div th:if="${shopProfiles[u.maTaiKhoan] != null}" class="mt-1">
+                                        <a th:href="@{'/shop/' + ${shopProfiles[u.maTaiKhoan].slug}}" target="_blank"
+                                           class="inline-flex items-center gap-1 text-[11px] font-bold text-primary hover:underline">
+                                            <span class="material-symbols-outlined text-[13px]">storefront</span>
+                                            <span th:text="${shopProfiles[u.maTaiKhoan].tenShop}">Tên Shop</span>
+                                        </a>
+                                    </div>
+                                    <!-- Nhân viên -->
+                                    <div th:if="${staffProfiles[u.maTaiKhoan] != null}">
+                                        <div class="font-semibold text-purple-700" th:text="${staffProfiles[u.maTaiKhoan].hoTen}">Họ Tên NV</div>
+                                        <div class="text-[11px] text-on-surface-variant" th:text="'Chức vụ: ' + ${staffProfiles[u.maTaiKhoan].chucVu}">Chức vụ</div>
+                                    </div>
+                                    <div th:if="${customerProfiles[u.maTaiKhoan] == null and shopProfiles[u.maTaiKhoan] == null and staffProfiles[u.maTaiKhoan] == null}"
+                                         class="text-on-surface-variant/60 italic text-[11px]">Chưa liên kết hồ sơ</div>
+                                </td>
+                                <td class="p-4">
+                                    <span th:if="${u.authProvider == 'GOOGLE'}" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-700 flex items-center gap-1 w-fit">
+                                        <span>Google OAuth</span>
+                                    </span>
+                                    <span th:unless="${u.authProvider == 'GOOGLE'}" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700 w-fit">
+                                        Hệ thống (Local)
+                                    </span>
+                                </td>
+                                <td class="p-4">
+                                    <span th:switch="${u.vaiTro}">
+                                        <span th:case="'ADMIN'" class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-rose-100 text-rose-800">SUPER ADMIN</span>
+                                        <span th:case="'MANAGER'" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 text-purple-800">MANAGER</span>
+                                        <span th:case="'VENDOR'" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">VENDOR</span>
+                                        <span th:case="'NHANVIENKHO'" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">THỦ KHO</span>
+                                        <span th:case="*" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700">USER</span>
+                                    </span>
+                                </td>
+                                <td class="p-4">
+                                    <span th:if="${u.trangThai == 'HoatDong'}" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700 flex items-center gap-1 w-fit">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>Hoạt động
+                                    </span>
+                                    <span th:unless="${u.trangThai == 'HoatDong'}" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-700 flex items-center gap-1 w-fit">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>Bị khóa
+                                    </span>
+                                </td>
+                                <td class="p-4 text-on-surface-variant text-[11px]" th:text="${#temporals.format(u.ngayTao, 'dd/MM/yyyy HH:mm')}">Ngày tạo</td>
+                                <td class="p-4 text-right">
+                                    <div class="inline-flex items-center gap-1.5 flex-wrap justify-end">
+                                        <!-- Khóa / Mở khóa -->
+                                        <form th:action="@{'/admin/users/' + ${u.maTaiKhoan} + '/toggle-lock'}" method="post">
+                                            <button type="submit"
+                                                    th:data-user="${u.tenDangNhap}"
+                                                    th:data-action="${u.trangThai == 'HoatDong' ? 'KHÓA' : 'MỞ KHÓA'}"
+                                                    onclick="return confirm('Bạn có chắc chắn muốn ' + this.dataset.action + ' tài khoản @' + this.dataset.user + '?');"
+                                                    th:class="${u.trangThai == 'HoatDong'} ? 'px-2.5 py-1 rounded-xl bg-rose-50 text-rose-700 border border-rose-200 font-bold text-xs hover:bg-rose-100 transition-all flex items-center gap-1' : 'px-2.5 py-1 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold text-xs hover:bg-emerald-100 transition-all flex items-center gap-1'">
+                                                <span class="material-symbols-outlined text-xs" th:text="${u.trangThai == 'HoatDong' ? 'lock' : 'lock_open'}">lock</span>
+                                                <span th:text="${u.trangThai == 'HoatDong' ? 'Khóa' : 'Mở'}">Khóa</span>
+                                            </button>
+                                        </form>
+
+                                        <!-- Đổi vai trò button -->
+                                        <button type="button" th:data-id="${u.maTaiKhoan}" th:data-user="${u.tenDangNhap}" th:data-role="${u.vaiTro}"
+                                                onclick="openRoleModal(this.dataset.id, this.dataset.user, this.dataset.role)"
+                                                class="px-2.5 py-1 rounded-xl bg-surface-container text-on-surface hover:bg-surface-container-high border border-surface-container font-bold text-xs transition-all flex items-center gap-1">
+                                            <span class="material-symbols-outlined text-xs text-primary">manage_accounts</span>
+                                            <span>Phân Quyền</span>
+                                        </button>
+
+                                        <!-- Reset mật khẩu button -->
+                                        <button type="button" th:data-id="${u.maTaiKhoan}" th:data-user="${u.tenDangNhap}"
+                                                onclick="openResetPwdModal(this.dataset.id, this.dataset.user)"
+                                                class="px-2.5 py-1 rounded-xl bg-surface-container text-on-surface hover:bg-surface-container-high border border-surface-container font-bold text-xs transition-all flex items-center gap-1">
+                                            <span class="material-symbols-outlined text-xs text-amber-600">key</span>
+                                            <span>Mật Khẩu</span>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr th:if="${users.isEmpty()}">
+                                <td colspan="7" class="p-8 text-center text-on-surface-variant">Không tìm thấy tài khoản người dùng nào.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div th:if="${page.totalPages > 1}" class="flex items-center justify-between mt-6">
+                    <span class="text-xs text-on-surface-variant" th:text="'Trang ' + (${page.number} + 1) + ' / ' + ${page.totalPages} + ' (Tổng cộng ' + ${page.totalElements} + ' tài khoản)'"></span>
+                    <div class="flex items-center gap-2">
+                        <a th:if="${page.hasPrevious()}" th:href="@{/admin/users(page=${page.number - 1}, keyword=${keyword}, role=${selectedRole})}"
+                           class="px-3.5 py-1.5 rounded-xl bg-surface-container text-xs font-bold hover:bg-surface-container-high transition-all">Trước</a>
+                        <a th:if="${page.hasNext()}" th:href="@{/admin/users(page=${page.number + 1}, keyword=${keyword}, role=${selectedRole})}"
+                           class="px-3.5 py-1.5 rounded-xl bg-surface-container text-xs font-bold hover:bg-surface-container-high transition-all">Sau</a>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal Phân Quyền Vai Trò -->
+    <div id="roleModal" class="fixed inset-0 z-50 hidden bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+        <div class="bg-surface-container-lowest rounded-3xl p-6 max-w-md w-full border border-surface-container shadow-2xl">
+            <h3 class="font-bold text-base text-on-surface mb-2">Thay Đổi Vai Trò Tài Khoản</h3>
+            <p class="text-xs text-on-surface-variant mb-4">Cập nhật phân quyền cho tài khoản <strong id="roleModalUser" class="text-primary">@username</strong></p>
+            <form id="roleForm" method="post" action="">
+                <div class="mb-4">
+                    <label class="block text-xs font-bold text-on-surface mb-1.5">Chọn vai trò mới</label>
+                    <select name="newRole" id="modalRoleSelect" class="w-full px-3.5 py-2.5 rounded-xl border border-surface-container bg-surface-container-low text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-primary">
+                        <option value="USER">USER - Khách mua hàng</option>
+                        <option value="VENDOR">VENDOR - Người bán / Chủ shop</option>
+                        <option value="MANAGER">MANAGER - Quản lý vận hành sàn</option>
+                        <option value="NHANVIENKHO">NHANVIENKHO - Nhân viên thủ kho</option>
+                        <option value="ADMIN">ADMIN - Super Admin toàn quyền</option>
+                    </select>
+                </div>
+                <div class="flex items-center justify-end gap-2">
+                    <button type="button" onclick="closeRoleModal()" class="px-4 py-2 rounded-xl bg-surface-container text-xs font-bold hover:bg-surface-container-high transition-all">Hủy</button>
+                    <button type="submit" class="px-4 py-2 rounded-xl bg-primary text-on-primary text-xs font-bold hover:bg-primary-container transition-all">Lưu Thay Đổi</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Đặt Lại Mật Khẩu -->
+    <div id="resetPwdModal" class="fixed inset-0 z-50 hidden bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+        <div class="bg-surface-container-lowest rounded-3xl p-6 max-w-md w-full border border-surface-container shadow-2xl">
+            <h3 class="font-bold text-base text-on-surface mb-2">Đặt Lại Mật Khẩu</h3>
+            <p class="text-xs text-on-surface-variant mb-4">Đặt mật khẩu mới cho tài khoản <strong id="resetPwdUser" class="text-primary">@username</strong></p>
+            <form id="resetPwdForm" method="post" action="">
+                <div class="mb-4">
+                    <label class="block text-xs font-bold text-on-surface mb-1.5">Mật khẩu mới (tối thiểu 6 ký tự)</label>
+                    <input type="password" name="newPassword" required minlength="6" placeholder="Nhập mật khẩu mới..."
+                           class="w-full px-3.5 py-2.5 rounded-xl border border-surface-container bg-surface-container-low text-xs focus:outline-none focus:ring-2 focus:ring-primary"/>
+                </div>
+                <div class="flex items-center justify-end gap-2">
+                    <button type="button" onclick="closeResetPwdModal()" class="px-4 py-2 rounded-xl bg-surface-container text-xs font-bold hover:bg-surface-container-high transition-all">Hủy</button>
+                    <button type="submit" class="px-4 py-2 rounded-xl bg-primary text-on-primary text-xs font-bold hover:bg-primary-container transition-all">Đặt Mật Khẩu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openRoleModal(id, user, currentRole) {
+            document.getElementById('roleModalUser').textContent = '@' + user;
+            document.getElementById('roleForm').action = '/admin/users/' + id + '/change-role';
+            document.getElementById('modalRoleSelect').value = currentRole;
+            document.getElementById('roleModal').classList.remove('hidden');
+        }
+        function closeRoleModal() {
+            document.getElementById('roleModal').classList.add('hidden');
+        }
+
+        function openResetPwdModal(id, user) {
+            document.getElementById('resetPwdUser').textContent = '@' + user;
+            document.getElementById('resetPwdForm').action = '/admin/users/' + id + '/reset-password';
+            document.getElementById('resetPwdModal').classList.remove('hidden');
+        }
+        function closeResetPwdModal() {
+            document.getElementById('resetPwdModal').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>

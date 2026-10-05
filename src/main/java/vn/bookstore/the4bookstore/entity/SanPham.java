@@ -43,6 +43,19 @@ public class SanPham {
     private Integer mucTonToiThieu = 0;
     @Column(length = 1000)
     private String moTa;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ma_shop")
+    private Shop shop;
+
+    @Column(name = "trang_thai_khoa", nullable = false, length = 30)
+    private String trangThaiKhoa = "BinhThuong"; // BinhThuong, BiKhoaBoiAdmin
+
+    @Column(name = "so_luong_da_ban", nullable = false)
+    private Integer soLuongDaBan = 0;
+
+    @Column(name = "hinh_anh", length = 500)
+    private String hinhAnh;
+
     @Column(nullable = false, length = 20)
     private String trangThai = "DangBan";
     @Column(nullable = false)
@@ -68,9 +81,12 @@ public class SanPham {
     }
 
     public String getHinhAnh() {
+        if (hinhAnh != null && !hinhAnh.isBlank()) {
+            return hinhAnh;
+        }
         if (moTa != null && moTa.startsWith("http")) {
             return moTa;
         }
-        return null;
+        return "/images/default-book.png";
     }
 }

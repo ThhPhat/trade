@@ -691,7 +691,7 @@ READS SQL DATA
 BEGIN
     DECLARE total_discount BIGINT DEFAULT 0;
     -- Tính tổng số tiền đã giảm từ các đơn hàng sử dụng mã khuyến mãi
-    SELECT COALESCE(SUM(tien_giam_gia), 0) INTO total_discount
+    SELECT COALESCE(SUM(tien_giam), 0) INTO total_discount
     FROM don_hang
     WHERE makm = p_makm AND trang_thai = 'DaGiao';
     RETURN total_discount;
