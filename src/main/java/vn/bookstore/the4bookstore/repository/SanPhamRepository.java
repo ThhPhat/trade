@@ -221,13 +221,26 @@ public interface SanPhamRepository extends JpaRepository<SanPham, Integer> {
            "GROUP BY s ORDER BY COUNT(yt) DESC")
     Page<SanPham> findTop20MostFavorited(@Param("maDanhMuc") Integer maDanhMuc, Pageable pageable);
 
-    // 6. Dành cho Vendor: Sản phẩm của riêng shop
+    // 6. Dành cho Vendor: Sản phẩm của riêng shop (loại bỏ DaXoa)
     List<SanPham> findByShop_MaShop(Integer maShop);
     Page<SanPham> findByShop_MaShop(Integer maShop, Pageable pageable);
     Page<SanPham> findByShop_MaShopAndTenSPContainingIgnoreCase(Integer maShop, String keyword, Pageable pageable);
     long countByShop_MaShop(Integer maShop);
 
-    // 7. Dành cho Shop Storefront: Sản phẩm đang bán của shop
+    @Query("SELECT s FROM SanPham s WHERE s.shop.maShop = :maShop AND s.trangThai != 'DaXoa'")
+    Page<SanPham> findActiveByShop(@Param("maShop") Integer maShop, Pageable pageable);
+
+    @Query("SELECT s FROM SanPham s WHERE s.shop.maShop = :maShop AND s.trangThai != 'DaXoa' AND LOWER(s.tenSP) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+    Page<SanPham> findActiveByShopAndKeyword(@Param("maShop") Integer maShop, @Param("keyword") String keyword, Pageable pageable);
+
+    @Query("SELECT COUNT(s) FROM SanPham s WHERE s.shop.maShop = :maShop AND s.trangThai != 'DaXoa'")
+    long countActiveByShop(@Param("maShop") Integer maShop);
+
+    // 7. Dành cho Quản trị viên: Toàn bộ sản phẩm chưa xóa sắp xếp mới nhất
+    @Query("SELECT s FROM SanPham s WHERE s.trangThai != 'DaXoa' ORDER BY s.maSP DESC")
+    List<SanPham> findAllActiveOrderByMaSPDesc();
+
+    // 8. Dành cho Shop Storefront: Sản phẩm đang bán của shop
     @Query("SELECT s FROM SanPham s WHERE s.shop.maShop = :maShop AND s.trangThai = 'DangBan' AND s.trangThaiKhoa = 'BinhThuong' AND s.shop.trangThai = 'HoatDong' ORDER BY s.ngayTao DESC")
     Page<SanPham> findActiveBooksByShop(@Param("maShop") Integer maShop, Pageable pageable);
 

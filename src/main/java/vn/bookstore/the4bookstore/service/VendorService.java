@@ -28,19 +28,22 @@ public class VendorService {
     private final KhuyenMaiRepository khuyenMaiRepository;
     private final DanhMucRepository danhMucRepository;
     private final NhaXuatBanRepository nhaXuatBanRepository;
+    private final SanPhamService sanPhamService;
 
     public VendorService(ShopRepository shopRepository,
                          SanPhamRepository sanPhamRepository,
                          DonHangRepository donHangRepository,
                          KhuyenMaiRepository khuyenMaiRepository,
                          DanhMucRepository danhMucRepository,
-                         NhaXuatBanRepository nhaXuatBanRepository) {
+                         NhaXuatBanRepository nhaXuatBanRepository,
+                         SanPhamService sanPhamService) {
         this.shopRepository = shopRepository;
         this.sanPhamRepository = sanPhamRepository;
         this.donHangRepository = donHangRepository;
         this.khuyenMaiRepository = khuyenMaiRepository;
         this.danhMucRepository = danhMucRepository;
         this.nhaXuatBanRepository = nhaXuatBanRepository;
+        this.sanPhamService = sanPhamService;
     }
 
     // --- DASHBOARD THỐNG KÊ CỦA SHOP ---
@@ -48,7 +51,7 @@ public class VendorService {
     public Map<String, Object> getShopDashboardStats(Integer maShop) {
         Map<String, Object> stats = new HashMap<>();
 
-        long totalBooks = sanPhamRepository.countByShop_MaShop(maShop);
+        long totalBooks = sanPhamRepository.countActiveByShop(maShop);
         long newOrders = donHangRepository.countByShop_MaShopAndTrangThai(maShop, "DonHangMoi");
         long confirmedOrders = donHangRepository.countByShop_MaShopAndTrangThai(maShop, "DaXacNhan");
         long pickedUpOrders = donHangRepository.countByShop_MaShopAndTrangThai(maShop, "DaLayHang");
@@ -82,9 +85,9 @@ public class VendorService {
     @Transactional(readOnly = true)
     public Page<SanPham> getShopProducts(Integer maShop, String keyword, Pageable pageable) {
         if (keyword != null && !keyword.isBlank()) {
-            return sanPhamRepository.findByShop_MaShopAndTenSPContainingIgnoreCase(maShop, keyword.trim(), pageable);
+            return sanPhamRepository.findActiveByShopAndKeyword(maShop, keyword.trim(), pageable);
         }
-        return sanPhamRepository.findByShop_MaShop(maShop, pageable);
+        return sanPhamRepository.findActiveByShop(maShop, pageable);
     }
 
     public SanPham saveShopProduct(Integer maShop, SanPham sanPham, Integer maDanhMuc, Integer maNXB) {
@@ -156,8 +159,7 @@ public class VendorService {
         if (sp.getShop() == null || !sp.getShop().getMaShop().equals(maShop)) {
             throw new SecurityException("Không có quyền xóa sản phẩm của shop khác!");
         }
-        sp.setTrangThai("NgungBan");
-        sanPhamRepository.save(sp);
+        sanPhamService.deleteProduct(maSP);
     }
 
     // --- QUY TRÌNH QUẢN LÝ ĐƠN HÀNG 7 TRẠNG THÁI ---

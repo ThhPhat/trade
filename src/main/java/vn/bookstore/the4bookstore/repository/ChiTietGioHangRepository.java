@@ -15,4 +15,9 @@ public interface ChiTietGioHangRepository extends JpaRepository<ChiTietGioHang, 
     Optional<ChiTietGioHang> findByGioHangAndSanPham(GioHang gioHang, SanPham sanPham);
     void deleteByGioHang(GioHang gioHang);
     long countByGioHang(GioHang gioHang);
+
+    @org.springframework.transaction.annotation.Transactional
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.data.jpa.repository.Query("DELETE FROM ChiTietGioHang c WHERE c.sanPham.maSP = :maSP")
+    void deleteBySanPham_MaSP(@org.springframework.data.repository.query.Param("maSP") Integer maSP);
 }

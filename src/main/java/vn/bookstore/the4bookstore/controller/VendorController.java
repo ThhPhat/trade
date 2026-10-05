@@ -309,9 +309,9 @@ public class VendorController {
 
         try {
             vendorService.deleteShopProduct(shop.getMaShop(), id);
-            redirectAttributes.addFlashAttribute("successMessage", "Đã ngừng bán sản phẩm!");
+            redirectAttributes.addFlashAttribute("successMessage", "Đã xóa sản phẩm thành công!");
         } catch (Exception ex) {
-            redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+            redirectAttributes.addFlashAttribute("errorMessage", "Không thể xóa sản phẩm: " + ex.getMessage());
         }
         return "redirect:/vendor/products";
     }

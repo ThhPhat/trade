@@ -54,9 +54,9 @@
                 <div class="mb-6 p-4 rounded-2xl bg-amber-50/80 border border-amber-300 text-amber-950 text-xs sm:text-sm flex items-start gap-3 shadow-xs">
                     <span class="material-symbols-outlined text-amber-600 text-xl shrink-0 mt-0.5">verified_user</span>
                     <div>
-                        <p class="font-bold text-sm">Chế độ kiểm tra thông tin sản phẩm của gian hàng (Chỉ đọc)</p>
+                        <p class="font-bold text-sm">Quản trị &amp; Kiểm duyệt sản phẩm của gian hàng</p>
                         <p class="text-xs text-amber-900/90 mt-0.5">
-                            Theo mô hình vận hành sàn thương mại điện tử, <strong>chỉ chủ gian hàng mới có quyền Thêm mới, Chỉnh sửa thông tin hoặc Xóa/Ngừng bán sản phẩm</strong> của họ. Quản trị viên và Quản lý sàn có quyền kiểm tra chi tiết thông tin và thực hiện <strong>Khóa sản phẩm vi phạm</strong> khi phát hiện nội dung không hợp lệ.
+                            Quản trị viên có toàn quyền kiểm tra thông tin chi tiết, <strong>Khóa sản phẩm vi phạm</strong> hoặc <strong>Xóa sản phẩm</strong> nếu phát hiện sai phạm hoặc nội dung không hợp lệ.
                         </p>
                     </div>
                 </div>
@@ -200,6 +200,16 @@
                                                     title="Mở khóa sản phẩm">
                                                 <span class="material-symbols-outlined text-[15px]">lock_open</span>
                                                 <span>Mở</span>
+                                            </button>
+                                        </form>
+
+                                        <!-- Xóa sản phẩm -->
+                                        <form th:action="@{'/admin/products/delete/' + ${p.maSP}}" method="post"
+                                              onsubmit="return confirm('Bạn có chắc muốn XÓA vĩnh viễn sản phẩm này?');">
+                                            <input type="hidden" name="returnUrl" th:value="@{'/admin/shops/' + ${shop.maShop} + '/products'}"/>
+                                            <button type="submit" class="p-1.5 rounded-xl bg-surface-container text-rose-600 hover:bg-rose-600 hover:text-white transition-all cursor-pointer"
+                                                    title="Xóa sản phẩm">
+                                                <span class="material-symbols-outlined text-[15px]">delete</span>
                                             </button>
                                         </form>
                                     </div>

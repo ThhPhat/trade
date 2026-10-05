@@ -16,4 +16,9 @@ public interface DanhGiaRepository extends JpaRepository<DanhGia, Integer> {
 
     @Query("SELECT AVG(d.soSao) FROM DanhGia d WHERE d.sanPham = :sanPham AND d.trangThai = 'HienThi'")
     Double findAverageRatingBySanPham(@Param("sanPham") SanPham sanPham);
+
+    @org.springframework.transaction.annotation.Transactional
+    @org.springframework.data.jpa.repository.Modifying
+    @Query("DELETE FROM DanhGia d WHERE d.sanPham.maSP = :maSP")
+    void deleteBySanPham_MaSP(@Param("maSP") Integer maSP);
 }

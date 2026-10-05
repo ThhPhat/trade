@@ -14,6 +14,7 @@ import vn.bookstore.the4bookstore.entity.DonHang;
 import vn.bookstore.the4bookstore.entity.TacGia;
 import vn.bookstore.the4bookstore.entity.NhaXuatBan;
 import vn.bookstore.the4bookstore.entity.SanPhamTacGia;
+import vn.bookstore.the4bookstore.entity.SanPhamTacGiaId;
 import vn.bookstore.the4bookstore.repository.DanhMucRepository;
 import vn.bookstore.the4bookstore.repository.NhaCungCapRepository;
 import vn.bookstore.the4bookstore.repository.NhaXuatBanRepository;
@@ -26,6 +27,7 @@ import vn.bookstore.the4bookstore.service.ReportService;
 import vn.bookstore.the4bookstore.service.OrderService;
 import vn.bookstore.the4bookstore.service.TacGiaService;
 import vn.bookstore.the4bookstore.service.NhaXuatBanService;
+import vn.bookstore.the4bookstore.service.SanPhamService;
 import vn.bookstore.the4bookstore.repository.ShopRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -54,6 +56,9 @@ public class AdminController {
     
     @Autowired(required = false)
     private ShopRepository shopRepository;
+
+    @Autowired(required = false)
+    private SanPhamService sanPhamService;
 
         public AdminController(SanPhamRepository sanPhamRepository,
                            DanhMucRepository danhMucRepository,
@@ -217,23 +222,113 @@ public class AdminController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // ==================== QUẢN LÝ SẢN PHẨM (CHUYỂN HƯỚNG VỀ GIAN HÀNG) ====================
-    @GetMapping({"/products", "/books"})
-    public String inventory(RedirectAttributes ra) {
-        ra.addFlashAttribute("infoMessage", "Sản phẩm hiện được quản lý theo từng Gian hàng riêng biệt. Vui lòng chọn gian hàng để xem danh sách sản phẩm.");
-        return "redirect:/admin/shops";
+    // ==================== QUẢN LÝ SẢN PHẨM & KHO HÀNG (FULL CRUD) ====================
+    @GetMapping({"/products", "/books", "/inventory"})
+    public String inventory(Model model) {
+        List<SanPham> books = sanPhamRepository.findAllActiveOrderByMaSPDesc();
+        List<DanhMuc> categories = danhMucRepository.findAll();
+        List<TacGia> authors = tacGiaRepository.findAll();
+        List<NhaXuatBan> publishers = nhaXuatBanRepository.findAll();
+
+        long lowStock = books.stream().filter(b -> b.getSoLuongTon() != null && b.getSoLuongTon() > 0 && b.getSoLuongTon() <= 5).count();
+        long outOfStock = books.stream().filter(b -> b.getSoLuongTon() == null || b.getSoLuongTon() == 0).count();
+
+        model.addAttribute("books", books);
+        model.addAttribute("categories", categories);
+        model.addAttribute("authors", authors);
+        model.addAttribute("publishers", publishers);
+        model.addAttribute("lowStockCount", lowStock);
+        model.addAttribute("outOfStockCount", outOfStock);
+        model.addAttribute("totalBooks", books.size());
+
+        return "admin/inventory";
     }
 
     @PostMapping({"/products/save", "/books/save"})
-    public String saveProduct(RedirectAttributes ra) {
-        ra.addFlashAttribute("errorMessage", "Quản trị viên chỉ có quyền xem thông tin và khóa sản phẩm vi phạm. Quyền Thêm mới hoặc Chỉnh sửa sản phẩm thuộc về từng Gian hàng!");
-        return "redirect:/admin/shops";
+    public String saveProduct(@RequestParam(value = "maSP", required = false) Integer maSP,
+                              @RequestParam("tenSP") String tenSP,
+                              @RequestParam(value = "loaiSP", defaultValue = "Sach") String loaiSP,
+                              @RequestParam(value = "ISBN", required = false) String isbn,
+                              @RequestParam("maDanhMuc") Integer maDanhMuc,
+                              @RequestParam(value = "maTacGia", required = false) Integer maTacGia,
+                              @RequestParam(value = "maNXB", required = false) Integer maNXB,
+                              @RequestParam("soLuongTon") Integer soLuongTon,
+                              @RequestParam("giaBan") Integer giaBan,
+                              @RequestParam(value = "trangThai", defaultValue = "DangBan") String trangThai,
+                              @RequestParam(value = "moTa", required = false) String moTa,
+                              RedirectAttributes ra) {
+        try {
+            SanPham book;
+            if (maSP != null && maSP > 0) {
+                book = sanPhamRepository.findById(maSP).orElse(new SanPham());
+                ra.addFlashAttribute("successMessage", "Cập nhật sản phẩm thành công!");
+            } else {
+                book = new SanPham();
+                ra.addFlashAttribute("successMessage", "Thêm sản phẩm mới thành công!");
+                if (shopRepository != null) {
+                    shopRepository.findById(1).ifPresent(book::setShop);
+                }
+            }
+
+            book.setTenSP(tenSP.trim());
+            book.setLoaiSP(loaiSP);
+
+            if (isbn == null || isbn.trim().isEmpty()) {
+                if (book.getISBN() == null || book.getISBN().trim().isEmpty()) {
+                    book.setISBN("BK-" + (System.currentTimeMillis() % 100000000));
+                }
+            } else {
+                book.setISBN(isbn.trim());
+            }
+
+            danhMucRepository.findById(maDanhMuc).ifPresent(book::setDanhMuc);
+            if (maNXB != null && maNXB > 0) {
+                nhaXuatBanRepository.findById(maNXB).ifPresent(book::setNhaXuatBan);
+            }
+            book.setSoLuongTon(soLuongTon != null ? soLuongTon : 0);
+            book.setGiaBan(giaBan != null ? giaBan : 0);
+            book.setTrangThai(trangThai);
+            book.setMoTa(moTa != null ? moTa.trim() : "");
+            if (book.getMucTonToiThieu() == null) book.setMucTonToiThieu(0);
+            if (book.getSoLuongDaBan() == null) book.setSoLuongDaBan(0);
+            if (book.getTrangThaiKhoa() == null) book.setTrangThaiKhoa("BinhThuong");
+
+            SanPham saved = sanPhamRepository.save(book);
+
+            if (maTacGia != null && maTacGia > 0) {
+                sanPhamTacGiaRepository.deleteBySanPhamId(saved.getMaSP());
+                tacGiaRepository.findById(maTacGia).ifPresent(tg -> {
+                    SanPhamTacGia sptg = new SanPhamTacGia();
+                    sptg.setSanPham(saved);
+                    sptg.setTacGia(tg);
+                    sptg.setThuTuTacGia(1);
+                    sanPhamTacGiaRepository.save(sptg);
+                });
+            }
+        } catch (Exception e) {
+            ra.addFlashAttribute("errorMessage", "Lỗi lưu sản phẩm: " + e.getMessage());
+        }
+        return "redirect:/admin/products";
     }
 
     @PostMapping({"/products/delete/{id}", "/books/delete/{id}"})
-    public String deleteProduct(@PathVariable("id") Integer id, RedirectAttributes ra) {
-        ra.addFlashAttribute("errorMessage", "Quản trị viên không có quyền xóa sản phẩm của gian hàng. Vui lòng sử dụng tính năng 'Khóa sản phẩm vi phạm' nếu có vi phạm.");
-        return "redirect:/admin/shops";
+    public String deleteProduct(@PathVariable("id") Integer id,
+                                @RequestParam(value = "returnUrl", required = false) String returnUrl,
+                                RedirectAttributes ra) {
+        try {
+            if (sanPhamService != null) {
+                sanPhamService.deleteProduct(id);
+            } else {
+                sanPhamRepository.deleteById(id);
+            }
+            ra.addFlashAttribute("successMessage", "Đã xóa sản phẩm thành công!");
+        } catch (Exception e) {
+            ra.addFlashAttribute("errorMessage", "Không thể xóa sản phẩm: " + e.getMessage());
+        }
+        if (returnUrl != null && !returnUrl.isBlank()) {
+            return "redirect:" + returnUrl;
+        }
+        return "redirect:/admin/products";
     }
 
     @GetMapping("/products/{id}/json")

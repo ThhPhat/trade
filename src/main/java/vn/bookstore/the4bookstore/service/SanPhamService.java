@@ -5,10 +5,11 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import vn.bookstore.the4bookstore.entity.DanhMuc;
 import vn.bookstore.the4bookstore.entity.SanPham;
-import vn.bookstore.the4bookstore.repository.DanhMucRepository;
-import vn.bookstore.the4bookstore.repository.SanPhamRepository;
+import vn.bookstore.the4bookstore.repository.*;
 
 import java.util.List;
 import java.util.Optional;
@@ -22,6 +23,13 @@ public class SanPhamService {
 
     private final SanPhamRepository sanPhamRepository;
     private final DanhMucRepository danhMucRepository;
+    private final ChiTietDonHangRepository chiTietDonHangRepository;
+    private final ChiTietGioHangRepository chiTietGioHangRepository;
+    private final DanhGiaRepository danhGiaRepository;
+    private final SanPhamTacGiaRepository sanPhamTacGiaRepository;
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     public List<SanPham> getFeaturedBooks() {
         List<DanhMuc> bookCategories = getCategoriesByLoaiSP("Sach");
@@ -175,5 +183,65 @@ public class SanPhamService {
             case "name_asc"   -> Sort.by(Sort.Direction.ASC,  "tenSP");
             default           -> Sort.by(Sort.Direction.DESC, "ngayTao");
         };
+    }
+
+    /**
+     * Xóa sản phẩm an toàn:
+     * - Nếu đã có đơn hàng: Soft delete (chuyển sang 'DaXoa' để giữ tính toàn vẹn dữ liệu đơn hàng và lịch sử hóa đơn).
+     * - Nếu chưa có đơn hàng: Hard delete (dọn dẹp sạch giỏ hàng, đánh giá, quan hệ tác giả, yêu thích... và xóa khỏi DB).
+     */
+    @Transactional
+    public void deleteProduct(Integer maSP) {
+        SanPham sp = sanPhamRepository.findById(maSP)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy sản phẩm với mã: " + maSP));
+
+        // 1. Kiểm tra đơn hàng liên quan
+        long orderCount = chiTietDonHangRepository.countBySanPham_MaSP(maSP);
+        if (orderCount > 0) {
+            // Đã phát sinh đơn hàng: chuyển trạng thái DaXoa để bảo toàn lịch sử hóa đơn
+            sp.setTrangThai("DaXoa");
+            sanPhamRepository.save(sp);
+            try {
+                chiTietGioHangRepository.deleteBySanPham_MaSP(maSP);
+            } catch (Exception ignored) {}
+            return;
+        }
+
+        // 2. Chưa có đơn hàng: Xóa sạch toàn bộ dữ liệu phụ thuộc
+        try {
+            chiTietGioHangRepository.deleteBySanPham_MaSP(maSP);
+        } catch (Exception ignored) {}
+
+        try {
+            sanPhamTacGiaRepository.deleteBySanPhamId(maSP);
+        } catch (Exception ignored) {}
+
+        try {
+            danhGiaRepository.deleteBySanPham_MaSP(maSP);
+        } catch (Exception ignored) {}
+
+        if (entityManager != null) {
+            try {
+                entityManager.createNativeQuery("DELETE FROM san_pham_yeu_thich WHERE masp = :id").setParameter("id", maSP).executeUpdate();
+            } catch (Exception ignored) {}
+            try {
+                entityManager.createNativeQuery("DELETE FROM san_pham_da_xem WHERE masp = :id").setParameter("id", maSP).executeUpdate();
+            } catch (Exception ignored) {}
+            try {
+                entityManager.createNativeQuery("DELETE FROM kho_hang WHERE masp = :id").setParameter("id", maSP).executeUpdate();
+            } catch (Exception ignored) {}
+            try {
+                entityManager.createNativeQuery("DELETE FROM chi_tiet_kiem_ke WHERE masp = :id").setParameter("id", maSP).executeUpdate();
+            } catch (Exception ignored) {}
+            try {
+                entityManager.createNativeQuery("DELETE FROM chi_tiet_phieu_nhap WHERE masp = :id").setParameter("id", maSP).executeUpdate();
+            } catch (Exception ignored) {}
+            try {
+                entityManager.createNativeQuery("DELETE FROM chi_tiet_tra_hang WHERE masp = :id").setParameter("id", maSP).executeUpdate();
+            } catch (Exception ignored) {}
+        }
+
+        // 3. Xóa cứng sản phẩm khỏi cơ sở dữ liệu
+        sanPhamRepository.delete(sp);
     }
 }
