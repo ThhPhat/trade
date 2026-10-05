@@ -16,6 +16,8 @@ public interface ShopRepository extends JpaRepository<Shop, Integer> {
     Optional<Shop> findBySlug(String slug);
     boolean existsByTenShop(String tenShop);
     boolean existsBySlug(String slug);
+    long countByTrangThai(String trangThai);
+    List<Shop> findByTrangThai(String trangThai);
     Page<Shop> findByTrangThai(String trangThai, Pageable pageable);
     Page<Shop> findByTenShopContainingIgnoreCase(String keyword, Pageable pageable);
     List<Shop> findByTenShopContainingIgnoreCaseAndTrangThai(String keyword, String trangThai);

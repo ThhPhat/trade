@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/common/head :: common_head('Hồ Sơ Gian Hàng Chờ Duyệt - The4BookStore')}"></head>
+
+<body class="bg-surface font-body-md text-body-md text-on-surface antialiased min-h-screen flex flex-col">
+
+    <header th:replace="~{fragments/common/navbar :: common_navbar('vendor')}"></header>
+
+    <main class="w-full pt-28 pb-16 flex-1 flex items-center justify-center">
+        <div class="max-w-2xl w-full mx-auto px-4">
+            <div class="bg-surface-container-lowest p-8 md:p-10 rounded-3xl shadow-xl border border-surface-container">
+                
+                <div class="text-center mb-8">
+                    <div class="w-20 h-20 bg-amber-100 text-amber-600 rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-sm">
+                        <span class="material-symbols-outlined text-[42px] animate-pulse">hourglass_top</span>
+                    </div>
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 mb-3">
+                        <span class="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span>
+                        Đang Chờ Quản Trị Viên Phê Duyệt
+                    </span>
+                    <h1 class="text-2xl md:text-3xl font-extrabold text-on-surface">Hồ Sơ Đang Chờ Phê Duyệt</h1>
+                    <p class="text-sm text-on-surface-variant mt-2 max-w-md mx-auto">
+                        Cảm ơn bạn đã đăng ký mở gian hàng tại <strong>The4BookStore</strong>. Hồ sơ của bạn đã được gửi đến ban quản trị và đang trong quá trình xét duyệt.
+                    </p>
+                </div>
+
+                <div th:if="${successMessage}" class="mb-6 p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[20px]">check_circle</span>
+                    <span th:text="${successMessage}"></span>
+                </div>
+
+                <!-- Shop Profile Preview Card -->
+                <div th:if="${shop != null}" class="bg-surface-container-low/60 rounded-2xl p-5 border border-surface-container mb-6 space-y-3 text-xs">
+                    <div class="flex items-center justify-between pb-3 border-b border-surface-container">
+                        <span class="text-on-surface-variant font-medium">Tên gian hàng đăng ký:</span>
+                        <strong class="text-sm font-bold text-primary" th:text="${shop.tenShop}">Tên Shop</strong>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-on-surface-variant font-medium">Số điện thoại liên hệ:</span>
+                        <span class="font-mono font-bold text-on-surface" th:text="${shop.soDienThoai}">0901234567</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-on-surface-variant font-medium">Email gian hàng:</span>
+                        <span class="font-medium text-on-surface" th:text="${shop.emailShop}">shop@domain.com</span>
+                    </div>
+                    <div class="flex items-start justify-between gap-4">
+                        <span class="text-on-surface-variant font-medium shrink-0">Địa chỉ kho/cửa hàng:</span>
+                        <span class="text-right text-on-surface font-medium" th:text="${shop.diaChiShop}">Địa chỉ</span>
+                    </div>
+                    <div class="flex items-center justify-between pt-2 border-t border-surface-container/60">
+                        <span class="text-on-surface-variant font-medium">Thời gian gửi hồ sơ:</span>
+                        <span class="text-on-surface-variant" th:text="${#temporals.format(shop.ngayTao, 'dd/MM/yyyy HH:mm')}">01/01/2026</span>
+                    </div>
+                </div>
+
+                <!-- Policy & Protection Info Box -->
+                <div class="p-4 rounded-2xl bg-primary/5 border border-primary/20 text-xs text-on-surface-variant space-y-1.5 mb-8">
+                    <div class="flex items-center gap-2 text-primary font-bold text-sm">
+                        <span class="material-symbols-outlined text-[20px]">verified_user</span>
+                        <span>Quy trình phê duyệt &amp; kích hoạt quyền bán hàng:</span>
+                    </div>
+                    <p class="leading-relaxed pl-7">
+                        • Đội ngũ Admin/Quản lý sàn sẽ tiến hành đối soát thông tin gian hàng trong vòng <strong>24 giờ làm việc</strong>.
+                    </p>
+                    <p class="leading-relaxed pl-7">
+                        • <strong>Chỉ sau khi hồ sơ được phê duyệt</strong>, tài khoản của bạn mới được cấp quyền truy cập Kênh Người Bán để đăng tải sản phẩm, quản trị kho và tiếp nhận đơn hàng.
+                    </p>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+                    <a th:href="@{/vendor}" class="w-full sm:w-auto px-6 py-3 bg-primary text-on-primary font-bold text-xs rounded-xl hover:bg-primary-container shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer">
+                        <span class="material-symbols-outlined text-[18px]">refresh</span>
+                        <span>Kiểm Tra Lại Trạng Thái</span>
+                    </a>
+                    <a th:href="@{/}" class="w-full sm:w-auto px-5 py-3 rounded-xl border border-surface-container text-on-surface font-bold text-xs hover:bg-surface-container transition-colors flex items-center justify-center gap-2">
+                        <span class="material-symbols-outlined text-[18px]">home</span>
+                        <span>Về Trang Chủ</span>
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <footer th:replace="~{fragments/common/footer :: common_footer}"></footer>
+</body>
+</html>

@@ -156,15 +156,6 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                 if (safePicture != null && !safePicture.isBlank()) {
                     kh.setAnhDaiDien(safePicture);
                 }
-                // Đảm bảo số điện thoại không bị null nếu DB có ràng buộc NOT NULL
-                if (kh.getSoDienThoai() == null || kh.getSoDienThoai().isBlank()) {
-                    String seed = String.format("%08d", Math.abs((normalizedEmail + "_" + tk.getMaTaiKhoan()).hashCode() % 100000000));
-                    String tempPhone = "09" + seed;
-                    while (khachHangRepository.findBySoDienThoai(tempPhone).isPresent()) {
-                        tempPhone = "09" + String.format("%08d", (int)(Math.random() * 100000000));
-                    }
-                    kh.setSoDienThoai(tempPhone);
-                }
                 if (kh.getNgayDangKy() == null) {
                     kh.setNgayDangKy(LocalDateTime.now());
                 }
@@ -203,15 +194,6 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                 newKh.setEmail(normalizedEmail);
                 if (safePicture != null && !safePicture.isBlank()) {
                     newKh.setAnhDaiDien(safePicture);
-                }
-                // Tạo số điện thoại giữ chỗ hợp lệ và duy nhất để thỏa mãn ràng buộc NOT NULL & UNIQUE
-                if (newKh.getSoDienThoai() == null || newKh.getSoDienThoai().isBlank()) {
-                    String seed = String.format("%08d", Math.abs((normalizedEmail + "_" + tk.getMaTaiKhoan()).hashCode() % 100000000));
-                    String tempPhone = "09" + seed;
-                    while (khachHangRepository.findBySoDienThoai(tempPhone).isPresent()) {
-                        tempPhone = "09" + String.format("%08d", (int)(Math.random() * 100000000));
-                    }
-                    newKh.setSoDienThoai(tempPhone);
                 }
                 if (newKh.getNgayDangKy() == null) {
                     newKh.setNgayDangKy(LocalDateTime.now());

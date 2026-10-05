@@ -291,7 +291,7 @@ public class ProfileController {
         return "redirect:/profile?updated=true";
     }
 
-    @PostMapping("/profile/change-password")
+    @PostMapping("/change-password")
     public String changePassword(Authentication authentication,
                                  @RequestParam("matKhauCu") String matKhauCu,
                                  @RequestParam("matKhauMoi") String matKhauMoi,
@@ -329,7 +329,7 @@ public class ProfileController {
         return "redirect:/profile?pwdSuccess=true";
     }
 
-    @PostMapping("/profile/upload-avatar")
+    @PostMapping("/upload-avatar")
     public String uploadAvatar(Authentication authentication,
                                @RequestParam("avatarFile") MultipartFile avatarFile,
                                RedirectAttributes redirectAttributes) {
@@ -396,7 +396,7 @@ public class ProfileController {
         return "redirect:/profile";
     }
 
-    @PostMapping("/profile/remove-avatar")
+    @PostMapping("/remove-avatar")
     public String removeAvatar(Authentication authentication, RedirectAttributes redirectAttributes) {
         TaiKhoan tk = getCurrentTaiKhoan(authentication);
         if (tk == null) {

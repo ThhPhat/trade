@@ -79,7 +79,10 @@ public class AuthController {
             model.addAttribute("error", "Email đã được sử dụng!");
             return "auth/register";
         }
-        if (khachHangRepository.findBySoDienThoai(request.getSoDienThoai()).isPresent()) {
+        String phone = (request.getSoDienThoai() != null && !request.getSoDienThoai().isBlank()) ? request.getSoDienThoai().trim() : null;
+        String address = (request.getDiaChi() != null && !request.getDiaChi().isBlank()) ? request.getDiaChi().trim() : null;
+
+        if (phone != null && khachHangRepository.findBySoDienThoai(phone).isPresent()) {
             model.addAttribute("error", "Số điện thoại đã được sử dụng!");
             return "auth/register";
         }
@@ -97,9 +100,9 @@ public class AuthController {
         // Tạo hồ sơ khách hàng
         KhachHang kh = new KhachHang();
         kh.setHoTen(request.getHoTen());
-        kh.setSoDienThoai(request.getSoDienThoai());
+        kh.setSoDienThoai(phone);
         kh.setEmail(request.getEmail());
-        kh.setDiaChi(request.getDiaChi());
+        kh.setDiaChi(address);
         kh.setTaiKhoan(tk);
         khachHangRepository.save(kh);
 

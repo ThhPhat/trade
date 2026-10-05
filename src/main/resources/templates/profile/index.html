@@ -432,10 +432,10 @@
                                                       th:text="${#numbers.formatDecimal(dh.tongTien, 0, 'POINT', 0, 'COMMA') + '₫'}">595.000₫</span>
                                             </div>
                                             <div class="flex items-center gap-space-sm self-end sm:self-auto">
-                                                <button class="px-space-md py-2 rounded-xl bg-primary text-on-primary font-label-md text-xs font-semibold hover:bg-primary-container transition-colors flex items-center gap-1 cursor-pointer" type="button">
+                                                <a th:href="@{'/don-hang/' + ${dh.maDH}}" class="px-space-md py-2 rounded-xl bg-primary text-on-primary font-label-md text-xs font-semibold hover:bg-primary-container transition-colors flex items-center gap-1 cursor-pointer">
                                                     <span class="material-symbols-outlined text-[16px]">receipt_long</span>
                                                     <span>Chi tiết đơn</span>
-                                                </button>
+                                                </a>
                                             </div>
                                         </div>
                                     </div>

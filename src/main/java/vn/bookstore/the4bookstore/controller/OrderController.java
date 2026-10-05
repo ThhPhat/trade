@@ -166,8 +166,13 @@ public class OrderController {
         try {
             DonHang donHang = donHangService.getOrderById(id);
 
-            // Kiểm tra quyền sở hữu
-            if (!donHang.getKhachHang().getMaKH().equals(kh.getMaKH())) {
+            // Kiểm tra quyền sở hữu (hoặc tài khoản quản trị viên / nhân viên)
+            boolean isStaff = authentication != null && authentication.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN")
+                            || a.getAuthority().equals("ROLE_MANAGER")
+                            || a.getAuthority().equals("ROLE_QUANLY"));
+
+            if (!isStaff && (donHang.getKhachHang() == null || !donHang.getKhachHang().getMaKH().equals(kh.getMaKH()))) {
                 return "redirect:/don-hang";
             }
 
@@ -177,6 +182,7 @@ public class OrderController {
 
             return "order/detail";
         } catch (Exception e) {
+            org.slf4j.LoggerFactory.getLogger(OrderController.class).error("Lỗi khi xem chi tiết đơn hàng #{}: {}", id, e.getMessage());
             return "redirect:/don-hang";
         }
     }

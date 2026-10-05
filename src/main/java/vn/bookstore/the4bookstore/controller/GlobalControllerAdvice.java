@@ -29,17 +29,30 @@ public class GlobalControllerAdvice {
     private final SanPhamRepository sanPhamRepository;
 
     private final vn.bookstore.the4bookstore.service.GioHangService gioHangService;
+    private final vn.bookstore.the4bookstore.repository.ShopRepository shopRepository;
 
-        public GlobalControllerAdvice(KhachHangRepository khachHangRepository,
+    public GlobalControllerAdvice(KhachHangRepository khachHangRepository,
                                   TaiKhoanRepository taiKhoanRepository,
                                   @org.springframework.beans.factory.annotation.Autowired(required = false) DanhMucRepository danhMucRepository,
                                   @org.springframework.beans.factory.annotation.Autowired(required = false) SanPhamRepository sanPhamRepository,
-                                  @org.springframework.beans.factory.annotation.Autowired(required = false) vn.bookstore.the4bookstore.service.GioHangService gioHangService) {
+                                  @org.springframework.beans.factory.annotation.Autowired(required = false) vn.bookstore.the4bookstore.service.GioHangService gioHangService,
+                                  @org.springframework.beans.factory.annotation.Autowired(required = false) vn.bookstore.the4bookstore.repository.ShopRepository shopRepository) {
         this.khachHangRepository = khachHangRepository;
         this.taiKhoanRepository = taiKhoanRepository;
         this.danhMucRepository = danhMucRepository;
         this.sanPhamRepository = sanPhamRepository;
         this.gioHangService = gioHangService;
+        this.shopRepository = shopRepository;
+    }
+
+    @ModelAttribute("pendingShopCount")
+    public long getPendingShopCount() {
+        if (shopRepository == null) return 0;
+        try {
+            return shopRepository.countByTrangThai("ChoDuyet");
+        } catch (Exception e) {
+            return 0;
+        }
     }
 
     @ModelAttribute("cartItemCount")

@@ -111,9 +111,9 @@ public class DataSeeder implements CommandLineRunner {
                 if (khachHangRepository.findByTaiKhoan(tk).isEmpty()) {
                     KhachHang kh = new KhachHang();
                     kh.setHoTen("Người Dùng Test");
-                    kh.setSoDienThoai("0901234567");
+                    kh.setSoDienThoai(null);
                     kh.setEmail(tk.getEmail());
-                    kh.setDiaChi("123 Võ Văn Ngân, TP. Thủ Đức, TP.HCM");
+                    kh.setDiaChi(null);
                     kh.setTaiKhoan(tk);
                     khachHangRepository.save(kh);
                 }

@@ -50,12 +50,18 @@
                         <strong class="text-tertiary">24 - 48 Giờ làm việc</strong>
                     </div>
                 </div>
-                <div class="flex justify-center gap-3">
-                    <a th:href="@{/}" class="px-6 py-2.5 bg-primary text-on-primary font-headline-sm text-xs font-bold rounded-xl hover:bg-primary-container transition-all shadow-md">
-                        Tiếp Tục Mua Sắm
+                <div class="flex flex-wrap items-center justify-center gap-3">
+                    <a th:if="${param.maDH}" th:href="@{'/don-hang/' + ${param.maDH}}" class="px-6 py-2.5 bg-primary text-on-primary font-headline-sm text-xs font-bold rounded-xl hover:bg-primary-container transition-all shadow-md flex items-center gap-1.5 cursor-pointer">
+                        <span class="material-symbols-outlined text-[18px]">receipt_long</span>
+                        <span>Xem Chi Tiết Đơn Hàng</span>
                     </a>
-                    <a th:href="@{/don-hang}" class="px-5 py-2.5 rounded-xl border border-surface-container text-on-surface font-label-md text-xs font-semibold hover:bg-surface-container transition-colors">
-                        Xem Đơn Hàng
+                    <a th:href="@{/don-hang}" class="px-5 py-2.5 rounded-xl border border-surface-container bg-surface-container-lowest text-on-surface font-label-md text-xs font-semibold hover:bg-surface-container transition-colors flex items-center gap-1.5 cursor-pointer">
+                        <span class="material-symbols-outlined text-[18px]">list_alt</span>
+                        <span>Danh Sách Đơn Hàng</span>
+                    </a>
+                    <a th:href="@{/}" class="px-5 py-2.5 rounded-xl border border-surface-container text-on-surface-variant font-label-md text-xs font-medium hover:bg-surface-container transition-colors flex items-center gap-1.5">
+                        <span class="material-symbols-outlined text-[18px]">shopping_bag</span>
+                        <span>Tiếp Tục Mua Sắm</span>
                     </a>
                 </div>
             </div>

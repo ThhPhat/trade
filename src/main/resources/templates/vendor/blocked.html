@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/common/head :: common_head('Gian Hàng Tạm Khóa - The4BookStore')}"></head>
+
+<body class="bg-surface font-body-md text-body-md text-on-surface antialiased min-h-screen flex flex-col">
+
+    <header th:replace="~{fragments/common/navbar :: common_navbar('vendor')}"></header>
+
+    <main class="w-full pt-28 pb-16 flex-1 flex items-center justify-center">
+        <div class="max-w-xl w-full mx-auto px-4">
+            <div class="bg-surface-container-lowest p-8 md:p-10 rounded-3xl shadow-xl border border-surface-container text-center">
+                
+                <div class="w-20 h-20 bg-rose-100 text-rose-600 rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-sm">
+                    <span class="material-symbols-outlined text-[42px]">lock</span>
+                </div>
+                
+                <h1 class="text-2xl font-bold text-on-surface mb-2">Gian Hàng Tạm Ngưng Hoạt Động</h1>
+                
+                <p class="text-sm text-on-surface-variant max-w-md mx-auto mb-6">
+                    Gian hàng của bạn hiện đang ở trạng thái tạm khóa hoặc đã ngừng hoạt động trên hệ thống The4BookStore.
+                </p>
+
+                <div class="p-4 rounded-2xl bg-surface-container text-xs text-on-surface-variant space-y-2 mb-8 text-left">
+                    <p class="font-bold text-on-surface flex items-center gap-1.5">
+                        <span class="material-symbols-outlined text-primary text-[18px]">support_agent</span>
+                        <span>Cần hỗ trợ mở khóa gian hàng?</span>
+                    </p>
+                    <p>Vui lòng liên hệ bộ phận Quản lý Sàn của The4BookStore để được kiểm tra và xử lý:</p>
+                    <p>• Hotline hỗ trợ đối tác: <strong class="font-mono text-primary font-bold">1900 6868</strong></p>
+                    <p>• Email: <strong class="font-mono text-primary font-bold">partner-support@the4bookstore.vn</strong></p>
+                </div>
+
+                <div class="flex items-center justify-center gap-3">
+                    <a th:href="@{/}" class="px-6 py-3 bg-primary text-on-primary font-bold text-xs rounded-xl hover:bg-primary-container shadow-md transition-all flex items-center justify-center gap-2">
+                        <span class="material-symbols-outlined text-[18px]">home</span>
+                        <span>Về Trang Chủ</span>
+                    </a>
+                    <a th:href="@{/profile}" class="px-5 py-3 rounded-xl border border-surface-container text-on-surface font-bold text-xs hover:bg-surface-container transition-colors">
+                        Hồ Sơ Cá Nhân
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <footer th:replace="~{fragments/common/footer :: common_footer}"></footer>
+</body>
+</html>

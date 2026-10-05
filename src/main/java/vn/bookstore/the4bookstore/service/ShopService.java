@@ -77,10 +77,7 @@ public class ShopService {
         shop.setChietKhauPhanTram(new BigDecimal("5.00")); // Mặc định 5%
         shop.setNgayTao(LocalDateTime.now());
 
-        // Cập nhật vai trò người dùng thành VENDOR
-        taiKhoan.setVaiTro("VENDOR");
-        taiKhoanRepository.save(taiKhoan);
-
+        // Vai trò tài khoản vẫn giữ nguyên KHACHHANG/USER cho đến khi được Admin duyệt
         return shopRepository.save(shop);
     }
 
@@ -109,6 +106,14 @@ public class ShopService {
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy shop"));
         shop.setTrangThai("HoatDong");
         shop.setNgayCapNhat(LocalDateTime.now());
+
+        // Nâng cấp vai trò người dùng thành VENDOR khi đã được duyệt
+        if (shop.getTaiKhoan() != null) {
+            TaiKhoan tk = shop.getTaiKhoan();
+            tk.setVaiTro("VENDOR");
+            taiKhoanRepository.save(tk);
+        }
+
         shopRepository.save(shop);
     }
 

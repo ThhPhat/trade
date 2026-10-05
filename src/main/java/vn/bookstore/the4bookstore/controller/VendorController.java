@@ -63,10 +63,22 @@ public class VendorController {
         return tk;
     }
 
+    private String checkShopAccess(Shop shop) {
+        if (shop == null) return "redirect:/vendor/register";
+        if ("ChoDuyet".equalsIgnoreCase(shop.getTrangThai())) {
+            return "redirect:/vendor/pending";
+        }
+        if ("BiKhoa".equalsIgnoreCase(shop.getTrangThai()) || "DaXoa".equalsIgnoreCase(shop.getTrangThai())) {
+            return "redirect:/vendor/blocked";
+        }
+        return null;
+    }
+
     @GetMapping
     public String index(Authentication auth) {
         Shop shop = getCurrentShop(auth);
-        if (shop == null) return "redirect:/vendor/register";
+        String redirect = checkShopAccess(shop);
+        if (redirect != null) return redirect;
         return "redirect:/vendor/dashboard";
     }
 
@@ -74,6 +86,36 @@ public class VendorController {
         TaiKhoan user = getCurrentUser(auth);
         if (user == null) return null;
         return shopService.findByTaiKhoan(user).orElse(null);
+    }
+
+    // --- TRẠNG THÁI HỒ SƠ CHỜ DUYỆT ---
+    @GetMapping("/pending")
+    public String pendingApproval(Authentication auth, Model model) {
+        Shop shop = getCurrentShop(auth);
+        if (shop == null) return "redirect:/vendor/register";
+        if ("HoatDong".equalsIgnoreCase(shop.getTrangThai())) {
+            return "redirect:/vendor/dashboard";
+        }
+        if ("BiKhoa".equalsIgnoreCase(shop.getTrangThai()) || "DaXoa".equalsIgnoreCase(shop.getTrangThai())) {
+            return "redirect:/vendor/blocked";
+        }
+        model.addAttribute("shop", shop);
+        return "vendor/pending";
+    }
+
+    // --- TRẠNG THÁI GIAN HÀNG TẠM KHÓA ---
+    @GetMapping("/blocked")
+    public String blockedNotice(Authentication auth, Model model) {
+        Shop shop = getCurrentShop(auth);
+        if (shop == null) return "redirect:/vendor/register";
+        if ("HoatDong".equalsIgnoreCase(shop.getTrangThai())) {
+            return "redirect:/vendor/dashboard";
+        }
+        if ("ChoDuyet".equalsIgnoreCase(shop.getTrangThai())) {
+            return "redirect:/vendor/pending";
+        }
+        model.addAttribute("shop", shop);
+        return "vendor/blocked";
     }
 
     // --- ĐĂNG KÝ MỞ SHOP ---
@@ -84,6 +126,9 @@ public class VendorController {
 
         Optional<Shop> existing = shopService.findByTaiKhoan(user);
         if (existing.isPresent()) {
+            Shop s = existing.get();
+            if ("ChoDuyet".equalsIgnoreCase(s.getTrangThai())) return "redirect:/vendor/pending";
+            if ("BiKhoa".equalsIgnoreCase(s.getTrangThai()) || "DaXoa".equalsIgnoreCase(s.getTrangThai())) return "redirect:/vendor/blocked";
             return "redirect:/vendor/dashboard";
         }
         return "vendor/register";
@@ -102,26 +147,8 @@ public class VendorController {
 
         try {
             shopService.registerShop(user, tenShop, moTa, diaChiShop, soDienThoai, emailShop);
-
-            // Nâng cấp quyền ROLE_VENDOR ngay trong SecurityContext của session hiện tại
-            List<GrantedAuthority> updatedAuthorities = new ArrayList<>();
-            if (auth.getAuthorities() != null) {
-                updatedAuthorities.addAll(auth.getAuthorities());
-            }
-            if (updatedAuthorities.stream().noneMatch(a -> a.getAuthority().equalsIgnoreCase("ROLE_VENDOR"))) {
-                updatedAuthorities.add(new SimpleGrantedAuthority("ROLE_VENDOR"));
-            }
-            user.setVaiTro("VENDOR");
-            CustomUserDetails updatedUserDetails = new CustomUserDetails(user);
-            Authentication newAuth = new UsernamePasswordAuthenticationToken(
-                    updatedUserDetails,
-                    auth.getCredentials(),
-                    updatedAuthorities
-            );
-            SecurityContextHolder.getContext().setAuthentication(newAuth);
-
-            redirectAttributes.addFlashAttribute("successMessage", "Đăng ký mở gian hàng thành công! Chào mừng bạn đến với Kênh Người Bán.");
-            return "redirect:/vendor/dashboard";
+            redirectAttributes.addFlashAttribute("successMessage", "Đăng ký mở gian hàng thành công! Hồ sơ của bạn đã được gửi và đang chờ Ban Quản Trị phê duyệt.");
+            return "redirect:/vendor/pending";
         } catch (Exception ex) {
             redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
             return "redirect:/vendor/register";
@@ -132,7 +159,8 @@ public class VendorController {
     @GetMapping("/dashboard")
     public String dashboard(Authentication auth, Model model) {
         Shop shop = getCurrentShop(auth);
-        if (shop == null) return "redirect:/vendor/register";
+        String redirect = checkShopAccess(shop);
+        if (redirect != null) return redirect;
 
         Map<String, Object> stats = vendorService.getShopDashboardStats(shop.getMaShop());
         model.addAttribute("shop", shop);
@@ -144,7 +172,8 @@ public class VendorController {
     @GetMapping("/profile")
     public String shopProfile(Authentication auth, Model model) {
         Shop shop = getCurrentShop(auth);
-        if (shop == null) return "redirect:/vendor/register";
+        String redirect = checkShopAccess(shop);
+        if (redirect != null) return redirect;
         model.addAttribute("shop", shop);
         return "vendor/profile";
     }
@@ -160,7 +189,8 @@ public class VendorController {
                                 @RequestParam(required = false) String banner,
                                 RedirectAttributes redirectAttributes) {
         Shop shop = getCurrentShop(auth);
-        if (shop == null) return "redirect:/vendor/register";
+        String redirect = checkShopAccess(shop);
+        if (redirect != null) return redirect;
 
         try {
             shopService.updateShopProfile(shop.getMaShop(), tenShop, moTa, diaChiShop, soDienThoai, emailShop, logo, banner);
@@ -178,7 +208,8 @@ public class VendorController {
                            @RequestParam(defaultValue = "0") int page,
                            Model model) {
         Shop shop = getCurrentShop(auth);
-        if (shop == null) return "redirect:/vendor/register";
+        String redirect = checkShopAccess(shop);
+        if (redirect != null) return redirect;
 
         Page<SanPham> productPage = vendorService.getShopProducts(shop.getMaShop(), keyword, PageRequest.of(page, 10));
         model.addAttribute("shop", shop);
@@ -191,7 +222,8 @@ public class VendorController {
     @GetMapping("/products/add")
     public String addProductForm(Authentication auth, Model model) {
         Shop shop = getCurrentShop(auth);
-        if (shop == null) return "redirect:/vendor/register";
+        String redirect = checkShopAccess(shop);
+        if (redirect != null) return redirect;
 
         model.addAttribute("shop", shop);
         model.addAttribute("sanPham", new SanPham());
@@ -203,7 +235,8 @@ public class VendorController {
     @GetMapping("/products/edit/{id}")
     public String editProductForm(Authentication auth, @PathVariable Integer id, Model model) {
         Shop shop = getCurrentShop(auth);
-        if (shop == null) return "redirect:/vendor/register";
+        String redirect = checkShopAccess(shop);
+        if (redirect != null) return redirect;
 
         SanPham sp = vendorService.getShopProducts(shop.getMaShop(), null, PageRequest.of(0, 1000))
                 .stream().filter(p -> p.getMaSP().equals(id)).findFirst()
@@ -223,7 +256,8 @@ public class VendorController {
                               @RequestParam(required = false) Integer maNXB,
                               RedirectAttributes redirectAttributes) {
         Shop shop = getCurrentShop(auth);
-        if (shop == null) return "redirect:/vendor/register";
+        String redirect = checkShopAccess(shop);
+        if (redirect != null) return redirect;
 
         try {
             vendorService.saveShopProduct(shop.getMaShop(), sanPham, maDanhMuc, maNXB);
@@ -237,7 +271,8 @@ public class VendorController {
     @PostMapping("/products/delete/{id}")
     public String deleteProduct(Authentication auth, @PathVariable Integer id, RedirectAttributes redirectAttributes) {
         Shop shop = getCurrentShop(auth);
-        if (shop == null) return "redirect:/vendor/register";
+        String redirect = checkShopAccess(shop);
+        if (redirect != null) return redirect;
 
         try {
             vendorService.deleteShopProduct(shop.getMaShop(), id);
@@ -255,7 +290,8 @@ public class VendorController {
                          @RequestParam(defaultValue = "0") int page,
                          Model model) {
         Shop shop = getCurrentShop(auth);
-        if (shop == null) return "redirect:/vendor/register";
+        String redirect = checkShopAccess(shop);
+        if (redirect != null) return redirect;
 
         Page<DonHang> orderPage = vendorService.getShopOrders(shop.getMaShop(), status, PageRequest.of(page, 10));
         model.addAttribute("shop", shop);
@@ -268,7 +304,8 @@ public class VendorController {
     @PostMapping("/orders/{id}/confirm")
     public String confirmOrder(Authentication auth, @PathVariable Integer id, RedirectAttributes redirectAttributes) {
         Shop shop = getCurrentShop(auth);
-        if (shop == null) return "redirect:/vendor/register";
+        String redirect = checkShopAccess(shop);
+        if (redirect != null) return redirect;
         try {
             vendorService.xacNhanDonHang(id, shop.getMaShop());
             redirectAttributes.addFlashAttribute("successMessage", "Đã xác nhận đơn hàng #" + id);
@@ -281,7 +318,8 @@ public class VendorController {
     @PostMapping("/orders/{id}/pickup")
     public String pickupOrder(Authentication auth, @PathVariable Integer id, RedirectAttributes redirectAttributes) {
         Shop shop = getCurrentShop(auth);
-        if (shop == null) return "redirect:/vendor/register";
+        String redirect = checkShopAccess(shop);
+        if (redirect != null) return redirect;
         try {
             vendorService.daLayHang(id, shop.getMaShop());
             redirectAttributes.addFlashAttribute("successMessage", "Đã bàn giao đơn hàng #" + id + " cho đơn vị vận chuyển.");
@@ -294,7 +332,8 @@ public class VendorController {
     @PostMapping("/orders/{id}/delivering")
     public String deliveringOrder(Authentication auth, @PathVariable Integer id, RedirectAttributes redirectAttributes) {
         Shop shop = getCurrentShop(auth);
-        if (shop == null) return "redirect:/vendor/register";
+        String redirect = checkShopAccess(shop);
+        if (redirect != null) return redirect;
         try {
             vendorService.dangGiaoHang(id, shop.getMaShop());
             redirectAttributes.addFlashAttribute("successMessage", "Đơn hàng #" + id + " đang trên đường giao.");
@@ -307,7 +346,8 @@ public class VendorController {
     @PostMapping("/orders/{id}/complete")
     public String completeOrder(Authentication auth, @PathVariable Integer id, RedirectAttributes redirectAttributes) {
         Shop shop = getCurrentShop(auth);
-        if (shop == null) return "redirect:/vendor/register";
+        String redirect = checkShopAccess(shop);
+        if (redirect != null) return redirect;
         try {
             vendorService.daGiaoHang(id, shop.getMaShop());
             redirectAttributes.addFlashAttribute("successMessage", "Đơn hàng #" + id + " đã giao thành công!");
@@ -320,7 +360,8 @@ public class VendorController {
     @PostMapping("/orders/{id}/cancel")
     public String cancelOrder(Authentication auth, @PathVariable Integer id, @RequestParam(required = false) String lyDo, RedirectAttributes redirectAttributes) {
         Shop shop = getCurrentShop(auth);
-        if (shop == null) return "redirect:/vendor/register";
+        String redirect = checkShopAccess(shop);
+        if (redirect != null) return redirect;
         try {
             vendorService.huyDonHang(id, shop.getMaShop(), lyDo != null ? lyDo : "Shop hết hàng");
             redirectAttributes.addFlashAttribute("successMessage", "Đã hủy đơn hàng #" + id);
@@ -333,7 +374,8 @@ public class VendorController {
     @PostMapping("/orders/{id}/accept-return")
     public String acceptReturn(Authentication auth, @PathVariable Integer id, RedirectAttributes redirectAttributes) {
         Shop shop = getCurrentShop(auth);
-        if (shop == null) return "redirect:/vendor/register";
+        String redirect = checkShopAccess(shop);
+        if (redirect != null) return redirect;
         try {
             vendorService.dongYTraHang(id, shop.getMaShop());
             redirectAttributes.addFlashAttribute("successMessage", "Đã đồng ý trả hàng - hoàn tiền cho đơn #" + id);
@@ -346,7 +388,8 @@ public class VendorController {
     @PostMapping("/orders/{id}/reject-return")
     public String rejectReturn(Authentication auth, @PathVariable Integer id, @RequestParam String lyDo, RedirectAttributes redirectAttributes) {
         Shop shop = getCurrentShop(auth);
-        if (shop == null) return "redirect:/vendor/register";
+        String redirect = checkShopAccess(shop);
+        if (redirect != null) return redirect;
         try {
             vendorService.tuChoiTraHang(id, shop.getMaShop(), lyDo);
             redirectAttributes.addFlashAttribute("successMessage", "Đã từ chối trả hàng cho đơn #" + id + ". Đơn đã chuyển sang trạng thái Tranh Chấp để Quản Lý xem xét.");
@@ -360,7 +403,8 @@ public class VendorController {
     @GetMapping("/promotions")
     public String promotions(Authentication auth, Model model) {
         Shop shop = getCurrentShop(auth);
-        if (shop == null) return "redirect:/vendor/register";
+        String redirect = checkShopAccess(shop);
+        if (redirect != null) return redirect;
 
         model.addAttribute("shop", shop);
         model.addAttribute("promotions", vendorService.getShopPromotions(shop.getMaShop()));
@@ -372,7 +416,8 @@ public class VendorController {
                                   @ModelAttribute KhuyenMai km,
                                   RedirectAttributes redirectAttributes) {
         Shop shop = getCurrentShop(auth);
-        if (shop == null) return "redirect:/vendor/register";
+        String redirect = checkShopAccess(shop);
+        if (redirect != null) return redirect;
 
         try {
             vendorService.createShopPromotion(shop.getMaShop(), km);
