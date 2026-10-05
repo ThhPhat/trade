@@ -91,6 +91,22 @@ public class VendorService {
         Shop shop = shopRepository.findById(maShop)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy shop: " + maShop));
 
+        // Auto-generate ISBN if empty or null so user never has to invent or type code
+        if (sanPham.getISBN() != null && !sanPham.getISBN().trim().isEmpty()) {
+            sanPham.setISBN(sanPham.getISBN().trim());
+        } else {
+            sanPham.setISBN("BK-" + (System.currentTimeMillis() % 100000000));
+        }
+        if (sanPham.getMucTonToiThieu() == null) {
+            sanPham.setMucTonToiThieu(0);
+        }
+        if (sanPham.getSoLuongTon() == null) {
+            sanPham.setSoLuongTon(0);
+        }
+        if (sanPham.getGiaBan() == null) {
+            sanPham.setGiaBan(0);
+        }
+
         if (sanPham.getMaSP() != null) {
             SanPham existing = sanPhamRepository.findById(sanPham.getMaSP())
                     .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy sản phẩm"));
@@ -101,6 +117,7 @@ public class VendorService {
             existing.setGiaBan(sanPham.getGiaBan());
             existing.setSoLuongTon(sanPham.getSoLuongTon());
             existing.setMoTa(sanPham.getMoTa());
+            existing.setISBN(sanPham.getISBN());
             existing.setLoaiSP(sanPham.getLoaiSP() != null ? sanPham.getLoaiSP() : "sach");
             if (sanPham.getHinhAnh() != null && !sanPham.getHinhAnh().isBlank()) {
                 existing.setHinhAnh(sanPham.getHinhAnh());
@@ -122,6 +139,9 @@ public class VendorService {
             if (sanPham.getLoaiSP() == null) sanPham.setLoaiSP("sach");
             if (maDanhMuc != null) {
                 sanPham.setDanhMuc(danhMucRepository.findById(maDanhMuc).orElse(null));
+            }
+            if (sanPham.getDanhMuc() == null) {
+                sanPham.setDanhMuc(danhMucRepository.findAll().stream().findFirst().orElse(null));
             }
             if (maNXB != null) {
                 sanPham.setNhaXuatBan(nhaXuatBanRepository.findById(maNXB).orElse(null));

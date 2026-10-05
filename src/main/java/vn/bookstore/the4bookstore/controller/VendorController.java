@@ -3,6 +3,7 @@ package vn.bookstore.the4bookstore.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -29,7 +30,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Controller
 @RequestMapping("/vendor")
 @RequiredArgsConstructor
@@ -228,7 +231,8 @@ public class VendorController {
         String redirect = checkShopAccess(shop);
         if (redirect != null) return redirect;
 
-        Page<SanPham> productPage = vendorService.getShopProducts(shop.getMaShop(), keyword, PageRequest.of(page, 10));
+        Page<SanPham> productPage = vendorService.getShopProducts(shop.getMaShop(), keyword, 
+                PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC, "maSP")));
         model.addAttribute("shop", shop);
         model.addAttribute("products", productPage.getContent());
         model.addAttribute("page", productPage);
@@ -286,10 +290,15 @@ public class VendorController {
             }
             vendorService.saveShopProduct(shop.getMaShop(), sanPham, maDanhMuc, maNXB);
             redirectAttributes.addFlashAttribute("successMessage", "Lưu sản phẩm thành công!");
+            return "redirect:/vendor/products";
         } catch (Exception ex) {
-            redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+            log.error("Lỗi khi lưu sản phẩm cho shop #{}: ", shop.getMaShop(), ex);
+            redirectAttributes.addFlashAttribute("errorMessage", "Không thể lưu sách: " + ex.getMessage());
+            if (sanPham.getMaSP() != null) {
+                return "redirect:/vendor/products/edit/" + sanPham.getMaSP();
+            }
+            return "redirect:/vendor/products/add";
         }
-        return "redirect:/vendor/products";
     }
 
     @PostMapping("/products/delete/{id}")
