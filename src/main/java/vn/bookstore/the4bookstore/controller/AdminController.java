@@ -28,8 +28,10 @@ import vn.bookstore.the4bookstore.service.OrderService;
 import vn.bookstore.the4bookstore.service.TacGiaService;
 import vn.bookstore.the4bookstore.service.NhaXuatBanService;
 import vn.bookstore.the4bookstore.service.SanPhamService;
+import vn.bookstore.the4bookstore.service.CloudinaryService;
 import vn.bookstore.the4bookstore.repository.ShopRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -59,6 +61,9 @@ public class AdminController {
 
     @Autowired(required = false)
     private SanPhamService sanPhamService;
+
+    @Autowired(required = false)
+    private CloudinaryService cloudinaryService;
 
         public AdminController(SanPhamRepository sanPhamRepository,
                            DanhMucRepository danhMucRepository,
@@ -256,6 +261,7 @@ public class AdminController {
                               @RequestParam("giaBan") Integer giaBan,
                               @RequestParam(value = "trangThai", defaultValue = "DangBan") String trangThai,
                               @RequestParam(value = "moTa", required = false) String moTa,
+                              @RequestParam(value = "imageFile", required = false) MultipartFile imageFile,
                               RedirectAttributes ra) {
         try {
             SanPham book;
@@ -279,6 +285,16 @@ public class AdminController {
                 }
             } else {
                 book.setISBN(isbn.trim());
+            }
+
+            // Tải ảnh bìa lên Cloudinary nếu có file
+            if (imageFile != null && !imageFile.isEmpty() && cloudinaryService != null) {
+                String uploadedImg = cloudinaryService.uploadImage(imageFile, "books");
+                if (uploadedImg != null && !uploadedImg.isBlank()) {
+                    book.setHinhAnh(uploadedImg);
+                }
+            } else if (moTa != null && moTa.trim().startsWith("http")) {
+                book.setHinhAnh(moTa.trim());
             }
 
             danhMucRepository.findById(maDanhMuc).ifPresent(book::setDanhMuc);
