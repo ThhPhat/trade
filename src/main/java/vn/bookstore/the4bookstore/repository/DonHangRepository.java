@@ -73,5 +73,9 @@ public interface DonHangRepository extends JpaRepository<DonHang, Integer> {
 
     @Query(value = "SELECT fn_TinhPhiSan(:tongTien, :maShop)", nativeQuery = true)
     Integer calculatePlatformFee(@Param("tongTien") Integer tongTien, @Param("maShop") Integer maShop);
+
+    @org.springframework.data.jpa.repository.Modifying
+    @Query("UPDATE DonHang d SET d.shop = null WHERE d.shop.maShop = :maShop")
+    void detachShopFromOrders(@Param("maShop") Integer maShop);
 }
 

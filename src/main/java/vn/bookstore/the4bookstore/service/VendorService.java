@@ -102,7 +102,9 @@ public class VendorService {
             existing.setSoLuongTon(sanPham.getSoLuongTon());
             existing.setMoTa(sanPham.getMoTa());
             existing.setLoaiSP(sanPham.getLoaiSP() != null ? sanPham.getLoaiSP() : "sach");
-            existing.setHinhAnh(sanPham.getHinhAnh());
+            if (sanPham.getHinhAnh() != null && !sanPham.getHinhAnh().isBlank()) {
+                existing.setHinhAnh(sanPham.getHinhAnh());
+            }
             existing.setTrangThai(sanPham.getTrangThai());
 
             if (maDanhMuc != null) {

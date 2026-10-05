@@ -56,6 +56,7 @@
                     <table class="w-full text-left text-xs">
                         <thead class="bg-surface-container-low text-on-surface-variant uppercase font-bold text-[11px] border-b border-surface-container">
                             <tr>
+                                <th class="p-4 w-12 text-center">STT</th>
                                 <th class="p-4">Gian hàng</th>
                                 <th class="p-4">Chủ shop</th>
                                 <th class="p-4">Liên hệ</th>
@@ -67,7 +68,8 @@
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-surface-container">
-                            <tr th:each="s : ${shops}" class="hover:bg-surface-container-low/50 transition-colors">
+                            <tr th:each="s, iterStat : ${shops}" class="hover:bg-surface-container-low/50 transition-colors">
+                                <td class="p-4 text-center font-bold text-outline" th:text="${page.number * page.size + iterStat.count}">1</td>
                                 <td class="p-4">
                                     <div class="flex items-center gap-3">
                                         <img th:src="${s.logo != null ? s.logo : '/images/default-shop.png'}" class="w-10 h-10 rounded-xl object-cover ring-1 ring-surface-container"/>
@@ -142,9 +144,9 @@
                                             </button>
                                         </form>
 
-                                        <!-- Xóa shop (Khóa toàn bộ sản phẩm) -->
-                                        <form th:if="${s.trangThai != 'DaXoa'}" th:action="@{'/admin/shops/' + ${s.maShop} + '/delete'}" method="post" onsubmit="return confirm('CẢNH BÁO: Bạn có chắc chắn muốn XÓA gian hàng này? Thao tác này sẽ xóa shop và KHÓA TOÀN BỘ sản phẩm của gian hàng!');">
-                                            <button type="submit" class="px-3 py-1 rounded-xl bg-rose-50 text-rose-700 border border-rose-200 font-bold text-xs hover:bg-rose-100 transition-all flex items-center gap-1" title="Xóa gian hàng và khóa toàn bộ sản phẩm">
+                                        <!-- Xóa shop vĩnh viễn -->
+                                        <form th:if="${s.trangThai != 'DaXoa'}" th:action="@{'/admin/shops/' + ${s.maShop} + '/delete'}" method="post" onsubmit="return confirm('CẢNH BÁO: Bạn có chắc chắn muốn XÓA VĨNH VIỄN gian hàng này? Thao tác này sẽ xóa hoàn toàn shop khỏi hệ thống và ngừng kinh doanh các sản phẩm liên quan!');">
+                                            <button type="submit" class="px-3 py-1 rounded-xl bg-rose-50 text-rose-700 border border-rose-200 font-bold text-xs hover:bg-rose-100 transition-all flex items-center gap-1" title="Xóa gian hàng vĩnh viễn">
                                                 <span class="material-symbols-outlined text-xs">delete</span>
                                                 <span>Xóa Shop</span>
                                             </button>
@@ -153,7 +155,7 @@
                                 </td>
                             </tr>
                             <tr th:if="${shops.isEmpty()}">
-                                <td colspan="7" class="p-8 text-center text-on-surface-variant">Không có gian hàng nào được tìm thấy.</td>
+                                <td colspan="9" class="p-8 text-center text-on-surface-variant">Không có gian hàng nào được tìm thấy.</td>
                             </tr>
                         </tbody>
                     </table>

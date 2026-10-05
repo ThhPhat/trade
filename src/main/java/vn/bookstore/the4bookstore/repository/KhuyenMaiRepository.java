@@ -30,4 +30,8 @@ public interface KhuyenMaiRepository extends JpaRepository<KhuyenMai, Integer> {
     List<KhuyenMai> findByPhamViOrderByMaKMDesc(String phamVi);
 
     List<KhuyenMai> findByPhamViAndLoaiKhuyenMaiOrderByMaKMDesc(String phamVi, String loaiKhuyenMai);
+
+    @org.springframework.data.jpa.repository.Modifying
+    @Query("UPDATE KhuyenMai km SET km.shop = null WHERE km.shop.maShop = :maShop")
+    void detachShopFromPromotions(@Param("maShop") Integer maShop);
 }

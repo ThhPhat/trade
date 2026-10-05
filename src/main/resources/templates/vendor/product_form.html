@@ -16,7 +16,7 @@
                 <a th:href="@{/vendor/products}" class="px-4 py-2 bg-surface-container text-on-surface text-xs font-bold rounded-xl hover:bg-surface-container-high transition-all">Quay lại danh sách</a>
             </div>
 
-            <form th:action="@{/vendor/products/save}" method="post" class="space-y-6">
+            <form th:action="@{/vendor/products/save}" method="post" enctype="multipart/form-data" class="space-y-6">
                 <input type="hidden" name="maSP" th:value="${sanPham.maSP}"/>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -70,10 +70,52 @@
                     </div>
                 </div>
 
-                <div>
-                    <label class="block text-xs font-bold uppercase text-on-surface-variant mb-1">Link Ảnh Bìa Sách (URL)</label>
-                    <input type="url" name="hinhAnh" th:value="${sanPham.hinhAnh}" placeholder="https://..."
-                           class="w-full px-4 py-2.5 rounded-xl border border-surface-container bg-surface-container-low text-xs focus:ring-2 focus:ring-primary"/>
+                <!-- Ảnh bìa sách: Tải từ máy hoặc nhập URL -->
+                <div class="p-5 rounded-2xl bg-surface-container-low border border-surface-container space-y-4">
+                    <div class="flex items-center justify-between">
+                        <label class="block text-xs font-bold uppercase text-on-surface">Ảnh Bìa Sách (Tải từ máy / Cloudinary)</label>
+                        <span class="text-[11px] text-primary font-medium flex items-center gap-1">
+                            <span class="material-symbols-outlined text-sm">cloud_upload</span>
+                            Lưu trữ đám mây Cloudinary
+                        </span>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row items-center gap-5">
+                        <!-- Preview container -->
+                        <div class="relative w-28 h-36 rounded-2xl border-2 border-dashed border-outline-variant bg-surface-container overflow-hidden flex items-center justify-center shrink-0 shadow-inner group">
+                            <img id="bookImagePreview" 
+                                 th:src="${sanPham.hinhAnh != null and !sanPham.hinhAnh.isEmpty() ? sanPham.hinhAnh : 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=80&w=300'}" 
+                                 alt="Ảnh bìa xem trước" 
+                                 class="w-full h-full object-cover transition-transform group-hover:scale-105"/>
+                            <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-[11px] font-bold pointer-events-none">
+                                Xem trước
+                            </div>
+                        </div>
+
+                        <!-- Upload controls -->
+                        <div class="flex-1 w-full space-y-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-on-surface-variant mb-1">1. Tải ảnh từ máy tính (Khuyên dùng):</label>
+                                <input type="file" name="imageFile" id="imageFileInput" accept="image/png,image/jpeg,image/webp,image/gif"
+                                       onchange="previewUploadedImage(this)"
+                                       class="block w-full text-xs text-on-surface file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-primary file:text-on-primary hover:file:bg-primary-container file:cursor-pointer cursor-pointer border border-surface-container rounded-xl bg-surface-container-lowest"/>
+                                <p class="text-[11px] text-on-surface-variant mt-1">Hỗ trợ JPG, PNG, WEBP (Tối đa 5MB). Hệ thống sẽ tự động lưu vào Cloudinary.</p>
+                            </div>
+
+                            <div class="relative flex py-1 items-center">
+                                <div class="flex-grow border-t border-surface-container"></div>
+                                <span class="flex-shrink mx-3 text-[11px] text-outline font-bold uppercase">hoặc</span>
+                                <div class="flex-grow border-t border-surface-container"></div>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-on-surface-variant mb-1">2. Hoặc dán đường dẫn ảnh trực tiếp (URL):</label>
+                                <input type="url" name="hinhAnh" id="imageUrlInput" th:value="${sanPham.hinhAnh}" placeholder="https://..."
+                                       oninput="previewUrlImage(this.value)"
+                                       class="w-full px-4 py-2.5 rounded-xl border border-surface-container bg-surface-container-lowest text-xs focus:ring-2 focus:ring-primary"/>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div>
@@ -92,5 +134,22 @@
     </main>
 
     <footer th:replace="~{fragments/common/footer :: common_footer}"></footer>
+
+    <script>
+        function previewUploadedImage(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('bookImagePreview').src = e.target.result;
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+        function previewUrlImage(url) {
+            if (url && url.trim().startsWith('http')) {
+                document.getElementById('bookImagePreview').src = url.trim();
+            }
+        }
+    </script>
 </body>
 </html>

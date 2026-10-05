@@ -43,19 +43,22 @@ public class ProfileController {
     private final TaiKhoanRepository taiKhoanRepository;
     private final KhachHangRepository khachHangRepository;
     private final DonHangRepository donHangRepository;
-        private final VoucherDaLuuRepository voucherDaLuuRepository;
+    private final VoucherDaLuuRepository voucherDaLuuRepository;
     private final PasswordEncoder passwordEncoder;
+    private final vn.bookstore.the4bookstore.service.CloudinaryService cloudinaryService;
 
     public ProfileController(TaiKhoanRepository taiKhoanRepository,
                              KhachHangRepository khachHangRepository,
                              DonHangRepository donHangRepository,
-                                                          VoucherDaLuuRepository voucherDaLuuRepository,
-                             PasswordEncoder passwordEncoder) {
+                             VoucherDaLuuRepository voucherDaLuuRepository,
+                             PasswordEncoder passwordEncoder,
+                             vn.bookstore.the4bookstore.service.CloudinaryService cloudinaryService) {
         this.taiKhoanRepository = taiKhoanRepository;
         this.khachHangRepository = khachHangRepository;
         this.donHangRepository = donHangRepository;
-                this.voucherDaLuuRepository = voucherDaLuuRepository;
+        this.voucherDaLuuRepository = voucherDaLuuRepository;
         this.passwordEncoder = passwordEncoder;
+        this.cloudinaryService = cloudinaryService;
     }
 
     private TaiKhoan getCurrentTaiKhoan(Authentication authentication) {
@@ -354,27 +357,8 @@ public class ProfileController {
             return "redirect:/profile";
         }
 
-        String originalFilename = avatarFile.getOriginalFilename();
-        String extension = ".png";
-        if (originalFilename != null && originalFilename.contains(".")) {
-            extension = originalFilename.substring(originalFilename.lastIndexOf(".")).toLowerCase();
-            if (!extension.matches("\\.(png|jpg|jpeg|webp|gif)")) {
-                extension = ".png";
-            }
-        }
-
         try {
-            Path uploadDir = Paths.get("uploads", "avatars");
-            if (!Files.exists(uploadDir)) {
-                Files.createDirectories(uploadDir);
-            }
-
-            String filename = "avatar_" + tk.getMaTaiKhoan() + "_" + UUID.randomUUID().toString().substring(0, 8) + extension;
-            Path filePath = uploadDir.resolve(filename);
-
-            try (InputStream inputStream = avatarFile.getInputStream()) {
-                Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
-            }
+            String avatarUrl = cloudinaryService.uploadImage(avatarFile, "avatars");
 
             KhachHang kh = khachHangRepository.findByTaiKhoan(tk).orElseGet(() -> {
                 KhachHang newKh = new KhachHang();
@@ -385,7 +369,7 @@ public class ProfileController {
                 return newKh;
             });
 
-            kh.setAnhDaiDien("/uploads/avatars/" + filename);
+            kh.setAnhDaiDien(avatarUrl);
             khachHangRepository.save(kh);
 
             redirectAttributes.addFlashAttribute("avatarSuccess", "Tải lên ảnh đại diện thành công!");

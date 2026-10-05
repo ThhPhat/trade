@@ -36,6 +36,7 @@
             <table class="w-full text-left text-xs">
                 <thead class="bg-surface-container-low text-on-surface-variant uppercase font-bold text-[11px] border-b border-surface-container">
                     <tr>
+                        <th class="p-4 w-12 text-center">STT</th>
                         <th class="p-4">Hình ảnh</th>
                         <th class="p-4">Tên sách</th>
                         <th class="p-4">Danh mục</th>
@@ -47,13 +48,18 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-surface-container">
-                    <tr th:each="sp : ${products}" class="hover:bg-surface-container-low/50 transition-colors">
+                    <tr th:each="sp, iterStat : ${products}" class="hover:bg-surface-container-low/50 transition-colors">
+                        <td class="p-4 text-center font-bold text-outline" th:text="${page.number * page.size + iterStat.count}">1</td>
                         <td class="p-4">
                             <img th:src="${sp.getHinhAnh()}" class="w-12 h-16 object-cover rounded-lg shadow-sm border border-surface-container"/>
                         </td>
                         <td class="p-4 font-bold text-on-surface">
                             <div th:text="${sp.tenSP}">Tên sách</div>
-                            <div class="text-[11px] text-on-surface-variant font-normal" th:text="'ISBN: ' + (${sp.ISBN != null ? sp.ISBN : 'N/A'})">ISBN</div>
+                            <div class="flex items-center gap-2 mt-0.5 text-[11px] text-on-surface-variant font-normal">
+                                <span class="font-mono text-primary font-bold" th:text="'Mã SP: #' + ${sp.maSP}">Mã SP: #1</span>
+                                <span class="text-outline">|</span>
+                                <span th:text="'ISBN: ' + (${sp.ISBN != null and !sp.ISBN.isEmpty() ? sp.ISBN : 'N/A'})">ISBN</span>
+                            </div>
                         </td>
                         <td class="p-4 text-on-surface-variant" th:text="${sp.danhMuc != null ? sp.danhMuc.tenDanhMuc : 'N/A'}">Danh mục</td>
                         <td class="p-4 font-bold text-primary" th:text="${#numbers.formatDecimal(sp.giaBan, 0, 'COMMA', 0, 'POINT')} + ' đ'">Giá</td>
@@ -80,7 +86,7 @@
                         </td>
                     </tr>
                     <tr th:if="${products.isEmpty()}">
-                        <td colspan="8" class="p-8 text-center text-on-surface-variant">Shop chưa có sản phẩm nào. Hãy nhấn nút đăng sách mới!</td>
+                        <td colspan="9" class="p-8 text-center text-on-surface-variant">Shop chưa có sản phẩm nào. Hãy nhấn nút đăng sách mới!</td>
                     </tr>
                 </tbody>
             </table>

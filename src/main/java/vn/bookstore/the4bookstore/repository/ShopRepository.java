@@ -19,7 +19,9 @@ public interface ShopRepository extends JpaRepository<Shop, Integer> {
     long countByTrangThai(String trangThai);
     List<Shop> findByTrangThai(String trangThai);
     Page<Shop> findByTrangThai(String trangThai, Pageable pageable);
+    Page<Shop> findByTrangThaiNot(String trangThai, Pageable pageable);
     Page<Shop> findByTenShopContainingIgnoreCase(String keyword, Pageable pageable);
+    Page<Shop> findByTenShopContainingIgnoreCaseAndTrangThaiNot(String keyword, String trangThai, Pageable pageable);
     List<Shop> findByTenShopContainingIgnoreCaseAndTrangThai(String keyword, String trangThai);
 
     @org.springframework.data.jpa.repository.Query(value = "SELECT fn_DemSachCuaShop(:maShop)", nativeQuery = true)

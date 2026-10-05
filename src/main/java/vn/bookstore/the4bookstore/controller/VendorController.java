@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import vn.bookstore.the4bookstore.entity.*;
 import vn.bookstore.the4bookstore.repository.*;
+import org.springframework.web.multipart.MultipartFile;
+import vn.bookstore.the4bookstore.service.CloudinaryService;
 import vn.bookstore.the4bookstore.service.ShopService;
 import vn.bookstore.the4bookstore.service.VendorService;
 
@@ -35,6 +37,7 @@ public class VendorController {
 
     private final ShopService shopService;
     private final VendorService vendorService;
+    private final CloudinaryService cloudinaryService;
     private final TaiKhoanRepository taiKhoanRepository;
     private final DanhMucRepository danhMucRepository;
     private final NhaXuatBanRepository nhaXuatBanRepository;
@@ -185,6 +188,8 @@ public class VendorController {
                                 @RequestParam String diaChiShop,
                                 @RequestParam String soDienThoai,
                                 @RequestParam String emailShop,
+                                @RequestParam(value = "logoFile", required = false) MultipartFile logoFile,
+                                @RequestParam(value = "bannerFile", required = false) MultipartFile bannerFile,
                                 @RequestParam(required = false) String logo,
                                 @RequestParam(required = false) String banner,
                                 RedirectAttributes redirectAttributes) {
@@ -193,6 +198,18 @@ public class VendorController {
         if (redirect != null) return redirect;
 
         try {
+            if (logoFile != null && !logoFile.isEmpty()) {
+                String uploadedLogo = cloudinaryService.uploadImage(logoFile, "shops");
+                if (uploadedLogo != null && !uploadedLogo.isBlank()) {
+                    logo = uploadedLogo;
+                }
+            }
+            if (bannerFile != null && !bannerFile.isEmpty()) {
+                String uploadedBanner = cloudinaryService.uploadImage(bannerFile, "shops");
+                if (uploadedBanner != null && !uploadedBanner.isBlank()) {
+                    banner = uploadedBanner;
+                }
+            }
             shopService.updateShopProfile(shop.getMaShop(), tenShop, moTa, diaChiShop, soDienThoai, emailShop, logo, banner);
             redirectAttributes.addFlashAttribute("successMessage", "Cập nhật hồ sơ gian hàng thành công!");
         } catch (Exception ex) {
@@ -252,6 +269,7 @@ public class VendorController {
     @PostMapping("/products/save")
     public String saveProduct(Authentication auth,
                               @ModelAttribute SanPham sanPham,
+                              @RequestParam(value = "imageFile", required = false) MultipartFile imageFile,
                               @RequestParam(required = false) Integer maDanhMuc,
                               @RequestParam(required = false) Integer maNXB,
                               RedirectAttributes redirectAttributes) {
@@ -260,6 +278,12 @@ public class VendorController {
         if (redirect != null) return redirect;
 
         try {
+            if (imageFile != null && !imageFile.isEmpty()) {
+                String uploadedImg = cloudinaryService.uploadImage(imageFile, "books");
+                if (uploadedImg != null && !uploadedImg.isBlank()) {
+                    sanPham.setHinhAnh(uploadedImg);
+                }
+            }
             vendorService.saveShopProduct(shop.getMaShop(), sanPham, maDanhMuc, maNXB);
             redirectAttributes.addFlashAttribute("successMessage", "Lưu sản phẩm thành công!");
         } catch (Exception ex) {

@@ -26,13 +26,19 @@ public class ShopService {
     private final ShopRepository shopRepository;
     private final TaiKhoanRepository taiKhoanRepository;
     private final SanPhamRepository sanPhamRepository;
+    private final vn.bookstore.the4bookstore.repository.DonHangRepository donHangRepository;
+    private final vn.bookstore.the4bookstore.repository.KhuyenMaiRepository khuyenMaiRepository;
 
     public ShopService(ShopRepository shopRepository,
                        TaiKhoanRepository taiKhoanRepository,
-                       SanPhamRepository sanPhamRepository) {
+                       SanPhamRepository sanPhamRepository,
+                       vn.bookstore.the4bookstore.repository.DonHangRepository donHangRepository,
+                       vn.bookstore.the4bookstore.repository.KhuyenMaiRepository khuyenMaiRepository) {
         this.shopRepository = shopRepository;
         this.taiKhoanRepository = taiKhoanRepository;
         this.sanPhamRepository = sanPhamRepository;
+        this.donHangRepository = donHangRepository;
+        this.khuyenMaiRepository = khuyenMaiRepository;
     }
 
     @Transactional(readOnly = true)
@@ -149,17 +155,32 @@ public class ShopService {
 
     public void xoaShop(Integer maShop) {
         Shop shop = shopRepository.findById(maShop)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy shop"));
-        shop.setTrangThai("DaXoa");
-        shop.setNgayCapNhat(LocalDateTime.now());
-        shopRepository.save(shop);
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy shop: " + maShop));
 
-        // Khi một shop bị xóa thì sẽ khóa toàn bộ sản phẩm của shop
+        // 1. Khóa và gỡ liên kết shop khỏi toàn bộ sản phẩm của shop
         List<SanPham> products = sanPhamRepository.findByShop_MaShop(maShop);
         for (SanPham sp : products) {
+            sp.setShop(null);
             sp.setTrangThaiKhoa("BiKhoaBoiAdmin");
+            sp.setTrangThai("NgungBan");
             sanPhamRepository.save(sp);
         }
+
+        // 2. Gỡ liên kết shop khỏi các đơn hàng lịch sử
+        donHangRepository.detachShopFromOrders(maShop);
+
+        // 3. Gỡ liên kết shop khỏi khuyến mãi
+        khuyenMaiRepository.detachShopFromPromotions(maShop);
+
+        // 4. Trả vai trò tài khoản chủ shop về USER / KHACHHANG
+        if (shop.getTaiKhoan() != null) {
+            TaiKhoan tk = shop.getTaiKhoan();
+            tk.setVaiTro("USER");
+            taiKhoanRepository.save(tk);
+        }
+
+        // 5. Xóa hoàn toàn bản ghi gian hàng khỏi cơ sở dữ liệu
+        shopRepository.delete(shop);
     }
 
     @Transactional(readOnly = true)
@@ -178,7 +199,7 @@ public class ShopService {
 
     @Transactional(readOnly = true)
     public Page<Shop> getAllShops(Pageable pageable) {
-        return shopRepository.findAll(pageable);
+        return shopRepository.findByTrangThaiNot("DaXoa", pageable);
     }
 
     @Transactional(readOnly = true)
@@ -188,7 +209,10 @@ public class ShopService {
 
     @Transactional(readOnly = true)
     public Page<Shop> searchShops(String keyword, Pageable pageable) {
-        return shopRepository.findByTenShopContainingIgnoreCase(keyword, pageable);
+        if (keyword == null || keyword.isBlank()) {
+            return getAllShops(pageable);
+        }
+        return shopRepository.findByTenShopContainingIgnoreCaseAndTrangThaiNot(keyword.trim(), "DaXoa", pageable);
     }
 
     private static final Pattern NONLATIN = Pattern.compile("[^\\w-]");

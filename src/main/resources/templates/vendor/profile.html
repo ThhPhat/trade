@@ -29,32 +29,68 @@
                 <span th:text="${errorMessage}"></span>
             </div>
 
-            <form th:action="@{/vendor/profile}" method="post" class="space-y-6">
-                <!-- Banner Preview -->
-                <div>
-                    <label class="block text-xs font-bold uppercase text-on-surface-variant mb-2">Ảnh Bìa / Banner Gian Hàng (URL)</label>
-                    <div class="h-44 w-full rounded-2xl overflow-hidden bg-surface-container-low border border-surface-container mb-3 relative">
-                        <img th:src="${shop.banner != null ? shop.banner : 'https://images.unsplash.com/photo-1507842229451-7f01be45c06b?w=1200'}"
-                             alt="Banner Shop" class="w-full h-full object-cover"/>
+            <form th:action="@{/vendor/profile}" method="post" enctype="multipart/form-data" class="space-y-6">
+                <!-- Banner Preview & Upload -->
+                <div class="p-5 rounded-2xl bg-surface-container-low border border-surface-container space-y-3">
+                    <div class="flex items-center justify-between">
+                        <label class="block text-xs font-bold uppercase text-on-surface">Ảnh Bìa / Banner Gian Hàng</label>
+                        <span class="text-[11px] text-primary font-medium flex items-center gap-1">
+                            <span class="material-symbols-outlined text-sm">cloud_upload</span>
+                            Tự động đồng bộ Cloudinary
+                        </span>
                     </div>
-                    <input type="url" name="banner" th:value="${shop.banner}" placeholder="https://..."
-                           class="w-full px-4 py-2.5 rounded-xl border border-surface-container bg-surface-container-low text-xs focus:ring-2 focus:ring-primary"/>
+                    <div class="h-44 w-full rounded-2xl overflow-hidden bg-surface-container border border-surface-container relative shadow-inner group">
+                        <img id="bannerPreview"
+                             th:src="${shop.banner != null and !shop.banner.isEmpty() ? shop.banner : 'https://images.unsplash.com/photo-1507842229451-7f01be45c06b?w=1200'}"
+                             alt="Banner Shop" class="w-full h-full object-cover transition-transform group-hover:scale-105"/>
+                        <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-bold pointer-events-none">
+                            Xem trước ảnh bìa
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+                        <div>
+                            <label class="block text-xs font-semibold text-on-surface-variant mb-1">Tải từ máy tính (Khuyên dùng):</label>
+                            <input type="file" name="bannerFile" id="bannerFileInput" accept="image/png,image/jpeg,image/webp,image/gif"
+                                   onchange="previewImageFile(this, 'bannerPreview')"
+                                   class="block w-full text-xs text-on-surface file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-primary file:text-on-primary hover:file:bg-primary-container file:cursor-pointer cursor-pointer border border-surface-container rounded-xl bg-surface-container-lowest"/>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-on-surface-variant mb-1">Hoặc dán URL ảnh bìa:</label>
+                            <input type="url" name="banner" id="bannerUrlInput" th:value="${shop.banner}" placeholder="https://..."
+                                   oninput="previewImageUrl(this.value, 'bannerPreview')"
+                                   class="w-full px-4 py-2 rounded-xl border border-surface-container bg-surface-container-lowest text-xs focus:ring-2 focus:ring-primary"/>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Logo & Shop Name -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label class="block text-xs font-bold uppercase text-on-surface-variant mb-1">Ảnh Đại Diện / Logo (URL)</label>
-                        <div class="flex items-center gap-4 mb-2">
-                            <img th:src="${shop.logo != null ? shop.logo : '/images/default-shop.png'}" class="w-14 h-14 rounded-2xl object-cover ring-2 ring-primary/20"/>
-                            <input type="url" name="logo" th:value="${shop.logo}" placeholder="https://..."
-                                   class="flex-1 px-4 py-2.5 rounded-xl border border-surface-container bg-surface-container-low text-xs focus:ring-2 focus:ring-primary"/>
+                    <div class="p-5 rounded-2xl bg-surface-container-low border border-surface-container space-y-3">
+                        <label class="block text-xs font-bold uppercase text-on-surface">Ảnh Đại Diện / Logo Shop</label>
+                        <div class="flex items-center gap-4">
+                            <div class="w-16 h-16 rounded-2xl overflow-hidden bg-surface-container border border-surface-container relative shrink-0 shadow-inner group">
+                                <img id="logoPreview"
+                                     th:src="${shop.logo != null and !shop.logo.isEmpty() ? shop.logo : '/images/default-shop.png'}"
+                                     class="w-full h-full object-cover transition-transform group-hover:scale-105"/>
+                            </div>
+                            <div class="flex-1 space-y-2">
+                                <input type="file" name="logoFile" id="logoFileInput" accept="image/png,image/jpeg,image/webp,image/gif"
+                                       onchange="previewImageFile(this, 'logoPreview')"
+                                       class="block w-full text-xs text-on-surface file:mr-2 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-primary file:text-on-primary hover:file:bg-primary-container file:cursor-pointer cursor-pointer border border-surface-container rounded-xl bg-surface-container-lowest"/>
+                                <input type="url" name="logo" id="logoUrlInput" th:value="${shop.logo}" placeholder="Hoặc dán URL: https://..."
+                                       oninput="previewImageUrl(this.value, 'logoPreview')"
+                                       class="w-full px-3 py-1.5 rounded-xl border border-surface-container bg-surface-container-lowest text-xs focus:ring-2 focus:ring-primary"/>
+                            </div>
                         </div>
                     </div>
-                    <div>
-                        <label class="block text-xs font-bold uppercase text-on-surface-variant mb-1">Tên Gian Hàng <span class="text-error">*</span></label>
-                        <input type="text" name="tenShop" th:value="${shop.tenShop}" required
-                               class="w-full px-4 py-2.5 rounded-xl border border-surface-container bg-surface-container-low text-xs font-bold focus:ring-2 focus:ring-primary"/>
+
+                    <div class="p-5 rounded-2xl bg-surface-container-low border border-surface-container flex flex-col justify-between">
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-on-surface-variant mb-1">Tên Gian Hàng <span class="text-error">*</span></label>
+                            <input type="text" name="tenShop" th:value="${shop.tenShop}" required
+                                   class="w-full px-4 py-2.5 rounded-xl border border-surface-container bg-surface-container-lowest text-xs font-bold focus:ring-2 focus:ring-primary"/>
+                        </div>
+                        <p class="text-[11px] text-on-surface-variant mt-2">Tên shop là thương hiệu hiển thị trực tiếp với khách mua hàng.</p>
                     </div>
                 </div>
 
@@ -93,5 +129,24 @@
     </main>
 
     <footer th:replace="~{fragments/common/footer :: common_footer}"></footer>
+
+    <script>
+        function previewImageFile(input, targetImgId) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = document.getElementById(targetImgId);
+                    if (img) img.src = e.target.result;
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+        function previewImageUrl(url, targetImgId) {
+            if (url && url.trim().startsWith('http')) {
+                const img = document.getElementById(targetImgId);
+                if (img) img.src = url.trim();
+            }
+        }
+    </script>
 </body>
 </html>
