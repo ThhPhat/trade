@@ -451,7 +451,7 @@ CREATE TABLE `khach_hang` (
   UNIQUE KEY `UK6j1oks4nrqpqnl0b6cnp85vrd` (`so_dien_thoai`),
   UNIQUE KEY `UKiv6nhi0meph4iaotgx5h0yg63` (`ma_tai_khoan`),
   CONSTRAINT `FKchhnalcpr9cvc1leppvfftoh5` FOREIGN KEY (`ma_tai_khoan`) REFERENCES `tai_khoan` (`ma_tai_khoan`)
-) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -998,7 +998,7 @@ CREATE TABLE `shop` (
 
 LOCK TABLES `shop` WRITE;
 /*!40000 ALTER TABLE `shop` DISABLE KEYS */;
-INSERT INTO `shop` VALUES (1,4,'The4BookStore Official','the4bookstore-official','https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=150','https://images.unsplash.com/photo-1507842229451-7f01be45c06b?w=1200','Gian hàng chính thức của hệ thống The4BookStore.','Số 1 Võ Văn Ngân, TP. Thủ Đức, TP. Hồ Chí Minh','0903943105','official@the4bookstore.vn',5.00,'HoatDong','2026-10-05 13:11:19','2026-10-05 08:52:44'),(2,22,'Nhà Sách Trí Tuệ','nha-sach-tri-tue','https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=150','https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=1200','Chuyên cung cấp sách kỹ năng sống và sách kinh tế chọn lọc.','123 Cầu Giấy, Hà Nội','0912345678','trituebook@gmail.com',5.00,'HoatDong','2026-10-05 13:11:31',NULL),(3,16,'FAHASA','fahasa','https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=150','https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=150','Thử nghiệm','462/18 Nguyễn Tri Phương','0967238940','thangphatnekea21333@gmail.com',5.00,'HoatDong','2026-10-05 06:59:49','2026-10-05 11:36:48'),(5,1,'Hieu Sach Hoa Sen','hieu-sach-hoa-sen','https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=150','https://images.unsplash.com/photo-1507842229451-7f01be45c06b?w=1200','Gian hang thu nghiem cho duyet','123 Duong Sach, Q.1','0987654321','hoasen@test.com',5.00,'HoatDong','2026-10-05 07:21:01','2026-10-05 07:21:02');
+INSERT INTO `shop` VALUES (1,4,'The4BookStore Official','the4bookstore-official','https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=150','https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=150','Gian hàng chính thức của hệ thống The4BookStore.','Số 1 Võ Văn Ngân, TP. Thủ Đức, TP. Hồ Chí Minh','0903943105','official@the4bookstore.vn',5.00,'HoatDong','2026-10-05 13:11:19','2026-10-05 12:58:50'),(2,22,'Nhà Sách Trí Tuệ','nha-sach-tri-tue','https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=150','https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=1200','Chuyên cung cấp sách kỹ năng sống và sách kinh tế chọn lọc.','123 Cầu Giấy, Hà Nội','0912345678','trituebook@gmail.com',5.00,'HoatDong','2026-10-05 13:11:31',NULL),(3,16,'FAHASA','fahasa','https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=150','https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=150','Thử nghiệm','462/18 Nguyễn Tri Phương','0967238940','thangphatnekea21333@gmail.com',5.00,'HoatDong','2026-10-05 06:59:49','2026-10-05 11:36:48'),(5,1,'Hieu Sach Hoa Sen','hieu-sach-hoa-sen','https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=150','https://images.unsplash.com/photo-1507842229451-7f01be45c06b?w=1200','Gian hang thu nghiem cho duyet','123 Duong Sach, Q.1','0987654321','hoasen@test.com',5.00,'HoatDong','2026-10-05 07:21:01','2026-10-05 07:21:02');
 /*!40000 ALTER TABLE `shop` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1048,7 +1048,7 @@ CREATE TABLE `tai_khoan` (
   UNIQUE KEY `UKd0golrlr34gkql6so1i4gbuw5` (`email`),
   UNIQUE KEY `UKgkh4qh51gkiu8ccu1ybn1q7h7` (`ten_dang_nhap`),
   KEY `idx_tk_vaitro_trangthai` (`vai_tro`,`trang_thai`)
-) ENGINE=InnoDB AUTO_INCREMENT=29 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=34 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1057,7 +1057,7 @@ CREATE TABLE `tai_khoan` (
 
 LOCK TABLES `tai_khoan` WRITE;
 /*!40000 ALTER TABLE `tai_khoan` DISABLE KEYS */;
-INSERT INTO `tai_khoan` VALUES (1,'hoasen@the4bookstore.vn','.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi','2026-09-21 17:59:56.441901','vendor_hoasen','HoatDong','VENDOR',NULL,NULL),(4,'admin@the4bookstore.vn','.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi','2026-09-21 17:59:56.500059','admin','HoatDong','ADMIN',NULL,NULL),(5,'manager@the4bookstore.vn','.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi','2026-09-21 17:59:56.503747','manager','HoatDong','MANAGER',NULL,NULL),(16,'fahasa@the4bookstore.vn','.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi','2026-09-24 07:49:19.934471','vendor_fahasa','HoatDong','VENDOR','GOOGLE','107848872169038249996'),(17,'user@the4bookstore.vn','.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi','2026-09-25 14:59:02.302868','user','HoatDong','USER','GOOGLE','114426590934798871845'),(22,'vendor@the4bookstore.vn','.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi','2026-10-05 13:11:31.000000','vendor_demo','HoatDong','VENDOR','LOCAL',NULL);
+INSERT INTO `tai_khoan` VALUES (1,'hoasen@the4bookstore.vn','$2a$10$QurYuGywR9fGOvn1lOVJxOPO/TC3KXmuWll.T8mcxFYphvqASkiAC','2026-09-21 17:59:56.441901','vendor_hoasen','HoatDong','VENDOR',NULL,NULL),(4,'admin@the4bookstore.vn','$2a$10$QurYuGywR9fGOvn1lOVJxOPO/TC3KXmuWll.T8mcxFYphvqASkiAC','2026-09-21 17:59:56.500059','admin','HoatDong','ADMIN',NULL,NULL),(5,'manager@the4bookstore.vn','$2a$10$QurYuGywR9fGOvn1lOVJxOPO/TC3KXmuWll.T8mcxFYphvqASkiAC','2026-09-21 17:59:56.503747','manager','HoatDong','MANAGER',NULL,NULL),(16,'fahasa@the4bookstore.vn','$2a$10$QurYuGywR9fGOvn1lOVJxOPO/TC3KXmuWll.T8mcxFYphvqASkiAC','2026-09-24 07:49:19.934471','vendor_fahasa','HoatDong','VENDOR','GOOGLE','107848872169038249996'),(17,'user@the4bookstore.vn','$2a$10$QurYuGywR9fGOvn1lOVJxOPO/TC3KXmuWll.T8mcxFYphvqASkiAC','2026-09-25 14:59:02.302868','user','HoatDong','USER','GOOGLE','114426590934798871845'),(22,'vendor@the4bookstore.vn','$2a$10$QurYuGywR9fGOvn1lOVJxOPO/TC3KXmuWll.T8mcxFYphvqASkiAC','2026-10-05 13:11:31.000000','vendor_demo','HoatDong','VENDOR','LOCAL',NULL);
 /*!40000 ALTER TABLE `tai_khoan` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2310,4 +2310,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-10-05 19:51:14
+-- Dump completed on 2026-10-05 20:09:16

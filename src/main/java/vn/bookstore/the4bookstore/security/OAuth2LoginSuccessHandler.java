@@ -61,7 +61,10 @@ public class OAuth2LoginSuccessHandler extends SavedRequestAwareAuthenticationSu
 
         // 3. Phân luồng điều hướng theo vai trò
         boolean isAdminOrManager = authentication.getAuthorities().stream().anyMatch(a ->
-                "ROLE_ADMIN".equals(a.getAuthority()) || "ROLE_QUANLY".equals(a.getAuthority())
+                "ROLE_ADMIN".equals(a.getAuthority()) || "ROLE_QUANLY".equals(a.getAuthority()) || "ROLE_MANAGER".equals(a.getAuthority())
+        );
+        boolean isVendor = authentication.getAuthorities().stream().anyMatch(a ->
+                "ROLE_VENDOR".equals(a.getAuthority())
         );
         boolean isWarehouse = authentication.getAuthorities().stream().anyMatch(a ->
                 "ROLE_NHANVIENKHO".equals(a.getAuthority())
@@ -79,6 +82,15 @@ public class OAuth2LoginSuccessHandler extends SavedRequestAwareAuthenticationSu
                 return;
             }
             getRedirectStrategy().sendRedirect(request, response, "/admin/dashboard");
+            return;
+        }
+
+        if (isVendor) {
+            if (savedRequest != null && savedRequest.getRedirectUrl().contains("/vendor")) {
+                getRedirectStrategy().sendRedirect(request, response, savedRequest.getRedirectUrl());
+                return;
+            }
+            getRedirectStrategy().sendRedirect(request, response, "/vendor/dashboard");
             return;
         }
 

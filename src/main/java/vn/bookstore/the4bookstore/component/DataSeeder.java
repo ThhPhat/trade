@@ -57,47 +57,39 @@ public class DataSeeder implements CommandLineRunner {
 
         String defaultPassword = passwordEncoder.encode("123456");
 
-        createAccountIfNotFound("khachhang", "KHACHHANG", defaultPassword);
-        createAccountIfNotFound("banhang", "NHANVIENBANHANG", defaultPassword);
-        createAccountIfNotFound("thukho", "NHANVIENKHO", defaultPassword);
-        createAccountIfNotFound("admin", "ADMIN", defaultPassword);
-        createAccountIfNotFound("quanly", "QUANLY", defaultPassword);
+        // 1. Tạo hoặc đảm bảo 3 tài khoản nòng cốt: ADMIN, MANAGER, USER
+        createAccountIfNotFound("admin", "ADMIN", defaultPassword, "admin@the4bookstore.vn");
+        createAccountIfNotFound("manager", "MANAGER", defaultPassword, "manager@the4bookstore.vn");
+        createAccountIfNotFound("user", "USER", defaultPassword, "user@the4bookstore.vn");
 
-        // Đảm bảo tài khoản admin và quanly luôn có mật khẩu là 123456 và trạng thái HoatDong
+        // Luôn đảm bảo mật khẩu 123456 và trạng thái HoatDong
         taiKhoanRepository.findByTenDangNhap("admin").ifPresent(tk -> {
             tk.setMatKhauHash(defaultPassword);
             tk.setVaiTro("ADMIN");
             tk.setTrangThai("HoatDong");
             taiKhoanRepository.save(tk);
         });
-        taiKhoanRepository.findByTenDangNhap("quanly").ifPresent(tk -> {
+        taiKhoanRepository.findByTenDangNhap("manager").ifPresent(tk -> {
             tk.setMatKhauHash(defaultPassword);
-            tk.setVaiTro("QUANLY");
+            tk.setVaiTro("MANAGER");
+            tk.setTrangThai("HoatDong");
+            taiKhoanRepository.save(tk);
+        });
+        taiKhoanRepository.findByTenDangNhap("user").ifPresent(tk -> {
+            tk.setMatKhauHash(defaultPassword);
+            tk.setVaiTro("USER");
             tk.setTrangThai("HoatDong");
             taiKhoanRepository.save(tk);
         });
 
-        // Tự động cấp quyền ADMIN cho các tài khoản của nhà phát triển
-        java.util.List<String> devAccounts = java.util.List.of("caotuong", "caotuong14@gmail.com", "caotuong06@gmail.com", "24110375@student.hcmute.edu.vn");
-        for (String id : devAccounts) {
-            taiKhoanRepository.findByTenDangNhap(id).or(() -> taiKhoanRepository.findByEmail(id)).ifPresent(tk -> {
-                tk.setVaiTro("ADMIN");
+        // Đảm bảo mật khẩu 123456 cho các tài khoản Shop (Vendor)
+        for (String vendorUser : java.util.List.of("vendor_demo", "vendor_fahasa", "vendor_hoasen")) {
+            taiKhoanRepository.findByTenDangNhap(vendorUser).ifPresent(tk -> {
+                tk.setMatKhauHash(defaultPassword);
+                tk.setVaiTro("VENDOR");
                 tk.setTrangThai("HoatDong");
                 taiKhoanRepository.save(tk);
             });
-        }
-
-        // Khởi tạo tài khoản kiểm thử cho email SMTP nếu được cấu hình trong .env
-        String configuredEmail = (mailUsername != null && !mailUsername.isBlank()) ? mailUsername.trim() : System.getenv("MAIL_USERNAME");
-        if (configuredEmail != null && !configuredEmail.isBlank() && taiKhoanRepository.findByEmail(configuredEmail.trim()).isEmpty()) {
-            TaiKhoan tkMail = new TaiKhoan();
-            tkMail.setTenDangNhap("the4bookstore_user");
-            tkMail.setEmail(configuredEmail.trim());
-            tkMail.setMatKhauHash(defaultPassword);
-            tkMail.setVaiTro("KHACHHANG");
-            tkMail.setTrangThai("HoatDong");
-            tkMail.setAuthProvider("LOCAL");
-            taiKhoanRepository.save(tkMail);
         }
 
         seedBookstoreData();
@@ -105,24 +97,26 @@ public class DataSeeder implements CommandLineRunner {
         seedStationeryAndGifts();
     }
 
-    private void createAccountIfNotFound(String username, String role, String password) {
+    private void createAccountIfNotFound(String username, String role, String password, String email) {
         if (taiKhoanRepository.findByTenDangNhap(username).isEmpty()) {
             TaiKhoan tk = new TaiKhoan();
             tk.setTenDangNhap(username);
             tk.setMatKhauHash(password);
             tk.setVaiTro(role);
             tk.setTrangThai("HoatDong");
-            tk.setEmail(username + "@gmail.com");
+            tk.setEmail(email != null ? email : username + "@the4bookstore.vn");
             tk = taiKhoanRepository.save(tk);
 
-            if ("KHACHHANG".equals(role)) {
-                KhachHang kh = new KhachHang();
-                kh.setHoTen("Khách hàng mặc định");
-                kh.setSoDienThoai("0999999999");
-                kh.setEmail(tk.getEmail());
-                kh.setDiaChi("TP.HCM");
-                kh.setTaiKhoan(tk);
-                khachHangRepository.save(kh);
+            if ("USER".equals(role) || "KHACHHANG".equals(role)) {
+                if (khachHangRepository.findByTaiKhoan(tk).isEmpty()) {
+                    KhachHang kh = new KhachHang();
+                    kh.setHoTen("Người Dùng Test");
+                    kh.setSoDienThoai("0901234567");
+                    kh.setEmail(tk.getEmail());
+                    kh.setDiaChi("123 Võ Văn Ngân, TP. Thủ Đức, TP.HCM");
+                    kh.setTaiKhoan(tk);
+                    khachHangRepository.save(kh);
+                }
             }
         }
     }
