@@ -1,5 +1,7 @@
 package vn.bookstore.the4bookstore.controller;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
@@ -7,6 +9,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import vn.bookstore.the4bookstore.entity.*;
 import vn.bookstore.the4bookstore.repository.*;
@@ -14,16 +17,29 @@ import vn.bookstore.the4bookstore.security.CustomOAuth2User;
 import vn.bookstore.the4bookstore.security.CustomOidcUser;
 import vn.bookstore.the4bookstore.security.CustomUserDetails;
 import vn.bookstore.the4bookstore.service.DonHangService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.time.LocalDateTime;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
+import java.util.Optional;
+import jakarta.servlet.http.HttpServletRequest;
 
 @Controller
 @RequestMapping("/don-hang")
 public class OrderController {
+
+    private static final Logger logger = LoggerFactory.getLogger(OrderController.class);
+
+    @Value("${vietqr.webhook-secret:}")
+    private String webhookSecret;
 
     private final DonHangService donHangService;
     private final KhachHangRepository khachHangRepository;
@@ -31,19 +47,22 @@ public class OrderController {
     private final DonHangRepository donHangRepository;
     private final ThanhToanRepository thanhToanRepository;
     private final vn.bookstore.the4bookstore.service.VietQRService vietQRService;
+    private final ShopRepository shopRepository;
 
     public OrderController(DonHangService donHangService,
                            KhachHangRepository khachHangRepository,
                            TaiKhoanRepository taiKhoanRepository,
                            DonHangRepository donHangRepository,
                            ThanhToanRepository thanhToanRepository,
-                           vn.bookstore.the4bookstore.service.VietQRService vietQRService) {
+                           vn.bookstore.the4bookstore.service.VietQRService vietQRService,
+                           ShopRepository shopRepository) {
         this.donHangService = donHangService;
         this.khachHangRepository = khachHangRepository;
         this.taiKhoanRepository = taiKhoanRepository;
         this.donHangRepository = donHangRepository;
         this.thanhToanRepository = thanhToanRepository;
         this.vietQRService = vietQRService;
+        this.shopRepository = shopRepository;
     }
 
     // ==================== Helper: Lấy TaiKhoan từ Authentication ====================
@@ -111,6 +130,19 @@ public class OrderController {
             kh.setNgayDangKy(LocalDateTime.now());
             return khachHangRepository.save(kh);
         });
+    }
+
+    private Shop getCurrentShop(Authentication authentication) {
+        TaiKhoan tk = getCurrentTaiKhoan(authentication);
+        if (tk == null) return null;
+        Optional<Shop> userShop = shopRepository.findByTaiKhoan(tk);
+        if (userShop.isPresent()) {
+            return userShop.get();
+        }
+        if ("ADMIN".equalsIgnoreCase(tk.getVaiTro()) || "MANAGER".equalsIgnoreCase(tk.getVaiTro()) || "QUANLY".equalsIgnoreCase(tk.getVaiTro())) {
+            return shopRepository.findById(1).orElse(null);
+        }
+        return null;
     }
 
     // ==================== Lịch sử đơn hàng ====================
@@ -380,6 +412,19 @@ public class OrderController {
         }
 
         DonHang dh = donHangService.getOrderById(id);
+
+        boolean isAdminOrManager = authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN")
+                        || a.getAuthority().equals("ROLE_MANAGER")
+                        || a.getAuthority().equals("ROLE_QUANLY"));
+
+        if (!isAdminOrManager) {
+            Shop currentShop = getCurrentShop(authentication);
+            if (currentShop == null || dh.getShop() == null || !dh.getShop().getMaShop().equals(currentShop.getMaShop())) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền xác nhận thanh toán cho đơn hàng của shop khác!");
+            }
+        }
+
         dh.setTrangThaiThanhToan("DaThanhToan");
         if ("ChoThanhToan".equalsIgnoreCase(dh.getTrangThai())) {
             dh.setTrangThai("ChoXuLy");
@@ -411,14 +456,42 @@ public class OrderController {
         }
     }
 
-    // ==================== Webhook Ngân hàng / Casso / SePAY ====================
-    @PostMapping("/api/vietqr-webhook")
-    @ResponseBody
-    public ResponseEntity<?> vietQrWebhook(@RequestBody(required = false) Map<String, Object> payload) {
+    private boolean verifyWebhookSignature(HttpServletRequest request, String body) {
+        if (webhookSecret == null || webhookSecret.isBlank()) {
+            logger.warn("VietQR webhook secret not configured - accepting without verification");
+            return true;
+        }
+        String signature = request.getHeader("X-Webhook-Signature");
+        if (signature == null) return false;
         try {
-            if (payload == null || payload.isEmpty()) {
+            Mac mac = Mac.getInstance("HmacSHA256");
+            mac.init(new SecretKeySpec(webhookSecret.getBytes(StandardCharsets.UTF_8), "HmacSHA256"));
+            String computed = Base64.getEncoder().encodeToString(mac.doFinal(body.getBytes(StandardCharsets.UTF_8)));
+            return MessageDigest.isEqual(computed.getBytes(), signature.getBytes());
+        } catch (Exception e) {
+            logger.error("Webhook signature verification failed", e);
+            return false;
+        }
+    }
+
+    // ==================== Webhook Ngân hàng / Casso / SePAY ====================
+    @PostMapping({"/api/vietqr-webhook", "/api/webhooks/vietqr"})
+    @ResponseBody
+    public ResponseEntity<?> vietQrWebhook(HttpServletRequest request, @RequestBody(required = false) String rawBody) {
+        try {
+            if (rawBody == null || rawBody.isBlank()) {
                 return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Empty payload"));
             }
+
+            if (!verifyWebhookSignature(request, rawBody)) {
+                logger.warn("VietQR webhook signature verification failed from IP: {}", request.getRemoteAddr());
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("success", false, "message", "Invalid signature"));
+            }
+
+            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+            Map<String, Object> payload = mapper.readValue(rawBody, new com.fasterxml.jackson.core.type.TypeReference<Map<String, Object>>() {});
+            
+            logger.info("Received VietQR webhook from IP {}: {}", request.getRemoteAddr(), payload);
 
             // Hỗ trợ trích xuất nội dung từ Casso / SePAY / Webhook ngân hàng
             String content = "";

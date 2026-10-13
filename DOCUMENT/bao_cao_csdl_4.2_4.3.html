@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Báo cáo Cơ sở dữ liệu The4BookStore - Mục 4.2 và 4.3</title>
+<style>
+    body { font-family: 'Times New Roman', Times, serif; font-size: 13pt; line-height: 1.4; color: #000; margin: 30px; }
+    h2 { font-size: 16pt; color: #1a365d; border-bottom: 2px solid #1a365d; padding-bottom: 5px; margin-top: 30px; }
+    h3 { font-size: 14pt; color: #2b6cb0; margin-top: 25px; }
+    h4 { font-size: 13pt; color: #2d3748; margin-top: 15px; }
+    table { width: 100%; border-collapse: collapse; margin: 15px 0 25px 0; font-size: 12pt; }
+    th, td { border: 1px solid #333; padding: 6px 10px; text-align: left; vertical-align: middle; }
+    th { background-color: #f2f2f2; font-weight: bold; text-align: center; }
+    td:first-child { text-align: center; width: 5%; }
+    .table-caption { font-style: italic; text-align: center; margin-bottom: 15px; font-weight: bold; }
+    code { font-family: Consolas, monospace; background: #f7fafc; padding: 2px 4px; border-radius: 3px; font-size: 11pt; }
+</style>
+</head>
+<body>
+
+<h2>4.2. Chi tiết các bảng dữ liệu thực tế trong hệ thống</h2>
+<p>Hệ thống cơ sở dữ liệu <code>QL_NhaSach</code> bao gồm 40 bảng dữ liệu thực tế được chuẩn hóa ở dạng chuẩn 3NF, bảo đảm tính nhất quán và toàn vẹn dữ liệu:</p>
+
+<h3>1. Bảng tai_khoan</h3>
+<p><b>TAI_KHOAN</b>(<u>ma_tai_khoan</u>, ten_dang_nhap, email, mat_khau_hash, vai_tro, trang_thai, auth_provider, provider_id, ngay_tao, token_version)</p>
+<p>Lưu trữ thông tin tài khoản đăng nhập cho toàn bộ người dùng trong hệ thống.</p>
+<table>
+<tr><th>STT</th><th>Tên thuộc tính</th><th>Kiểu dữ liệu</th><th>Ràng buộc</th><th>Ý nghĩa diễn giải</th></tr>
+<tr><td>1</td><td>ma_tai_khoan</td><td>INT</td><td>PK, AUTO_INCREMENT</td><td>Mã định danh duy nhất của tài khoản</td></tr>
+<tr><td>2</td><td>ten_dang_nhap</td><td>VARCHAR(50)</td><td>UNIQUE, NOT NULL</td><td>Tên tài khoản dùng để đăng nhập</td></tr>
+<tr><td>3</td><td>email</td><td>VARCHAR(100)</td><td>UNIQUE, NOT NULL</td><td>Địa chỉ thư điện tử xác thực</td></tr>
+<tr><td>4</td><td>mat_khau_hash</td><td>VARCHAR(255)</td><td>NULL</td><td>Mật khẩu mã hóa BCrypt (NULL nếu dùng OAuth2)</td></tr>
+<tr><td>5</td><td>vai_tro</td><td>VARCHAR(30)</td><td>NOT NULL</td><td>Vai trò: KHACHHANG, VENDOR, NHANVIENKHO, NHANVIENBANHANG, QUANLY, ADMIN</td></tr>
+<tr><td>6</td><td>trang_thai</td><td>VARCHAR(20)</td><td>NOT NULL, DEFAULT 'HoatDong'</td><td>Trạng thái: HoatDong, BiKhoa</td></tr>
+<tr><td>7</td><td>auth_provider</td><td>VARCHAR(20)</td><td>DEFAULT 'LOCAL'</td><td>Hình thức đăng nhập: LOCAL, GOOGLE, FACEBOOK</td></tr>
+<tr><td>8</td><td>provider_id</td><td>VARCHAR(100)</td><td>NULL</td><td>Mã định danh từ dịch vụ OAuth2 (Google Sub ID)</td></tr>
+<tr><td>9</td><td>ngay_tao</td><td>DATETIME(6)</td><td>NOT NULL</td><td>Thời điểm khởi tạo tài khoản</td></tr>
+<tr><td>10</td><td>token_version</td><td>INT</td><td>NOT NULL, DEFAULT 1</td><td>Phiên bản token phục vụ thu hồi JWT lập tức</td></tr>
+</table>
+
+<h3>2. Bảng khach_hang</h3>
+<p><b>KHACH_HANG</b>(<u>makh</u>, ho_ten, email, so_dien_thoai, dia_chi, anh_dai_dien, ngay_dang_ky, ma_tai_khoan)</p>
+<p>Lưu trữ hồ sơ cá nhân chi tiết của người mua sách.</p>
+<table>
+<tr><th>STT</th><th>Tên thuộc tính</th><th>Kiểu dữ liệu</th><th>Ràng buộc</th><th>Ý nghĩa diễn giải</th></tr>
+<tr><td>1</td><td>makh</td><td>INT</td><td>PK, AUTO_INCREMENT</td><td>Mã định danh duy nhất của khách hàng</td></tr>
+<tr><td>2</td><td>ho_ten</td><td>VARCHAR(100)</td><td>NOT NULL</td><td>Họ và tên khách hàng</td></tr>
+<tr><td>3</td><td>email</td><td>VARCHAR(100)</td><td>NULL</td><td>Thư điện tử liên lạc</td></tr>
+<tr><td>4</td><td>so_dien_thoai</td><td>VARCHAR(20)</td><td>UNIQUE, NULL</td><td>Số điện thoại liên hệ</td></tr>
+<tr><td>5</td><td>dia_chi</td><td>VARCHAR(255)</td><td>NULL</td><td>Địa chỉ giao nhận mặc định</td></tr>
+<tr><td>6</td><td>anh_dai_dien</td><td>VARCHAR(500)</td><td>NULL</td><td>URL ảnh đại diện (Cloudinary)</td></tr>
+<tr><td>7</td><td>ngay_dang_ky</td><td>DATETIME(6)</td><td>NOT NULL</td><td>Thời điểm tạo hồ sơ khách hàng</td></tr>
+<tr><td>8</td><td>ma_tai_khoan</td><td>INT</td><td>FK -&gt; tai_khoan, UNIQUE, NULL</td><td>Khóa ngoại liên kết tài khoản hệ thống</td></tr>
+</table>
+
+<h3>3. Bảng shop (Gian hàng người bán)</h3>
+<p><b>SHOP</b>(<u>ma_shop</u>, ten_shop, slug, mo_ta, logo, banner, dia_chi_shop, so_dien_thoai, email_shop, trang_thai, chiet_khau_phan_tram, ngay_tao, ngay_cap_nhat, ma_tai_khoan)</p>
+<p>Lưu thông tin các gian hàng sách đăng ký hoạt động trên sàn Marketplace.</p>
+<table>
+<tr><th>STT</th><th>Tên thuộc tính</th><th>Kiểu dữ liệu</th><th>Ràng buộc</th><th>Ý nghĩa diễn giải</th></tr>
+<tr><td>1</td><td>ma_shop</td><td>INT</td><td>PK, AUTO_INCREMENT</td><td>Mã định danh duy nhất của gian hàng</td></tr>
+<tr><td>2</td><td>ten_shop</td><td>VARCHAR(100)</td><td>NOT NULL</td><td>Tên thương hiệu của gian hàng</td></tr>
+<tr><td>3</td><td>slug</td><td>VARCHAR(120)</td><td>UNIQUE, NOT NULL</td><td>Đường dẫn định danh thân thiện URL</td></tr>
+<tr><td>4</td><td>mo_ta</td><td>TEXT</td><td>NULL</td><td>Đoạn văn bản giới thiệu về Shop</td></tr>
+<tr><td>5</td><td>logo</td><td>VARCHAR(500)</td><td>NULL</td><td>URL ảnh logo gian hàng</td></tr>
+<tr><td>6</td><td>banner</td><td>VARCHAR(500)</td><td>NULL</td><td>URL ảnh banner trang trí gian hàng</td></tr>
+<tr><td>7</td><td>dia_chi_shop</td><td>VARCHAR(255)</td><td>NOT NULL</td><td>Địa chỉ kho/trụ sở của Shop</td></tr>
+<tr><td>8</td><td>so_dien_thoai</td><td>VARCHAR(20)</td><td>NOT NULL</td><td>Số điện thoại liên hệ của Shop</td></tr>
+<tr><td>9</td><td>email_shop</td><td>VARCHAR(100)</td><td>NULL</td><td>Email hỗ trợ khách hàng của Shop</td></tr>
+<tr><td>10</td><td>trang_thai</td><td>VARCHAR(30)</td><td>NOT NULL, DEFAULT 'ChoDuyet'</td><td>Trạng thái: ChoDuyet, HoatDong, BiKhoa, DaXoa</td></tr>
+<tr><td>11</td><td>chiet_khau_phan_tram</td><td>DECIMAL(5,2)</td><td>DEFAULT 5.00</td><td>Tỷ lệ % phí hoa hồng sàn thu</td></tr>
+<tr><td>12</td><td>ngay_tao</td><td>DATETIME(6)</td><td>NOT NULL</td><td>Thời điểm gửi đơn đăng ký mở Shop</td></tr>
+<tr><td>13</td><td>ngay_cap_nhat</td><td>DATETIME(6)</td><td>NULL</td><td>Thời điểm cập nhật hồ sơ gần nhất</td></tr>
+<tr><td>14</td><td>ma_tai_khoan</td><td>INT</td><td>FK -&gt; tai_khoan, UNIQUE, NOT NULL</td><td>Tài khoản chủ sở hữu gian hàng</td></tr>
+</table>
+
+<h3>4. Bảng nhan_vien</h3>
+<p><b>NHAN_VIEN</b>(<u>manv</u>, ho_ten, chuc_vu, email, so_dien_thoai, ngay_vao_lam, ma_tai_khoan)</p>
+<p>Lưu trữ thông tin nhân sự nội bộ sàn (Thủ kho, Nhân viên bán hàng, Quản lý, Admin).</p>
+<table>
+<tr><th>STT</th><th>Tên thuộc tính</th><th>Kiểu dữ liệu</th><th>Ràng buộc</th><th>Ý nghĩa diễn giải</th></tr>
+<tr><td>1</td><td>manv</td><td>INT</td><td>PK, AUTO_INCREMENT</td><td>Mã định danh nhân viên</td></tr>
+<tr><td>2</td><td>ho_ten</td><td>VARCHAR(100)</td><td>NOT NULL</td><td>Họ và tên nhân viên</td></tr>
+<tr><td>3</td><td>chuc_vu</td><td>VARCHAR(50)</td><td>NOT NULL</td><td>Chức danh công tác</td></tr>
+<tr><td>4</td><td>email</td><td>VARCHAR(100)</td><td>NULL</td><td>Email công vụ</td></tr>
+<tr><td>5</td><td>so_dien_thoai</td><td>VARCHAR(20)</td><td>NULL</td><td>Số điện thoại liên hệ</td></tr>
+<tr><td>6</td><td>ngay_vao_lam</td><td>DATETIME(6)</td><td>NOT NULL</td><td>Ngày bắt đầu công tác</td></tr>
+<tr><td>7</td><td>ma_tai_khoan</td><td>INT</td><td>FK -&gt; tai_khoan, UNIQUE, NULL</td><td>Khóa ngoại liên kết tài khoản đăng nhập</td></tr>
+</table>
+
+<h3>5. Bảng dia_chi_giao_hang</h3>
+<p><b>DIA_CHI_GIAO_HANG</b>(<u>ma_dia_chi</u>, ten_nguoi_nhan, so_dien_thoai, dia_chi_chi_tiet, tinh_thanh, quan_huyen, phuong_xa, la_mac_dinh, makh)</p>
+<table>
+<tr><th>STT</th><th>Tên thuộc tính</th><th>Kiểu dữ liệu</th><th>Ràng buộc</th><th>Ý nghĩa diễn giải</th></tr>
+<tr><td>1</td><td>ma_dia_chi</td><td>INT</td><td>PK, AUTO_INCREMENT</td><td>Mã địa chỉ</td></tr>
+<tr><td>2</td><td>ten_nguoi_nhan</td><td>VARCHAR(100)</td><td>NOT NULL</td><td>Họ tên người nhận hàng</td></tr>
+<tr><td>3</td><td>so_dien_thoai</td><td>VARCHAR(20)</td><td>NOT NULL</td><td>Số điện thoại liên hệ nhận</td></tr>
+<tr><td>4</td><td>dia_chi_chi_tiet</td><td>VARCHAR(255)</td><td>NOT NULL</td><td>Số nhà, tên đường</td></tr>
+<tr><td>5</td><td>phuong_xa</td><td>VARCHAR(100)</td><td>NULL</td><td>Phường / Xã</td></tr>
+<tr><td>6</td><td>quan_huyen</td><td>VARCHAR(100)</td><td>NULL</td><td>Quận / Huyện</td></tr>
+<tr><td>7</td><td>tinh_thanh</td><td>VARCHAR(100)</td><td>NOT NULL</td><td>Tỉnh / Thành phố</td></tr>
+<tr><td>8</td><td>la_mac_dinh</td><td>BIT(1)</td><td>NOT NULL, DEFAULT 0</td><td>Đánh dấu địa chỉ mặc định</td></tr>
+<tr><td>9</td><td>makh</td><td>INT</td><td>FK -&gt; khach_hang, NOT NULL</td><td>Khách hàng sở hữu</td></tr>
+</table>
+
+<h3>6. Bảng password_reset_token</h3>
+<p><b>PASSWORD_RESET_TOKEN</b>(<u>id</u>, token, ngay_tao, ngay_het_han, da_su_dung, ma_tai_khoan)</p>
+<table>
+<tr><th>STT</th><th>Tên thuộc tính</th><th>Kiểu dữ liệu</th><th>Ràng buộc</th><th>Ý nghĩa diễn giải</th></tr>
+<tr><td>1</td><td>id</td><td>INT</td><td>PK, AUTO_INCREMENT</td><td>Mã bản ghi token</td></tr>
+<tr><td>2</td><td>token</td><td>VARCHAR(10)</td><td>NOT NULL</td><td>Mã OTP 6 chữ số</td></tr>
+<tr><td>3</td><td>ngay_tao</td><td>DATETIME(6)</td><td>NOT NULL</td><td>Thời điểm phát sinh mã</td></tr>
+<tr><td>4</td><td>ngay_het_han</td><td>DATETIME(6)</td><td>NOT NULL</td><td>Hạn sử dụng (NOW + 10 phút)</td></tr>
+<tr><td>5</td><td>da_su_dung</td><td>BIT(1)</td><td>NOT NULL, DEFAULT 0</td><td>Trạng thái đã xác thực</td></tr>
+<tr><td>6</td><td>ma_tai_khoan</td><td>INT</td><td>FK -&gt; tai_khoan, NOT NULL</td><td>Tài khoản cần đặt lại mật khẩu</td></tr>
+</table>
+
+<h3>7. Bảng danh_muc</h3>
+<p><b>DANH_MUC</b>(<u>ma_danh_muc</u>, ten_danh_muc, mo_ta)</p>
+<table>
+<tr><th>STT</th><th>Tên thuộc tính</th><th>Kiểu dữ liệu</th><th>Ràng buộc</th><th>Ý nghĩa diễn giải</th></tr>
+<tr><td>1</td><td>ma_danh_muc</td><td>INT</td><td>PK, AUTO_INCREMENT</td><td>Mã định danh danh mục</td></tr>
+<tr><td>2</td><td>ten_danh_muc</td><td>VARCHAR(100)</td><td>NOT NULL</td><td>Tên danh mục thể loại</td></tr>
+<tr><td>3</td><td>mo_ta</td><td>VARCHAR(255)</td><td>NULL</td><td>Mô tả thể loại sách</td></tr>
+</table>
+
+<h3>8. Bảng tac_gia</h3>
+<p><b>TAC_GIA</b>(<u>ma_tac_gia</u>, ten_tac_gia, mo_ta)</p>
+<table>
+<tr><th>STT</th><th>Tên thuộc tính</th><th>Kiểu dữ liệu</th><th>Ràng buộc</th><th>Ý nghĩa diễn giải</th></tr>
+<tr><td>1</td><td>ma_tac_gia</td><td>INT</td><td>PK, AUTO_INCREMENT</td><td>Mã tác giả</td></tr>
+<tr><td>2</td><td>ten_tac_gia</td><td>VARCHAR(100)</td><td>NOT NULL</td><td>Họ tên tác giả</td></tr>
+<tr><td>3</td><td>mo_ta</td><td>TEXT</td><td>NULL</td><td>Tóm tắt tiểu sử tác giả</td></tr>
+</table>
+
+<h3>9. Bảng nha_xuat_ban</h3>
+<p><b>NHA_XUAT_BAN</b>(<u>manxb</u>, ten_nxb, dia_chi, so_dien_thoai, email)</p>
+<table>
+<tr><th>STT</th><th>Tên thuộc tính</th><th>Kiểu dữ liệu</th><th>Ràng buộc</th><th>Ý nghĩa diễn giải</th></tr>
+<tr><td>1</td><td>manxb</td><td>INT</td><td>PK, AUTO_INCREMENT</td><td>Mã nhà xuất bản</td></tr>
+<tr><td>2</td><td>ten_nxb</td><td>VARCHAR(100)</td><td>NOT NULL</td><td>Tên nhà xuất bản</td></tr>
+<tr><td>3</td><td>dia_chi</td><td>VARCHAR(255)</td><td>NULL</td><td>Địa chỉ trụ sở NXB</td></tr>
+<tr><td>4</td><td>so_dien_thoai</td><td>VARCHAR(20)</td><td>NULL</td><td>Số điện thoại NXB</td></tr>
+<tr><td>5</td><td>email</td><td>VARCHAR(100)</td><td>NULL</td><td>Email liên hệ NXB</td></tr>
+</table>
+
+<h3>10. Bảng nha_cung_cap</h3>
+<p><b>NHA_CUNG_CAP</b>(<u>mancc</u>, ten_ncc, dia_chi, so_dien_thoai, email, trang_thai)</p>
+<table>
+<tr><th>STT</th><th>Tên thuộc tính</th><th>Kiểu dữ liệu</th><th>Ràng buộc</th><th>Ý nghĩa diễn giải</th></tr>
+<tr><td>1</td><td>mancc</td><td>INT</td><td>PK, AUTO_INCREMENT</td><td>Mã nhà cung cấp</td></tr>
+<tr><td>2</td><td>ten_ncc</td><td>VARCHAR(100)</td><td>NOT NULL</td><td>Tên nhà cung cấp</td></tr>
+<tr><td>3</td><td>dia_chi</td><td>VARCHAR(255)</td><td>NULL</td><td>Địa chỉ liên hệ</td></tr>
+<tr><td>4</td><td>so_dien_thoai</td><td>VARCHAR(20)</td><td>NULL</td><td>Điện thoại nhà cung cấp</td></tr>
+<tr><td>5</td><td>email</td><td>VARCHAR(100)</td><td>NULL</td><td>Thư điện tử đối tác</td></tr>
+<tr><td>6</td><td>trang_thai</td><td>VARCHAR(30)</td><td>NOT NULL, DEFAULT 'HoatDong'</td><td>Trạng thái: HoatDong, TamNgung</td></tr>
+</table>
+
+<h3>11. Bảng san_pham (Sản phẩm sách)</h3>
+<p><b>SAN_PHAM</b>(<u>masp</u>, tensp, isbn, gia_ban, so_luong_ton, so_luong_da_ban, muc_ton_toi_thieu, hinh_anh, mo_ta, loaisp, trang_thai, trang_thai_khoa, ly_do_khoa, ngay_tao, ngay_cap_nhat, ma_danh_muc, manxb, mancc, ma_shop)</p>
+<table>
+<tr><th>STT</th><th>Tên thuộc tính</th><th>Kiểu dữ liệu</th><th>Ràng buộc</th><th>Ý nghĩa diễn giải</th></tr>
+<tr><td>1</td><td>masp</td><td>INT</td><td>PK, AUTO_INCREMENT</td><td>Mã định danh sản phẩm sách</td></tr>
+<tr><td>2</td><td>tensp</td><td>VARCHAR(255)</td><td>NOT NULL</td><td>Tên tựa sách</td></tr>
+<tr><td>3</td><td>isbn</td><td>VARCHAR(20)</td><td>UNIQUE, NOT NULL</td><td>Mã tiêu chuẩn quốc tế cho sách (ISBN)</td></tr>
+<tr><td>4</td><td>gia_ban</td><td>INT</td><td>NOT NULL</td><td>Giá bán thực tế (VNĐ)</td></tr>
+<tr><td>5</td><td>so_luong_ton</td><td>INT</td><td>NOT NULL, DEFAULT 0</td><td>Tổng lượng sách tồn trong kho</td></tr>
+<tr><td>6</td><td>so_luong_da_ban</td><td>INT</td><td>NOT NULL, DEFAULT 0</td><td>Tổng lượng sách đã bán thành công</td></tr>
+<tr><td>7</td><td>muc_ton_toi_thieu</td><td>INT</td><td>NOT NULL, DEFAULT 5</td><td>Ngưỡng cảnh báo sắp hết hàng</td></tr>
+<tr><td>8</td><td>hinh_anh</td><td>VARCHAR(500)</td><td>NULL</td><td>URL ảnh bìa sách</td></tr>
+<tr><td>9</td><td>mo_ta</td><td>TEXT</td><td>NULL</td><td>Tóm tắt nội dung sách</td></tr>
+<tr><td>10</td><td>loaisp</td><td>VARCHAR(50)</td><td>NOT NULL, DEFAULT 'Sach'</td><td>Phân loại: Sach, VanPhongPham, DungCu</td></tr>
+<tr><td>11</td><td>trang_thai</td><td>VARCHAR(20)</td><td>NOT NULL, DEFAULT 'DangBan'</td><td>Trạng thái: DangBan, NgungBan</td></tr>
+<tr><td>12</td><td>trang_thai_khoa</td><td>VARCHAR(30)</td><td>NOT NULL, DEFAULT 'BinhThuong'</td><td>Khóa bởi Admin: BinhThuong, BiKhoa</td></tr>
+<tr><td>13</td><td>ly_do_khoa</td><td>VARCHAR(255)</td><td>NULL</td><td>Lý do Admin khóa vi phạm</td></tr>
+<tr><td>14</td><td>ngay_tao</td><td>DATETIME(6)</td><td>NOT NULL</td><td>Thời điểm đăng tải sách</td></tr>
+<tr><td>15</td><td>ngay_cap_nhat</td><td>DATETIME(6)</td><td>NULL</td><td>Thời điểm cập nhật thông tin gần nhất</td></tr>
+<tr><td>16</td><td>ma_danh_muc</td><td>INT</td><td>FK -&gt; danh_muc, NOT NULL</td><td>Thuộc thể loại nào</td></tr>
+<tr><td>17</td><td>manxb</td><td>INT</td><td>FK -&gt; nha_xuat_ban, NULL</td><td>Xuất bản bởi NXB nào</td></tr>
+<tr><td>18</td><td>mancc</td><td>INT</td><td>FK -&gt; nha_cung_cap, NULL</td><td>Nhập từ nhà cung cấp nào</td></tr>
+<tr><td>19</td><td>ma_shop</td><td>INT</td><td>FK -&gt; shop, NULL</td><td>Thuộc gian hàng Shop nào</td></tr>
+</table>
+
+<h3>12. Bảng san_pham_tac_gia</h3>
+<p><b>SAN_PHAM_TAC_GIA</b>(<u>masp</u>, <u>ma_tac_gia</u>, vai_tro)</p>
+<table>
+<tr><th>STT</th><th>Tên thuộc tính</th><th>Kiểu dữ liệu</th><th>Ràng buộc</th><th>Ý nghĩa diễn giải</th></tr>
+<tr><td>1</td><td>masp</td><td>INT</td><td>PK, FK -&gt; san_pham</td><td>Mã định danh sách</td></tr>
+<tr><td>2</td><td>ma_tac_gia</td><td>INT</td><td>PK, FK -&gt; tac_gia</td><td>Mã tác giả</td></tr>
+<tr><td>3</td><td>vai_tro</td><td>VARCHAR(50)</td><td>NULL</td><td>Vai trò: Tác giả chính, Đồng tác giả, Dịch giả</td></tr>
+</table>
+
+<h3>13. Bảng san_pham_yeu_thich (Wishlist)</h3>
+<p><b>SAN_PHAM_YEU_THICH</b>(<u>id</u>, ngay_tao, makh, masp)</p>
+<table>
+<tr><th>STT</th><th>Tên thuộc tính</th><th>Kiểu dữ liệu</th><th>Ràng buộc</th><th>Ý nghĩa diễn giải</th></tr>
+<tr><td>1</td><td>id</td><td>INT</td><td>PK, AUTO_INCREMENT</td><td>Mã bản ghi yêu thích</td></tr>
+<tr><td>2</td><td>ngay_tao</td><td>DATETIME(6)</td><td>NOT NULL</td><td>Ngày thêm vào yêu thích</td></tr>
+<tr><td>3</td><td>makh</td><td>INT</td><td>FK -&gt; khach_hang, NOT NULL</td><td>Khách hàng đánh dấu</td></tr>
+<tr><td>4</td><td>masp</td><td>INT</td><td>FK -&gt; san_pham, NOT NULL</td><td>Sách được yêu thích</td></tr>
+</table>
+
+<h3>14. Bảng san_pham_da_xem (Recently Viewed)</h3>
+<p><b>SAN_PHAM_DA_XEM</b>(<u>id</u>, ngay_xem, makh, masp)</p>
+<table>
+<tr><th>STT</th><th>Tên thuộc tính</th><th>Kiểu dữ liệu</th><th>Ràng buộc</th><th>Ý nghĩa diễn giải</th></tr>
+<tr><td>1</td><td>id</td><td>INT</td><td>PK, AUTO_INCREMENT</td><td>Mã bản ghi lịch sử</td></tr>
+<tr><td>2</td><td>ngay_xem</td><td>DATETIME(6)</td><td>NOT NULL</td><td>Thời gian xem gần nhất</td></tr>
+<tr><td>3</td><td>makh</td><td>INT</td><td>FK -&gt; khach_hang, NOT NULL</td><td>Khách hàng tra cứu</td></tr>
+<tr><td>4</td><td>masp</td><td>INT</td><td>FK -&gt; san_pham, NOT NULL</td><td>Sách vừa được xem</td></tr>
+</table>
+
+<h3>15. Bảng danh_gia</h3>
+<p><b>DANH_GIA</b>(<u>ma_danh_gia</u>, so_sao, noi_dung, ngay_tao, an_danh, makh, masp, madh)</p>
+<table>
+<tr><th>STT</th><th>Tên thuộc tính</th><th>Kiểu dữ liệu</th><th>Ràng buộc</th><th>Ý nghĩa diễn giải</th></tr>
+<tr><td>1</td><td>ma_danh_gia</td><td>INT</td><td>PK, AUTO_INCREMENT</td><td>Mã đánh giá</td></tr>
+<tr><td>2</td><td>so_sao</td><td>INT</td><td>NOT NULL, CHECK (1-5)</td><td>Chấm điểm (1 đến 5 sao)</td></tr>
+<tr><td>3</td><td>noi_dung</td><td>TEXT</td><td>NULL</td><td>Bình luận cảm nhận về sách</td></tr>
+<tr><td>4</td><td>ngay_tao</td><td>DATETIME(6)</td><td>NOT NULL</td><td>Thời điểm gửi đánh giá</td></tr>
+<tr><td>5</td><td>an_danh</td><td>BIT(1)</td><td>NOT NULL, DEFAULT 0</td><td>Đăng ẩn danh họ tên</td></tr>
+<tr><td>6</td><td>makh</td><td>INT</td><td>FK -&gt; khach_hang, NOT NULL</td><td>Khách hàng đánh giá</td></tr>
+<tr><td>7</td><td>masp</td><td>INT</td><td>FK -&gt; san_pham, NOT NULL</td><td>Sách được nhận xét</td></tr>
+<tr><td>8</td><td>madh</td><td>INT</td><td>FK -&gt; don_hang, NULL</td><td>Đơn hàng đã mua sản phẩm</td></tr>
+</table>
+
+<h3>16. Bảng danh_gia_media</h3>
+<p><b>DANH_GIA_MEDIA</b>(<u>ma_media</u>, loai_media, url_media, ma_danh_gia)</p>
+<table>
+<tr><th>STT</th><th>Tên thuộc tính</th><th>Kiểu dữ liệu</th><th>Ràng buộc</th><th>Ý nghĩa diễn giải</th></tr>
+<tr><td>1</td><td>ma_media</td><td>INT</td><td>PK, AUTO_INCREMENT</td><td>Mã tệp đính kèm</td></tr>
+<tr><td>2</td><td>loai_media</td><td>VARCHAR(20)</td><td>NOT NULL</td><td>HINH_ANH hoặc VIDEO</td></tr>
+<tr><td>3</td><td>url_media</td><td>VARCHAR(500)</td><td>NOT NULL</td><td>Đường dẫn URL tệp Cloudinary</td></tr>
+<tr><td>4</td><td>ma_danh_gia</td><td>INT</td><td>FK -&gt; danh_gia, NOT NULL</td><td>Thuộc bài đánh giá nào</td></tr>
+</table>
+
+<h3>17. Bảng gio_hang</h3>
+<p><b>GIO_HANG</b>(<u>ma_gio_hang</u>, ngay_cap_nhat, ngay_tao, makh)</p>
+<table>
+<tr><th>STT</th><th>Tên thuộc tính</th><th>Kiểu dữ liệu</th><th>Ràng buộc</th><th>Ý nghĩa diễn giải</th></tr>
+<tr><td>1</td><td>ma_gio_hang</td><td>INT</td><td>PK, AUTO_INCREMENT</td><td>Mã định danh giỏ hàng</td></tr>
+<tr><td>2</td><td>ngay_tao</td><td>DATETIME(6)</td><td>NOT NULL</td><td>Ngày khởi tạo giỏ hàng</td></tr>
+<tr><td>3</td><td>ngay_cap_nhat</td><td>DATETIME(6)</td><td>NULL</td><td>Thời điểm thay đổi gần nhất</td></tr>
+<tr><td>4</td><td>makh</td><td>INT</td><td>FK -&gt; khach_hang, UNIQUE, NOT NULL</td><td>Khách hàng sở hữu giỏ</td></tr>
+</table>
+
+<h3>18. Bảng chi_tiet_gio_hang</h3>
+<p><b>CHI_TIET_GIO_HANG</b>(<u>ma_chi_tiet_gio_hang</u>, so_luong, ma_gio_hang, masp)</p>
+<table>
+<tr><th>STT</th><th>Tên thuộc tính</th><th>Kiểu dữ liệu</th><th>Ràng buộc</th><th>Ý nghĩa diễn giải</th></tr>
+<tr><td>1</td><td>ma_chi_tiet_gio_hang</td><td>INT</td><td>PK, AUTO_INCREMENT</td><td>Mã mục giỏ hàng</td></tr>
+<tr><td>2</td><td>so_luong</td><td>INT</td><td>NOT NULL</td><td>Số lượng chọn mua</td></tr>
+<tr><td>3</td><td>ma_gio_hang</td><td>INT</td><td>FK -&gt; gio_hang, NOT NULL</td><td>Thuộc giỏ hàng nào</td></tr>
+<tr><td>4</td><td>masp</td><td>INT</td><td>FK -&gt; san_pham, NOT NULL</td><td>Sách được chọn</td></tr>
+</table>
+
+<h3>19. Bảng nha_van_chuyen</h3>
+<p><b>NHA_VAN_CHUYEN</b>(<u>ma_nvc</u>, ten_nvc, so_dien_thoai, phi_co_ban, thoi_gian_giao_du_kien, trang_thai)</p>
+<table>
+<tr><th>STT</th><th>Tên thuộc tính</th><th>Kiểu dữ liệu</th><th>Ràng buộc</th><th>Ý nghĩa diễn giải</th></tr>
+<tr><td>1</td><td>ma_nvc</td><td>INT</td><td>PK, AUTO_INCREMENT</td><td>Mã đơn vị vận chuyển</td></tr>
+<tr><td>2</td><td>ten_nvc</td><td>VARCHAR(100)</td><td>NOT NULL</td><td>Tên đối tác (Giao Hàng Nhanh, Viettel Post...)</td></tr>
+<tr><td>3</td><td>so_dien_thoai</td><td>VARCHAR(20)</td><td>NULL</td><td>Hotline hỗ trợ</td></tr>
+<tr><td>4</td><td>phi_co_ban</td><td>INT</td><td>NOT NULL, DEFAULT 25000</td><td>Cước phí cơ sở (VNĐ)</td></tr>
+<tr><td>5</td><td>thoi_gian_giao_du_kien</td><td>VARCHAR(50)</td><td>NULL</td><td>Ước lượng thời gian giao (2-3 ngày)</td></tr>
+<tr><td>6</td><td>trang_thai</td><td>VARCHAR(30)</td><td>NOT NULL, DEFAULT 'HoatDong'</td><td>Trạng thái: HoatDong, TamNgung</td></tr>
+</table>
+
+<h3>20. Bảng don_hang</h3>
+<p><b>DON_HANG</b>(<u>madh</u>, ngay_dat, ngay_giao_du_kien, ngay_hoan_thanh, tong_tien, tien_giam, phi_van_chuyen, chiet_khau_app_phan_tram, tien_phi_san, tien_thuc_nhan_shop, dia_chi_giao, so_dien_thoai_giao, phuong_thuc_thanh_toan, trang_thai_thanh_toan, trang_thai, ly_do_huy, ma_van_don, ly_do_tra_hang, phan_quyet_tranh_chap, makh, ma_shop, makm, ma_nvc, nguoi_xu_ly_tranh_chap)</p>
+<table>
+<tr><th>STT</th><th>Tên thuộc tính</th><th>Kiểu dữ liệu</th><th>Ràng buộc</th><th>Ý nghĩa diễn giải</th></tr>
+<tr><td>1</td><td>madh</td><td>INT</td><td>PK, AUTO_INCREMENT</td><td>Mã định danh đơn hàng</td></tr>
+<tr><td>2</td><td>ngay_dat</td><td>DATETIME(6)</td><td>NOT NULL</td><td>Thời điểm tạo đơn</td></tr>
+<tr><td>3</td><td>ngay_giao_du_kien</td><td>DATETIME(6)</td><td>NULL</td><td>Ngày dự kiến giao đến nơi</td></tr>
+<tr><td>4</td><td>ngay_hoan_thanh</td><td>DATETIME(6)</td><td>NULL</td><td>Ngày đơn hoàn tất hoặc hủy</td></tr>
+<tr><td>5</td><td>tong_tien</td><td>INT</td><td>NOT NULL</td><td>Tổng tiền khách phải thanh toán (VNĐ)</td></tr>
+<tr><td>6</td><td>tien_giam</td><td>INT</td><td>NOT NULL, DEFAULT 0</td><td>Tiền giảm giá từ khuyến mãi</td></tr>
+<tr><td>7</td><td>phi_van_chuyen</td><td>INT</td><td>NOT NULL, DEFAULT 0</td><td>Cước phí giao hàng</td></tr>
+<tr><td>8</td><td>chiet_khau_app_phan_tram</td><td>DECIMAL(5,2)</td><td>DEFAULT 5.00</td><td>Tỷ lệ hoa hồng sàn khấu trừ (%)</td></tr>
+<tr><td>9</td><td>tien_phi_san</td><td>INT</td><td>DEFAULT 0</td><td>Số tiền hoa hồng sàn thu về</td></tr>
+<tr><td>10</td><td>tien_thuc_nhan_shop</td><td>INT</td><td>DEFAULT 0</td><td>Doanh thu thực Shop nhận được</td></tr>
+<tr><td>11</td><td>dia_chi_giao</td><td>VARCHAR(255)</td><td>NOT NULL</td><td>Địa chỉ nhận hàng chi tiết</td></tr>
+<tr><td>12</td><td>so_dien_thoai_giao</td><td>VARCHAR(20)</td><td>NOT NULL</td><td>SĐT liên hệ nhận hàng</td></tr>
+<tr><td>13</td><td>phuong_thuc_thanh_toan</td><td>VARCHAR(50)</td><td>NOT NULL</td><td>Hình thức: COD, VIETQR, VNPAY</td></tr>
+<tr><td>14</td><td>trang_thai_thanh_toan</td><td>VARCHAR(30)</td><td>NOT NULL, DEFAULT 'ChuaThanhToan'</td><td>ChuaThanhToan, DaThanhToan, HoanTien</td></tr>
+<tr><td>15</td><td>trang_thai</td><td>VARCHAR(30)</td><td>NOT NULL</td><td>ChoXacNhan, DaXacNhan, DangGiao, GiaoThanhCong, HoanTat, DaHuy, TranhChap, TraHang</td></tr>
+<tr><td>16</td><td>ly_do_huy</td><td>VARCHAR(255)</td><td>NULL</td><td>Lý do hủy đơn</td></tr>
+<tr><td>17</td><td>ma_van_don</td><td>VARCHAR(100)</td><td>NULL</td><td>Mã tracking bưu kiện vận chuyển</td></tr>
+<tr><td>18</td><td>ly_do_tra_hang</td><td>TEXT</td><td>NULL</td><td>Lý do khách khiếu nại hoàn trả</td></tr>
+<tr><td>19</td><td>phan_quyet_tranh_chap</td><td>TEXT</td><td>NULL</td><td>Phán quyết của Quản trị sàn</td></tr>
+<tr><td>20</td><td>makh</td><td>INT</td><td>FK -&gt; khach_hang, NOT NULL</td><td>Khách hàng đặt mua</td></tr>
+<tr><td>21</td><td>ma_shop</td><td>INT</td><td>FK -&gt; shop, NOT NULL</td><td>Đơn thuộc Shop nào</td></tr>
+<tr><td>22</td><td>makm</td><td>INT</td><td>FK -&gt; khuyen_mai, NULL</td><td>Voucher áp dụng</td></tr>
+<tr><td>23</td><td>ma_nvc</td><td>INT</td><td>FK -&gt; nha_van_chuyen, NULL</td><td>Đơn vị vận chuyển đảm nhiệm</td></tr>
+<tr><td>24</td><td>nguoi_xu_ly_tranh_chap</td><td>INT</td><td>FK -&gt; tai_khoan, NULL</td><td>Quản lý phụ trách hòa giải tranh chấp</td></tr>
+</table>
+
+<h3>21. Bảng chi_tiet_don_hang</h3>
+<p><b>CHI_TIET_DON_HANG</b>(<u>ma_ctdh</u>, don_gia, so_luong, thanh_tien, madh, masp)</p>
+<table>
+<tr><th>STT</th><th>Tên thuộc tính</th><th>Kiểu dữ liệu</th><th>Ràng buộc</th><th>Ý nghĩa diễn giải</th></tr>
+<tr><td>1</td><td>ma_ctdh</td><td>INT</td><td>PK, AUTO_INCREMENT</td><td>Mã mục chi tiết đơn</td></tr>
+<tr><td>2</td><td>don_gia</td><td>INT</td><td>NOT NULL</td><td>Đơn giá sách tại thời điểm mua (VNĐ)</td></tr>
+<tr><td>3</td><td>so_luong</td><td>INT</td><td>NOT NULL</td><td>Số lượng mua</td></tr>
+<tr><td>4</td><td>thanh_tien</td><td>INT</td><td>NOT NULL</td><td>Thành tiền = don_gia * so_luong</td></tr>
+<tr><td>5</td><td>madh</td><td>INT</td><td>FK -&gt; don_hang, NOT NULL</td><td>Thuộc đơn hàng nào</td></tr>
+<tr><td>6</td><td>masp</td><td>INT</td><td>FK -&gt; san_pham, NOT NULL</td><td>Tựa sách được đặt mua</td></tr>
+</table>
+
+<h3>22. Bảng thanh_toan (Giao dịch cổng thanh toán)</h3>
+<p><b>THANH_TOAN</b>(<u>ma_thanh_toan</u>, phuong_thuc, so_tien, trang_thai, ma_giao_dich_cong, thong_tin_phan_hoi, ngay_tao, madh)</p>
+<table>
+<tr><th>STT</th><th>Tên thuộc tính</th><th>Kiểu dữ liệu</th><th>Ràng buộc</th><th>Ý nghĩa diễn giải</th></tr>
+<tr><td>1</td><td>ma_thanh_toan</td><td>INT</td><td>PK, AUTO_INCREMENT</td><td>Mã giao dịch thanh toán</td></tr>
+<tr><td>2</td><td>phuong_thuc</td><td>VARCHAR(50)</td><td>NOT NULL</td><td>Cổng thanh toán: VIETQR, VNPAY, COD</td></tr>
+<tr><td>3</td><td>so_tien</td><td>INT</td><td>NOT NULL</td><td>Số tiền thực hiện giao dịch (VNĐ)</td></tr>
+<tr><td>4</td><td>trang_thai</td><td>VARCHAR(30)</td><td>NOT NULL</td><td>ThanhCong, ThatBai, ChoXuLy</td></tr>
+<tr><td>5</td><td>ma_giao_dich_cong</td><td>VARCHAR(100)</td><td>NULL</td><td>Mã tham chiếu ngân hàng/cổng cung cấp</td></tr>
+<tr><td>6</td><td>thong_tin_phan_hoi</td><td>TEXT</td><td>NULL</td><td>Chuỗi JSON callback từ webhook</td></tr>
+<tr><td>7</td><td>ngay_tao</td><td>DATETIME(6)</td><td>NOT NULL</td><td>Thời điểm phát sinh giao dịch</td></tr>
+<tr><td>8</td><td>madh</td><td>INT</td><td>FK -&gt; don_hang, NOT NULL</td><td>Khóa ngoại trỏ về đơn hàng tương ứng</td></tr>
+</table>
+
+<h3>23. Bảng hoa_don</h3>
+<p><b>HOA_DON</b>(<u>ma_hoa_don</u>, ngay_lap, tong_tien, trang_thai, madh, manv)</p>
+<table>
+<tr><th>STT</th><th>Tên thuộc tính</th><th>Kiểu dữ liệu</th><th>Ràng buộc</th><th>Ý nghĩa diễn giải</th></tr>
+<tr><td>1</td><td>ma_hoa_don</td><td>INT</td><td>PK, AUTO_INCREMENT</td><td>Mã định danh hóa đơn</td></tr>
+<tr><td>2</td><td>ngay_lap</td><td>DATETIME(6)</td><td>NOT NULL</td><td>Thời điểm lập hóa đơn</td></tr>
+<tr><td>3</td><td>tong_tien</td><td>INT</td><td>NOT NULL</td><td>Tổng tiền thanh toán trên hóa đơn</td></tr>
+<tr><td>4</td><td>trang_thai</td><td>VARCHAR(20)</td><td>NOT NULL, DEFAULT 'DaThanhToan'</td><td>Trạng thái hóa đơn</td></tr>
+<tr><td>5</td><td>madh</td><td>INT</td><td>FK -&gt; don_hang, UNIQUE, NOT NULL</td><td>Đơn hàng xuất hóa đơn</td></tr>
+<tr><td>6</td><td>manv</td><td>INT</td><td>FK -&gt; nhan_vien, NULL</td><td>Nhân viên phụ trách xuất hóa đơn</td></tr>
+</table>
+
+<h3>24. Bảng khuyen_mai</h3>
+<p><b>KHUYEN_MAI</b>(<u>makm</u>, ma_code, ten_khuyen_mai, mo_ta, loai_khuyen_mai, gia_tri_giam, gia_tri_toi_thieu, giam_toi_da, so_luong, so_luong_da_dung, ngay_bat_dau, ngay_ket_thuc, trang_thai, ma_shop)</p>
+<table>
+<tr><th>STT</th><th>Tên thuộc tính</th><th>Kiểu dữ liệu</th><th>Ràng buộc</th><th>Ý nghĩa diễn giải</th></tr>
+<tr><td>1</td><td>makm</td><td>INT</td><td>PK, AUTO_INCREMENT</td><td>Mã định danh voucher</td></tr>
+<tr><td>2</td><td>ma_code</td><td>VARCHAR(50)</td><td>UNIQUE, NOT NULL</td><td>Mã code nhập (VD: THEFOUR, SALE50)</td></tr>
+<tr><td>3</td><td>ten_khuyen_mai</td><td>VARCHAR(100)</td><td>NOT NULL</td><td>Tên chương trình khuyến mãi</td></tr>
+<tr><td>4</td><td>mo_ta</td><td>TEXT</td><td>NULL</td><td>Thể lệ áp dụng</td></tr>
+<tr><td>5</td><td>loai_khuyen_mai</td><td>VARCHAR(20)</td><td>NOT NULL</td><td>PhanTram hoặc SoTien</td></tr>
+<tr><td>6</td><td>gia_tri_giam</td><td>INT</td><td>NOT NULL</td><td>Tỷ lệ % giảm hoặc số tiền trừ thẳng</td></tr>
+<tr><td>7</td><td>gia_tri_toi_thieu</td><td>INT</td><td>NOT NULL, DEFAULT 0</td><td>Giá trị đơn hàng tối thiểu</td></tr>
+<tr><td>8</td><td>giam_toi_da</td><td>INT</td><td>NULL</td><td>Mức giảm tối đa với mã %</td></tr>
+<tr><td>9</td><td>so_luong</td><td>INT</td><td>NOT NULL</td><td>Tổng số lượng mã phát hành</td></tr>
+<tr><td>10</td><td>so_luong_da_dung</td><td>INT</td><td>NOT NULL, DEFAULT 0</td><td>Số lượt đã sử dụng thực tế</td></tr>
+<tr><td>11</td><td>ngay_bat_dau</td><td>DATETIME(6)</td><td>NOT NULL</td><td>Ngày kích hoạt mã</td></tr>
+<tr><td>12</td><td>ngay_ket_thuc</td><td>DATETIME(6)</td><td>NOT NULL</td><td>Ngày hết hạn</td></tr>
+<tr><td>13</td><td>trang_thai</td><td>VARCHAR(20)</td><td>NOT NULL, DEFAULT 'HoatDong'</td><td>Trạng thái: HoatDong, HetHan, TamKhoa</td></tr>
+<tr><td>14</td><td>ma_shop</td><td>INT</td><td>FK -&gt; shop, NULL</td><td>Nếu NULL là voucher Toàn sàn, có giá trị là voucher của Shop</td></tr>
+</table>
+
+<h3>25. Bảng voucher_da_luu</h3>
+<p><b>VOUCHER_DA_LUU</b>(<u>id</u>, ngay_luu, ngay_dung, trang_thai, makh, makm)</p>
+<table>
+<tr><th>STT</th><th>Tên thuộc tính</th><th>Kiểu dữ liệu</th><th>Ràng buộc</th><th>Ý nghĩa diễn giải</th></tr>
+<tr><td>1</td><td>id</td><td>INT</td><td>PK, AUTO_INCREMENT</td><td>Mã định danh bản ghi lưu</td></tr>
+<tr><td>2</td><td>ngay_luu</td><td>DATETIME(6)</td><td>NOT NULL</td><td>Ngày thu thập voucher</td></tr>
+<tr><td>3</td><td>ngay_dung</td><td>DATETIME(6)</td><td>NULL</td><td>Thời điểm dùng mã thanh toán</td></tr>
+<tr><td>4</td><td>trang_thai</td><td>VARCHAR(20)</td><td>NOT NULL, DEFAULT 'ChuaDung'</td><td>ChuaDung, DaDung, HetHan</td></tr>
+<tr><td>5</td><td>makh</td><td>INT</td><td>FK -&gt; khach_hang, NOT NULL</td><td>Khách hàng thu thập</td></tr>
+<tr><td>6</td><td>makm</td><td>INT</td><td>FK -&gt; khuyen_mai, NOT NULL</td><td>Mã khuyến mãi được lưu</td></tr>
+</table>
+
+<h3>26. Bảng kho (Danh mục kho vật lý)</h3>
+<p><b>KHO</b>(<u>ma_kho</u>, ten_kho, dia_chi, so_dien_thoai, trang_thai)</p>
+<table>
+<tr><th>STT</th><th>Tên thuộc tính</th><th>Kiểu dữ liệu</th><th>Ràng buộc</th><th>Ý nghĩa diễn giải</th></tr>
+<tr><td>1</td><td>ma_kho</td><td>INT</td><td>PK, AUTO_INCREMENT</td><td>Mã định danh kho</td></tr>
+<tr><td>2</td><td>ten_kho</td><td>VARCHAR(100)</td><td>NOT NULL</td><td>Tên kho (Kho Tổng TP.HCM, Kho Tân Bình...)</td></tr>
+<tr><td>3</td><td>dia_chi</td><td>VARCHAR(255)</td><td>NOT NULL</td><td>Địa chỉ mặt bằng kho</td></tr>
+<tr><td>4</td><td>so_dien_thoai</td><td>VARCHAR(20)</td><td>NULL</td><td>SĐT liên hệ thủ kho</td></tr>
+<tr><td>5</td><td>trang_thai</td><td>VARCHAR(20)</td><td>NOT NULL, DEFAULT 'HoatDong'</td><td>Trạng thái hoạt động</td></tr>
+</table>
+
+<h3>27. Bảng kho_hang (Phân bổ tồn kho thực tế theo từng kho)</h3>
+<p><b>KHO_HANG</b>(<u>ma_kho</u>, <u>masp</u>, so_luong, so_luong_cho_xuat, ngay_cap_nhat)</p>
+<table>
+<tr><th>STT</th><th>Tên thuộc tính</th><th>Kiểu dữ liệu</th><th>Ràng buộc</th><th>Ý nghĩa diễn giải</th></tr>
+<tr><td>1</td><td>ma_kho</td><td>INT</td><td>PK, FK -&gt; kho</td><td>Kho chứa hàng</td></tr>
+<tr><td>2</td><td>masp</td><td>INT</td><td>PK, FK -&gt; san_pham</td><td>Sách được lưu trữ</td></tr>
+<tr><td>3</td><td>so_luong</td><td>INT</td><td>NOT NULL, DEFAULT 0</td><td>Số lượng thực tế trong kho</td></tr>
+<tr><td>4</td><td>so_luong_cho_xuat</td><td>INT</td><td>NOT NULL, DEFAULT 0</td><td>Lượng hàng đang chờ đóng gói xuất</td></tr>
+<tr><td>5</td><td>ngay_cap_nhat</td><td>DATETIME(6)</td><td>NULL</td><td>Thời điểm cập nhật biến động gần nhất</td></tr>
+</table>
+
+<h3>28. Bảng phieu_nhap</h3>
+<p><b>PHIEU_NHAP</b>(<u>mapn</u>, ngay_nhap, tong_tien, trang_thai, ghi_chu, nha_cung_cap_ten, mancc, manv, ma_kho, ma_shop)</p>
+<table>
+<tr><th>STT</th><th>Tên thuộc tính</th><th>Kiểu dữ liệu</th><th>Ràng buộc</th><th>Ý nghĩa diễn giải</th></tr>
+<tr><td>1</td><td>mapn</td><td>INT</td><td>PK, AUTO_INCREMENT</td><td>Mã định danh phiếu nhập</td></tr>
+<tr><td>2</td><td>ngay_nhap</td><td>DATETIME(6)</td><td>NOT NULL</td><td>Thời điểm lập phiếu nhập</td></tr>
+<tr><td>3</td><td>tong_tien</td><td>INT</td><td>NOT NULL</td><td>Tổng giá trị hàng nhập (VNĐ)</td></tr>
+<tr><td>4</td><td>trang_thai</td><td>VARCHAR(20)</td><td>NOT NULL</td><td>ChoDuyet, DaNhap, DaHuy</td></tr>
+<tr><td>5</td><td>ghi_chu</td><td>VARCHAR(500)</td><td>NULL</td><td>Ghi chú lý do nhập</td></tr>
+<tr><td>6</td><td>nha_cung_cap_ten</td><td>VARCHAR(255)</td><td>NULL</td><td>Tên NCC (nếu nhập ngoài đối tác)</td></tr>
+<tr><td>7</td><td>mancc</td><td>INT</td><td>FK -&gt; nha_cung_cap, NULL</td><td>Đối tác cung cấp</td></tr>
+<tr><td>8</td><td>manv</td><td>INT</td><td>FK -&gt; nhan_vien, NULL</td><td>Thủ kho lập phiếu</td></tr>
+<tr><td>9</td><td>ma_kho</td><td>INT</td><td>FK -&gt; kho, NULL</td><td>Nhập về kho nào</td></tr>
+<tr><td>10</td><td>ma_shop</td><td>INT</td><td>FK -&gt; shop, NULL</td><td>Nếu Shop tự nhập hàng thì lưu ma_shop</td></tr>
+</table>
+
+<h3>29. Bảng chi_tiet_phieu_nhap</h3>
+<p><b>CHI_TIET_PHIEU_NHAP</b>(<u>mactpn</u>, don_gia, so_luong, thanh_tien, mapn, masp)</p>
+<table>
+<tr><th>STT</th><th>Tên thuộc tính</th><th>Kiểu dữ liệu</th><th>Ràng buộc</th><th>Ý nghĩa diễn giải</th></tr>
+<tr><td>1</td><td>mactpn</td><td>INT</td><td>PK, AUTO_INCREMENT</td><td>Mã chi tiết phiếu nhập</td></tr>
+<tr><td>2</td><td>don_gia</td><td>INT</td><td>NOT NULL</td><td>Giá nhập mỗi cuốn sách</td></tr>
+<tr><td>3</td><td>so_luong</td><td>INT</td><td>NOT NULL</td><td>Số lượng nhập</td></tr>
+<tr><td>4</td><td>thanh_tien</td><td>INT</td><td>NOT NULL</td><td>Thành tiền = don_gia * so_luong</td></tr>
+<tr><td>5</td><td>mapn</td><td>INT</td><td>FK -&gt; phieu_nhap, NOT NULL</td><td>Thuộc phiếu nhập nào</td></tr>
+<tr><td>6</td><td>masp</td><td>INT</td><td>FK -&gt; san_pham, NOT NULL</td><td>Sách được nhập</td></tr>
+</table>
+
+<h3>30. Bảng phieu_kiem_ke</h3>
+<p><b>PHIEU_KIEM_KE</b>(<u>ma_phieu_kiem_ke</u>, ngay_kiem_ke, ngay_phe_duyet, trang_thai, ghi_chu, manv, manvphe_duyet, ma_kho, ma_shop)</p>
+<table>
+<tr><th>STT</th><th>Tên thuộc tính</th><th>Kiểu dữ liệu</th><th>Ràng buộc</th><th>Ý nghĩa diễn giải</th></tr>
+<tr><td>1</td><td>ma_phieu_kiem_ke</td><td>INT</td><td>PK, AUTO_INCREMENT</td><td>Mã phiếu kiểm kê</td></tr>
+<tr><td>2</td><td>ngay_kiem_ke</td><td>DATETIME(6)</td><td>NOT NULL</td><td>Ngày tiến hành đếm kho</td></tr>
+<tr><td>3</td><td>ngay_phe_duyet</td><td>DATETIME(6)</td><td>NULL</td><td>Ngày quản lý phê duyệt</td></tr>
+<tr><td>4</td><td>trang_thai</td><td>VARCHAR(30)</td><td>NOT NULL</td><td>ChoDuyet, DaCanBang, TuChoi</td></tr>
+<tr><td>5</td><td>ghi_chu</td><td>VARCHAR(500)</td><td>NULL</td><td>Ghi chú kết quả kiểm kê</td></tr>
+<tr><td>6</td><td>manv</td><td>INT</td><td>FK -&gt; nhan_vien, NULL</td><td>Nhân viên kiểm đếm</td></tr>
+<tr><td>7</td><td>manvphe_duyet</td><td>INT</td><td>FK -&gt; nhan_vien, NULL</td><td>Quản lý ký duyệt cân bằng kho</td></tr>
+<tr><td>8</td><td>ma_kho</td><td>INT</td><td>FK -&gt; kho, NULL</td><td>Kiểm kê tại kho vật lý</td></tr>
+<tr><td>9</td><td>ma_shop</td><td>INT</td><td>FK -&gt; shop, NULL</td><td>Kiểm kê kho hàng của Shop</td></tr>
+</table>
+
+<h3>31. Bảng chi_tiet_kiem_ke</h3>
+<p><b>CHI_TIET_KIEM_KE</b>(<u>ma_chi_tiet_kiem_ke</u>, so_luong_he_thong, so_luong_thuc_te, chenh_lech, ly_do, ma_phieu_kiem_ke, masp)</p>
+<table>
+<tr><th>STT</th><th>Tên thuộc tính</th><th>Kiểu dữ liệu</th><th>Ràng buộc</th><th>Ý nghĩa diễn giải</th></tr>
+<tr><td>1</td><td>ma_chi_tiet_kiem_ke</td><td>INT</td><td>PK, AUTO_INCREMENT</td><td>Mã chi tiết kiểm kê</td></tr>
+<tr><td>2</td><td>so_luong_he_thong</td><td>INT</td><td>NOT NULL</td><td>Tồn kho ghi nhận trên phần mềm</td></tr>
+<tr><td>3</td><td>so_luong_thuc_te</td><td>INT</td><td>NOT NULL</td><td>Số lượng đếm thực tế ở kệ</td></tr>
+<tr><td>4</td><td>chenh_lech</td><td>INT</td><td>NOT NULL</td><td>Lệch = thực_tế - hệ_thống</td></tr>
+<tr><td>5</td><td>ly_do</td><td>VARCHAR(255)</td><td>NULL</td><td>Giải trình lý do thừa/thiếu</td></tr>
+<tr><td>6</td><td>ma_phieu_kiem_ke</td><td>INT</td><td>FK -&gt; phieu_kiem_ke, NOT NULL</td><td>Thuộc phiếu kiểm kê nào</td></tr>
+<tr><td>7</td><td>masp</td><td>INT</td><td>FK -&gt; san_pham, NOT NULL</td><td>Đầu sách được kiểm kê</td></tr>
+</table>
+
+<h3>32. Bảng phieu_tra_hang</h3>
+<p><b>PHIEU_TRA_HANG</b>(<u>ma_phieu_tra</u>, ngay_tra, ly_do, tong_tien_hoan, trang_thai, ghi_chu, mancc, manv)</p>
+<table>
+<tr><th>STT</th><th>Tên thuộc tính</th><th>Kiểu dữ liệu</th><th>Ràng buộc</th><th>Ý nghĩa diễn giải</th></tr>
+<tr><td>1</td><td>ma_phieu_tra</td><td>INT</td><td>PK, AUTO_INCREMENT</td><td>Mã định danh phiếu trả hàng</td></tr>
+<tr><td>2</td><td>ngay_tra</td><td>DATETIME(6)</td><td>NOT NULL</td><td>Thời điểm tạo phiếu trả</td></tr>
+<tr><td>3</td><td>ly_do</td><td>VARCHAR(255)</td><td>NOT NULL</td><td>Lý do trả (hàng lỗi, hỏng, sách in lỗi)</td></tr>
+<tr><td>4</td><td>tong_tien_hoan</td><td>INT</td><td>NOT NULL, DEFAULT 0</td><td>Tổng tiền đối trừ/hoàn trả</td></tr>
+<tr><td>5</td><td>trang_thai</td><td>VARCHAR(20)</td><td>NOT NULL</td><td>ChoXuLy, DaTra, TuChoi</td></tr>
+<tr><td>6</td><td>ghi_chu</td><td>VARCHAR(500)</td><td>NULL</td><td>Ghi chú thêm</td></tr>
+<tr><td>7</td><td>mancc</td><td>INT</td><td>FK -&gt; nha_cung_cap, NULL</td><td>Trả hàng về nhà cung cấp nào</td></tr>
+<tr><td>8</td><td>manv</td><td>INT</td><td>FK -&gt; nhan_vien, NULL</td><td>Nhân viên kho xử lý trả hàng</td></tr>
+</table>
+
+<h3>33. Bảng chi_tiet_tra_hang</h3>
+<p><b>CHI_TIET_TRA_HANG</b>(<u>ma_chi_tiet_tra</u>, so_luong, don_gia_hoan, thanh_tien, ly_do_loi, ma_phieu_tra, masp)</p>
+<table>
+<tr><th>STT</th><th>Tên thuộc tính</th><th>Kiểu dữ liệu</th><th>Ràng buộc</th><th>Ý nghĩa diễn giải</th></tr>
+<tr><td>1</td><td>ma_chi_tiet_tra</td><td>INT</td><td>PK, AUTO_INCREMENT</td><td>Mã chi tiết phiếu trả</td></tr>
+<tr><td>2</td><td>so_luong</td><td>INT</td><td>NOT NULL</td><td>Số lượng gửi trả</td></tr>
+<tr><td>3</td><td>don_gia_hoan</td><td>INT</td><td>NOT NULL</td><td>Giá hoàn trả mỗi cuốn</td></tr>
+<tr><td>4</td><td>thanh_tien</td><td>INT</td><td>NOT NULL</td><td>Thành tiền hoàn</td></tr>
+<tr><td>5</td><td>ly_do_loi</td><td>VARCHAR(255)</td><td>NULL</td><td>Chi tiết lỗi từng cuốn</td></tr>
+<tr><td>6</td><td>ma_phieu_tra</td><td>INT</td><td>FK -&gt; phieu_tra_hang, NOT NULL</td><td>Thuộc phiếu trả nào</td></tr>
+<tr><td>7</td><td>masp</td><td>INT</td><td>FK -&gt; san_pham, NOT NULL</td><td>Cuốn sách được gửi trả</td></tr>
+</table>
+
+<h3>34. Bảng yeu_cau_cap_hang</h3>
+<p><b>YEU_CAU_CAP_HANG</b>(<u>ma_yeu_cau</u>, trang_thai, ngay_tao, ngay_duyet, ghi_chu, ly_do_tu_choi, ma_shop, ma_kho, ma_nhan_vien_duyet)</p>
+<table>
+<tr><th>STT</th><th>Tên thuộc tính</th><th>Kiểu dữ liệu</th><th>Ràng buộc</th><th>Ý nghĩa diễn giải</th></tr>
+<tr><td>1</td><td>ma_yeu_cau</td><td>INT</td><td>PK, AUTO_INCREMENT</td><td>Mã định danh yêu cầu cấp hàng</td></tr>
+<tr><td>2</td><td>trang_thai</td><td>VARCHAR(30)</td><td>NOT NULL, DEFAULT 'ChoDuyet'</td><td>ChoDuyet, DaDuyet, TuChoi, DaXuatKho</td></tr>
+<tr><td>3</td><td>ngay_tao</td><td>DATETIME</td><td>NOT NULL, DEFAULT CURRENT_TIMESTAMP</td><td>Thời điểm Shop gửi yêu cầu</td></tr>
+<tr><td>4</td><td>ngay_duyet</td><td>DATETIME</td><td>NULL</td><td>Thời điểm ban quản lý phê duyệt</td></tr>
+<tr><td>5</td><td>ghi_chu</td><td>VARCHAR(500)</td><td>NULL</td><td>Ghi chú nhu cầu cấp hàng</td></tr>
+<tr><td>6</td><td>ly_do_tu_choi</td><td>VARCHAR(500)</td><td>NULL</td><td>Lý do từ chối cấp (nếu có)</td></tr>
+<tr><td>7</td><td>ma_shop</td><td>INT</td><td>FK -&gt; shop, NOT NULL</td><td>Gian hàng đề nghị xin cấp</td></tr>
+<tr><td>8</td><td>ma_kho</td><td>INT</td><td>FK -&gt; kho, NOT NULL</td><td>Kho xuất nguồn của sàn</td></tr>
+<tr><td>9</td><td>ma_nhan_vien_duyet</td><td>INT</td><td>FK -&gt; nhan_vien, NULL</td><td>Nhân sự kho phụ trách duyệt xuất</td></tr>
+</table>
+
+<h3>35. Bảng chi_tiet_cap_hang</h3>
+<p><b>CHI_TIET_CAP_HANG</b>(<u>ma_chi_tiet</u>, so_luong_yeu_cau, so_luong_duyet, ma_yeu_cau, masp)</p>
+<table>
+<tr><th>STT</th><th>Tên thuộc tính</th><th>Kiểu dữ liệu</th><th>Ràng buộc</th><th>Ý nghĩa diễn giải</th></tr>
+<tr><td>1</td><td>ma_chi_tiet</td><td>INT</td><td>PK, AUTO_INCREMENT</td><td>Mã dòng chi tiết cấp</td></tr>
+<tr><td>2</td><td>so_luong_yeu_cau</td><td>INT</td><td>NOT NULL</td><td>Số lượng Shop yêu cầu nhận</td></tr>
+<tr><td>3</td><td>so_luong_duyet</td><td>INT</td><td>NULL</td><td>Số lượng kho tổng đồng ý cấp</td></tr>
+<tr><td>4</td><td>ma_yeu_cau</td><td>INT</td><td>FK -&gt; yeu_cau_cap_hang, NOT NULL</td><td>Thuộc yêu cầu nào</td></tr>
+<tr><td>5</td><td>masp</td><td>INT</td><td>FK -&gt; san_pham, NOT NULL</td><td>Đầu sách yêu cầu cấp</td></tr>
+</table>
+
+<h3>36. Bảng cau_hinh_he_thong</h3>
+<p><b>CAU_HINH_HE_THONG</b>(<u>ma_cau_hinh</u>, gia_tri, mo_ta)</p>
+<table>
+<tr><th>STT</th><th>Tên thuộc tính</th><th>Kiểu dữ liệu</th><th>Ràng buộc</th><th>Ý nghĩa diễn giải</th></tr>
+<tr><td>1</td><td>ma_cau_hinh</td><td>VARCHAR(50)</td><td>PK, NOT NULL</td><td>Khóa cấu hình (VD: PLATFORM_FEE_PERCENT)</td></tr>
+<tr><td>2</td><td>gia_tri</td><td>VARCHAR(255)</td><td>NOT NULL</td><td>Giá trị cài đặt (VD: '5.0')</td></tr>
+<tr><td>3</td><td>mo_ta</td><td>VARCHAR(255)</td><td>NULL</td><td>Ý nghĩa tham số hệ thống</td></tr>
+</table>
+
+<h3>37. Bảng nhat_ky_bao_mat (Security Audit Log)</h3>
+<p><b>NHAT_KY_BAO_MAT</b>(<u>id</u>, bang_ten, hanh_dong, ban_ghi_id, du_lieu_cu, du_lieu_moi, nguoi_thuc_hien, thoi_gian)</p>
+<table>
+<tr><th>STT</th><th>Tên thuộc tính</th><th>Kiểu dữ liệu</th><th>Ràng buộc</th><th>Ý nghĩa diễn giải</th></tr>
+<tr><td>1</td><td>id</td><td>BIGINT</td><td>PK, AUTO_INCREMENT</td><td>Mã định danh bản ghi audit log</td></tr>
+<tr><td>2</td><td>bang_ten</td><td>VARCHAR(64)</td><td>NOT NULL</td><td>Bảng bị can thiệp (tai_khoan, don_hang...)</td></tr>
+<tr><td>3</td><td>hanh_dong</td><td>ENUM</td><td>NOT NULL</td><td>INSERT, UPDATE, DELETE</td></tr>
+<tr><td>4</td><td>ban_ghi_id</td><td>INT</td><td>NULL</td><td>ID bản ghi bị tác động</td></tr>
+<tr><td>5</td><td>du_lieu_cu</td><td>JSON</td><td>NULL</td><td>Dữ liệu trước khi sửa đổi</td></tr>
+<tr><td>6</td><td>du_lieu_moi</td><td>JSON</td><td>NULL</td><td>Dữ liệu sau khi sửa đổi</td></tr>
+<tr><td>7</td><td>nguoi_thuc_hien</td><td>VARCHAR(100)</td><td>DEFAULT CURRENT_USER()</td><td>Tên người dùng thực hiện câu lệnh</td></tr>
+<tr><td>8</td><td>thoi_gian</td><td>TIMESTAMP</td><td>DEFAULT CURRENT_TIMESTAMP</td><td>Thời điểm xảy ra sự kiện</td></tr>
+</table>
+
+<h3>38. Bảng nhat_ky_thay_doi_du_lieu</h3>
+<p><b>NHAT_KY_THAY_DOI_DU_LIEU</b>(<u>ma_nhat_ky</u>, ten_bang, hanh_dong, khoa_chinh, du_lieu_cu, du_lieu_moi, nguoi_thuc_hien, thoi_gian)</p>
+<table>
+<tr><th>STT</th><th>Tên thuộc tính</th><th>Kiểu dữ liệu</th><th>Ràng buộc</th><th>Ý nghĩa diễn giải</th></tr>
+<tr><td>1</td><td>ma_nhat_ky</td><td>BIGINT</td><td>PK, AUTO_INCREMENT</td><td>Mã định danh duy nhất của bản ghi nhật ký</td></tr>
+<tr><td>2</td><td>ten_bang</td><td>VARCHAR(100)</td><td>NOT NULL</td><td>Tên bảng dữ liệu phát sinh thay đổi</td></tr>
+<tr><td>3</td><td>hanh_dong</td><td>VARCHAR(20)</td><td>NOT NULL</td><td>Thao tác tác động: INSERT, UPDATE, DELETE</td></tr>
+<tr><td>4</td><td>khoa_chinh</td><td>VARCHAR(100)</td><td>NOT NULL</td><td>Giá trị khóa chính của bản ghi bị tác động</td></tr>
+<tr><td>5</td><td>du_lieu_cu</td><td>JSON</td><td>NULL</td><td>Toàn bộ trạng thái dữ liệu trước khi thay đổi (dạng JSON)</td></tr>
+<tr><td>6</td><td>du_lieu_moi</td><td>JSON</td><td>NULL</td><td>Toàn bộ trạng thái dữ liệu sau khi thay đổi (dạng JSON)</td></tr>
+<tr><td>7</td><td>nguoi_thuc_hien</td><td>VARCHAR(100)</td><td>DEFAULT 'SYSTEM'</td><td>Tài khoản hoặc tác nhân thực hiện thao tác</td></tr>
+<tr><td>8</td><td>thoi_gian</td><td>DATETIME</td><td>NOT NULL, DEFAULT CURRENT_TIMESTAMP</td><td>Thời điểm chính xác phát sinh thay đổi dữ liệu</td></tr>
+</table>
+
+<h3>39. Bảng lich_su_sao_luu (Backup History)</h3>
+<p><b>LICH_SU_SAO_LUU</b>(<u>ma_sao_luu</u>, ten_file, duong_dan, loai_sao_luu, dung_luong_bytes, so_bang_sao_luu, trang_thai, nguoi_thuc_hien, thoi_gian_bat_dau, thoi_gian_ket_thuc, ma_bam_checksum, ghi_chu)</p>
+<table>
+<tr><th>STT</th><th>Tên thuộc tính</th><th>Kiểu dữ liệu</th><th>Ràng buộc</th><th>Ý nghĩa diễn giải</th></tr>
+<tr><td>1</td><td>ma_sao_luu</td><td>INT</td><td>PK, AUTO_INCREMENT</td><td>Mã định danh phiên sao lưu</td></tr>
+<tr><td>2</td><td>ten_file</td><td>VARCHAR(255)</td><td>NOT NULL</td><td>Tên tệp tin sao lưu sinh ra</td></tr>
+<tr><td>3</td><td>duong_dan</td><td>VARCHAR(500)</td><td>NULL</td><td>Đường dẫn lưu trữ vật lý của file trên máy chủ</td></tr>
+<tr><td>4</td><td>loai_sao_luu</td><td>VARCHAR(50)</td><td>NOT NULL, DEFAULT 'FULL'</td><td>Phương thức sao lưu: FULL, DIFFERENTIAL</td></tr>
+<tr><td>5</td><td>dung_luong_bytes</td><td>BIGINT</td><td>DEFAULT 0</td><td>Kích thước dung lượng của file sao lưu (bytes)</td></tr>
+<tr><td>6</td><td>so_bang_sao_luu</td><td>INT</td><td>DEFAULT 0</td><td>Tổng số bảng dữ liệu được kết xuất vào file sao lưu</td></tr>
+<tr><td>7</td><td>trang_thai</td><td>VARCHAR(50)</td><td>NOT NULL, DEFAULT 'DANG_XU_LY'</td><td>Trạng thái tiến trình: DANG_XU_LY, THANH_CONG, THAT_BAI</td></tr>
+<tr><td>8</td><td>nguoi_thuc_hien</td><td>VARCHAR(100)</td><td>DEFAULT 'SYSTEM'</td><td>Tài khoản quản trị thực hiện</td></tr>
+<tr><td>9</td><td>thoi_gian_bat_dau</td><td>DATETIME</td><td>NOT NULL, DEFAULT CURRENT_TIMESTAMP</td><td>Thời điểm bắt đầu chạy tiến trình mysqldump</td></tr>
+<tr><td>10</td><td>thoi_gian_ket_thuc</td><td>DATETIME</td><td>NULL</td><td>Thời điểm hoàn tất việc kết xuất file</td></tr>
+<tr><td>11</td><td>ma_bam_checksum</td><td>VARCHAR(128)</td><td>NULL</td><td>Mã băm SHA-256 xác thực tính toàn vẹn</td></tr>
+<tr><td>12</td><td>ghi_chu</td><td>TEXT</td><td>NULL</td><td>Ghi chú lý do sao lưu hoặc nhật ký lỗi nếu thất bại</td></tr>
+</table>
+
+<h3>40. Bảng lich_su_phuc_hoi (Restore History)</h3>
+<p><b>LICH_SU_PHUC_HOI</b>(<u>ma_phuc_hoi</u>, ten_file, nguoi_phuc_hoi, trang_thai, thoi_gian_bat_dau, thoi_gian_ket_thuc, tong_so_bang_phuc_hoi, ket_qua_kiem_tra_toan_ven, ghi_chu, ma_sao_luu)</p>
+<table>
+<tr><th>STT</th><th>Tên thuộc tính</th><th>Kiểu dữ liệu</th><th>Ràng buộc</th><th>Ý nghĩa diễn giải</th></tr>
+<tr><td>1</td><td>ma_phuc_hoi</td><td>INT</td><td>PK, AUTO_INCREMENT</td><td>Mã định danh duy nhất của phiên phục hồi</td></tr>
+<tr><td>2</td><td>ten_file</td><td>VARCHAR(255)</td><td>NOT NULL</td><td>Tên tệp tin backup được sử dụng để nạp lại dữ liệu</td></tr>
+<tr><td>3</td><td>nguoi_phuc_hoi</td><td>VARCHAR(100)</td><td>NOT NULL, DEFAULT 'ADMIN'</td><td>Kỹ sư quản trị DBA chịu trách nhiệm phục hồi</td></tr>
+<tr><td>4</td><td>trang_thai</td><td>VARCHAR(50)</td><td>NOT NULL, DEFAULT 'DANG_XU_LY'</td><td>Trạng thái phục hồi: DANG_XU_LY, THANH_CONG, THAT_BAI</td></tr>
+<tr><td>5</td><td>thoi_gian_bat_dau</td><td>DATETIME</td><td>NOT NULL, DEFAULT CURRENT_TIMESTAMP</td><td>Thời điểm bắt đầu nạp lại dữ liệu vào database</td></tr>
+<tr><td>6</td><td>thoi_gian_ket_thuc</td><td>DATETIME</td><td>NULL</td><td>Thời điểm hoàn thành quá trình phục hồi</td></tr>
+<tr><td>7</td><td>tong_so_bang_phuc_hoi</td><td>INT</td><td>DEFAULT 0</td><td>Tổng số bảng dữ liệu đã nạp thành công</td></tr>
+<tr><td>8</td><td>ket_qua_kiem_tra_toan_ven</td><td>VARCHAR(50)</td><td>DEFAULT 'CHUA_KIEM_TRA'</td><td>Kết quả đối soát toàn vẹn: HOP_LE, LOI_CHECKSUM, CHUA_KIEM_TRA</td></tr>
+<tr><td>9</td><td>ghi_chu</td><td>TEXT</td><td>NULL</td><td>Nhật ký chi tiết tiến trình hoặc thông báo lỗi nếu có</td></tr>
+<tr><td>10</td><td>ma_sao_luu</td><td>INT</td><td>FK -&gt; lich_su_sao_luu, NULL</td><td>Khóa ngoại liên kết trực tiếp với bản ghi sao lưu nguồn gốc</td></tr>
+</table>
+
+<h2>4.3. Danh sách các ràng buộc toàn vẹn trên CSDL</h2>
+
+<h3>4.3.1. Ràng buộc khóa chính</h3>
+<table>
+<tr><th>Mã số</th><th>Mô tả miền giá trị</th><th>Thành phần liên quan</th><th>Ghi chú</th></tr>
+<tr><td>RB1</td><td>Mã sản phẩm là mã duy nhất trong bảng Sản phẩm</td><td>masp, bảng CSDL san_pham</td><td>Khóa chính PK</td></tr>
+<tr><td>RB2</td><td>Mã đơn hàng là mã duy nhất trong bảng Đơn hàng</td><td>madh, bảng CSDL don_hang</td><td>Khóa chính PK</td></tr>
+<tr><td>RB3</td><td>Mã tài khoản là mã duy nhất trong bảng Tài khoản</td><td>ma_tai_khoan, bảng CSDL tai_khoan</td><td>Khóa chính PK</td></tr>
+<tr><td>RB4</td><td>Mã khách hàng là mã duy nhất trong bảng Khách hàng</td><td>makh, bảng CSDL khach_hang</td><td>Khóa chính PK</td></tr>
+<tr><td>RB5</td><td>Mã gian hàng là mã duy nhất trong bảng Shop</td><td>ma_shop, bảng CSDL shop</td><td>Khóa chính PK</td></tr>
+<tr><td>RB6</td><td>Mã nhân viên là mã duy nhất trong bảng Nhân viên</td><td>manv, bảng CSDL nhan_vien</td><td>Khóa chính PK</td></tr>
+<tr><td>RB7</td><td>Mã phiếu nhập là mã duy nhất trong bảng Phiếu nhập</td><td>mapn, bảng CSDL phieu_nhap</td><td>Khóa chính PK</td></tr>
+<tr><td>RB8</td><td>Mã phiếu kiểm kê là mã duy nhất trong bảng Phiếu kiểm kê</td><td>ma_phieu_kiem_ke, bảng CSDL phieu_kiem_ke</td><td>Khóa chính PK</td></tr>
+<tr><td>RB9</td><td>Mã khuyến mãi là mã duy nhất trong bảng Khuyến mãi</td><td>makm, bảng CSDL khuyen_mai</td><td>Khóa chính PK</td></tr>
+<tr><td>RB10</td><td>Cặp mã sản phẩm và mã tác giả là duy nhất trong bảng Sản phẩm - Tác giả</td><td>masp, ma_tac_gia, bảng CSDL san_pham_tac_gia</td><td>Khóa tổ hợp Composite PK</td></tr>
+<tr><td>RB11</td><td>Mã giao dịch thanh toán là duy nhất trong bảng Thanh toán</td><td>ma_thanh_toan, bảng CSDL thanh_toan</td><td>Khóa chính PK</td></tr>
+<tr><td>RB12</td><td>Mã yêu cầu cấp hàng là duy nhất trong bảng Yêu cầu cấp hàng</td><td>ma_yeu_cau, bảng CSDL yeu_cau_cap_hang</td><td>Khóa chính PK</td></tr>
+<tr><td>RB13</td><td>Mã phiên sao lưu là duy nhất trong bảng Lịch sử sao lưu</td><td>ma_sao_luu, bảng CSDL lich_su_sao_luu</td><td>Khóa chính PK</td></tr>
+<tr><td>RB14</td><td>Mã phiên phục hồi là duy nhất trong bảng Lịch sử phục hồi</td><td>ma_phuc_hoi, bảng CSDL lich_su_phuc_hoi</td><td>Khóa chính PK</td></tr>
+</table>
+<div class="table-caption">Bảng 4-36: Danh sách các ràng buộc khóa chính</div>
+
+<h3>4.3.2. Ràng buộc khóa ngoại</h3>
+<table>
+<tr><th>Mã số</th><th>Mô tả miền giá trị</th><th>Thành phần liên quan</th><th>Ghi chú</th></tr>
+<tr><td>RB1</td><td>Mã khách hàng trên mỗi đơn hàng phải tồn tại trong bảng Khách hàng</td><td>makh, bảng CSDL don_hang</td><td>Tham chiếu khach_hang(makh)</td></tr>
+<tr><td>RB2</td><td>Mã sản phẩm trong mỗi chi tiết đơn hàng phải tồn tại trong bảng Sản phẩm</td><td>masp, bảng CSDL chi_tiet_don_hang</td><td>Tham chiếu san_pham(masp)</td></tr>
+<tr><td>RB3</td><td>Mã khuyến mãi áp dụng trên đơn hàng phải tồn tại trong bảng Khuyến mãi</td><td>makm, bảng CSDL don_hang</td><td>Tham chiếu khuyen_mai(makm)</td></tr>
+<tr><td>RB4</td><td>Mã shop trên mỗi đơn hàng phải tồn tại trong bảng Shop</td><td>ma_shop, bảng CSDL don_hang</td><td>Tham chiếu shop(ma_shop)</td></tr>
+<tr><td>RB5</td><td>Mã danh mục trên mỗi sản phẩm phải tồn tại trong bảng Danh mục</td><td>ma_danh_muc, bảng CSDL san_pham</td><td>Tham chiếu danh_muc(ma_danh_muc)</td></tr>
+<tr><td>RB6</td><td>Mã nhà xuất bản trên mỗi sản phẩm phải tồn tại trong bảng Nhà xuất bản</td><td>manxb, bảng CSDL san_pham</td><td>Tham chiếu nha_xuat_ban(manxb)</td></tr>
+<tr><td>RB7</td><td>Mã nhà cung cấp trên mỗi sản phẩm phải tồn tại trong bảng Nhà cung cấp</td><td>mancc, bảng CSDL san_pham</td><td>Tham chiếu nha_cung_cap(mancc)</td></tr>
+<tr><td>RB8</td><td>Mã tài khoản trong hồ sơ khách hàng phải tồn tại trong bảng Tài khoản</td><td>ma_tai_khoan, bảng CSDL khach_hang</td><td>Tham chiếu tai_khoan(ma_tai_khoan)</td></tr>
+<tr><td>RB9</td><td>Mã kho trên mỗi phiếu nhập phải tồn tại trong bảng Kho</td><td>ma_kho, bảng CSDL phieu_nhap</td><td>Tham chiếu kho(ma_kho)</td></tr>
+<tr><td>RB10</td><td>Mã đơn vị vận chuyển trên mỗi đơn hàng phải tồn tại trong bảng Nhà vận chuyển</td><td>ma_nvc, bảng CSDL don_hang</td><td>Tham chiếu nha_van_chuyen(ma_nvc)</td></tr>
+<tr><td>RB11</td><td>Mã đơn hàng trên giao dịch thanh toán phải tồn tại trong bảng Đơn hàng</td><td>madh, bảng CSDL thanh_toan</td><td>Tham chiếu don_hang(madh)</td></tr>
+<tr><td>RB12</td><td>Mã yêu cầu trên chi tiết cấp hàng phải tồn tại trong bảng Yêu cầu cấp hàng</td><td>ma_yeu_cau, bảng CSDL chi_tiet_cap_hang</td><td>Tham chiếu yeu_cau_cap_hang(ma_yeu_cau)</td></tr>
+<tr><td>RB13</td><td>Mã bản ghi sao lưu trên phiên phục hồi phải tồn tại trong bảng Lịch sử sao lưu</td><td>ma_sao_luu, bảng CSDL lich_su_phuc_hoi</td><td>Tham chiếu lich_su_sao_luu(ma_sao_luu)</td></tr>
+</table>
+<div class="table-caption">Bảng 4-37: Danh sách các ràng buộc khóa ngoại</div>
+
+<h3>4.3.3. Ràng buộc miền giá trị</h3>
+<table>
+<tr><th>Mã số</th><th>Mô tả miền giá trị</th><th>Thành phần liên quan</th><th>Ghi chú</th></tr>
+<tr><td>RB1</td><td>Giá bán của sản phẩm trong bảng Sản phẩm phải lớn hơn hoặc bằng 0</td><td>gia_ban, bảng CSDL san_pham</td><td>gia_ban &gt;= 0</td></tr>
+<tr><td>RB2</td><td>Số sao đánh giá trong bảng Đánh giá phải nằm trong khoảng từ 1 đến 5</td><td>so_sao, bảng CSDL danh_gia</td><td>1 &lt;= so_sao &lt;= 5</td></tr>
+<tr><td>RB3</td><td>Trạng thái đơn hàng chỉ nhận các giá trị theo quy trình luân chuyển đơn</td><td>trang_thai, bảng CSDL don_hang</td><td>ChoXacNhan, DaXacNhan, DangGiao, GiaoThanhCong, HoanTat, DaHuy, TranhChap, TraHang</td></tr>
+<tr><td>RB4</td><td>Vai trò tài khoản chỉ nhận các quyền định danh trong hệ thống RBAC</td><td>vai_tro, bảng CSDL tai_khoan</td><td>KHACHHANG, VENDOR, NHANVIENKHO, NHANVIENBANHANG, QUANLY, ADMIN</td></tr>
+<tr><td>RB5</td><td>Số lượng sách mua trong chi tiết đơn hàng phải lớn hơn 0</td><td>so_luong, bảng CSDL chi_tiet_don_hang</td><td>so_luong &gt; 0</td></tr>
+<tr><td>RB6</td><td>Số lượng tồn kho của sản phẩm phải lớn hơn hoặc bằng 0</td><td>so_luong_ton, bảng CSDL san_pham</td><td>so_luong_ton &gt;= 0</td></tr>
+<tr><td>RB7</td><td>Tỷ lệ chiết khấu phí sàn nằm trong khoảng từ 0% đến 100%</td><td>chiet_khau_app_phan_tram, bảng CSDL don_hang</td><td>0 &lt;= chiet_khau &lt;= 100</td></tr>
+<tr><td>RB8</td><td>Giá trị giảm của mã khuyến mãi phải lớn hơn 0</td><td>gia_tri_giam, bảng CSDL khuyen_mai</td><td>gia_tri_giam &gt; 0</td></tr>
+<tr><td>RB9</td><td>Số lượng sách nhập kho trong chi tiết phiếu nhập phải lớn hơn 0</td><td>so_luong, bảng CSDL chi_tiet_phieu_nhap</td><td>so_luong &gt; 0</td></tr>
+</table>
+<div class="table-caption">Bảng 4-38: Danh sách các ràng buộc giá trị</div>
+
+<h3>4.3.4. Ràng buộc liên thuộc tính</h3>
+<table>
+<tr><th>Mã số</th><th>Mô tả miền giá trị</th><th>Thành phần liên quan</th><th>Ghi chú</th></tr>
+<tr><td>RB1</td><td>Ngày kết thúc phải lớn hơn ngày bắt đầu trên mỗi chương trình khuyến mãi</td><td>ngay_ket_thuc, ngay_bat_dau, bảng CSDL khuyen_mai</td><td>ngay_ket_thuc &gt;= ngay_bat_dau</td></tr>
+<tr><td>RB2</td><td>Số lượng đã dùng không được vượt quá số lượng phát hành của một mã khuyến mãi</td><td>so_luong_da_dung, so_luong, bảng CSDL khuyen_mai</td><td>so_luong_da_dung &lt;= so_luong</td></tr>
+<tr><td>RB3</td><td>Tiền Shop thực nhận phải bằng tổng tiền đơn hàng trừ đi tiền phí sàn thu</td><td>tien_thuc_nhan_shop, tong_tien, tien_phi_san, bảng CSDL don_hang</td><td>tien_thuc_nhan_shop = tong_tien - tien_phi_san</td></tr>
+<tr><td>RB4</td><td>Chênh lệch kiểm kê phải bằng số lượng đếm thực tế trừ số lượng hệ thống</td><td>chenh_lech, so_luong_thuc_te, so_luong_he_thong, bảng CSDL chi_tiet_kiem_ke</td><td>chenh_lech = so_luong_thuc_te - so_luong_he_thong</td></tr>
+<tr><td>RB5</td><td>Thời điểm hoàn thành sao lưu/phục hồi phải sau thời điểm bắt đầu</td><td>thoi_gian_ket_thuc, thoi_gian_bat_dau, bảng CSDL lich_su_sao_luu, lich_su_phuc_hoi</td><td>thoi_gian_ket_thuc &gt;= thoi_gian_bat_dau</td></tr>
+</table>
+<div class="table-caption">Bảng 4-39: Bảng các ràng buộc thuộc tính</div>
+
+<h4>Bảng Tầm ảnh hưởng:</h4>
+<table>
+<tr><th>Mã RB</th><th>Quan hệ</th><th>Thêm</th><th>Xóa</th><th>Sửa</th></tr>
+<tr><td>RB1</td><td>khuyen_mai</td><td>+</td><td>-</td><td>+(ngay_bat_dau, ngay_ket_thuc)</td></tr>
+<tr><td>RB2</td><td>khuyen_mai</td><td>+</td><td>-</td><td>+(so_luong_da_dung, so_luong)</td></tr>
+<tr><td>RB3</td><td>don_hang</td><td>+</td><td>-</td><td>+(tong_tien, tien_phi_san, tien_thuc_nhan_shop)</td></tr>
+<tr><td>RB4</td><td>chi_tiet_kiem_ke</td><td>+</td><td>-</td><td>+(so_luong_thuc_te, so_luong_he_thong, chenh_lech)</td></tr>
+<tr><td>RB5</td><td>lich_su_sao_luu<br>lich_su_phuc_hoi</td><td>+<br>+</td><td>-<br>-</td><td>+(thoi_gian_bat_dau, thoi_gian_ket_thuc)<br>+(thoi_gian_bat_dau, thoi_gian_ket_thuc)</td></tr>
+</table>
+
+<h3>4.3.5. Ràng buộc liên bộ</h3>
+<table>
+<tr><th>Mã số</th><th>Mô tả miền giá trị</th><th>Thành phần liên quan</th><th>Ghi chú</th></tr>
+<tr><td>RB1</td><td>Tên đăng nhập của các tài khoản phải khác nhau</td><td>ten_dang_nhap, bảng CSDL tai_khoan</td><td>Duy nhất (UNIQUE)</td></tr>
+<tr><td>RB2</td><td>Địa chỉ email của các tài khoản phải khác nhau</td><td>email, bảng CSDL tai_khoan</td><td>Duy nhất (UNIQUE)</td></tr>
+<tr><td>RB3</td><td>Mã ISBN của mỗi tựa sách phải khác nhau</td><td>isbn, bảng CSDL san_pham</td><td>Duy nhất (UNIQUE)</td></tr>
+<tr><td>RB4</td><td>Số điện thoại của các khách hàng phải khác nhau</td><td>so_dien_thoai, bảng CSDL khach_hang</td><td>Duy nhất (UNIQUE)</td></tr>
+<tr><td>RB5</td><td>Mã code khuyến mãi phải khác nhau</td><td>ma_code, bảng CSDL khuyen_mai</td><td>Duy nhất (UNIQUE)</td></tr>
+<tr><td>RB6</td><td>Mỗi tài khoản chỉ được liên kết duy nhất 1 gian hàng Shop</td><td>ma_tai_khoan, bảng CSDL shop</td><td>Quan hệ 1-1 (UNIQUE)</td></tr>
+<tr><td>RB7</td><td>Cùng một khách hàng và mã khuyến mãi chỉ được lưu một lần vào ví voucher</td><td>makh, makm, bảng CSDL voucher_da_luu</td><td>Khóa tổ hợp (UNIQUE)</td></tr>
+</table>
+<div class="table-caption">Bảng 4-40: Bảng các ràng buộc liên bộ</div>
+
+<h4>Bảng Tầm ảnh hưởng:</h4>
+<table>
+<tr><th>Mã RB</th><th>Quan hệ</th><th>Thêm</th><th>Xóa</th><th>Sửa</th></tr>
+<tr><td>RB1</td><td>tai_khoan</td><td>+</td><td>-</td><td>+(ten_dang_nhap)</td></tr>
+<tr><td>RB2</td><td>tai_khoan</td><td>+</td><td>-</td><td>+(email)</td></tr>
+<tr><td>RB3</td><td>san_pham</td><td>+</td><td>-</td><td>+(isbn)</td></tr>
+<tr><td>RB4</td><td>khach_hang</td><td>+</td><td>-</td><td>+(so_dien_thoai)</td></tr>
+<tr><td>RB5</td><td>khuyen_mai</td><td>+</td><td>-</td><td>+(ma_code)</td></tr>
+<tr><td>RB6</td><td>shop</td><td>+</td><td>-</td><td>+(ma_tai_khoan)</td></tr>
+<tr><td>RB7</td><td>voucher_da_luu</td><td>+</td><td>-</td><td>+(makh, makm)</td></tr>
+</table>
+
+<h3>4.3.6. Ràng buộc liên quan hệ</h3>
+<table>
+<tr><th>Mã số</th><th>Mô tả miền giá trị</th><th>Thành phần liên quan</th><th>Ghi chú</th></tr>
+<tr><td>RB1</td><td>Tổng tiền trên đơn hàng bằng tổng thành tiền của các chi tiết đơn hàng trừ đi Tiền giảm và cộng Phí vận chuyển</td><td>tong_tien, tien_giam, phi_van_chuyen, bảng CSDL don_hang, chi_tiet_don_hang</td><td>tong_tien = SUM(so_luong * don_gia) + phi_van_chuyen - tien_giam</td></tr>
+<tr><td>RB2</td><td>Số lượng mua của một sản phẩm trong chi tiết đơn hàng không được lớn hơn số lượng tồn kho của sản phẩm đó</td><td>so_luong, so_luong_ton, bảng CSDL chi_tiet_don_hang, san_pham</td><td>so_luong &lt;= so_luong_ton</td></tr>
+<tr><td>RB3</td><td>Tổng tiền nhập trên phiếu nhập phải bằng tổng thành tiền của các chi tiết phiếu nhập có cùng mã phiếu nhập</td><td>tong_tien, so_luong, don_gia, bảng CSDL phieu_nhap, chi_tiet_phieu_nhap</td><td>tong_tien = SUM(so_luong * don_gia)</td></tr>
+<tr><td>RB4</td><td>Tổng tiền ghi trên hóa đơn thanh toán điện tử phải bằng đúng tổng tiền thanh toán của đơn đặt hàng</td><td>tong_tien, bảng CSDL hoa_don, don_hang</td><td>hoa_don.tong_tien = don_hang.tong_tien</td></tr>
+<tr><td>RB5</td><td>Khách hàng chỉ được gửi đánh giá cho sản phẩm thuộc đơn hàng đã ở trạng thái Hoàn thành</td><td>trang_thai, bảng CSDL danh_gia, don_hang</td><td>trang_thai IN ('GiaoThanhCong', 'HoanTat')</td></tr>
+<tr><td>RB6</td><td>Số tiền trên giao dịch thanh toán cổng phải khớp tổng số tiền của đơn hàng</td><td>so_tien, tong_tien, bảng CSDL thanh_toan, don_hang</td><td>thanh_toan.so_tien = don_hang.tong_tien</td></tr>
+</table>
+<div class="table-caption">Bảng 4-41: Bảng các ràng buộc liên quan hệ</div>
+
+<h4>Bảng Tầm ảnh hưởng:</h4>
+<table>
+<tr><th>Mã RB</th><th>Quan hệ</th><th>Thêm</th><th>Xóa</th><th>Sửa</th></tr>
+<tr><td>RB1</td><td>don_hang<br>chi_tiet_don_hang</td><td>+<br>+</td><td>-<br>+</td><td>+(phi_van_chuyen, tien_giam, tong_tien)<br>+(so_luong, don_gia)</td></tr>
+<tr><td>RB2</td><td>chi_tiet_don_hang<br>san_pham</td><td>+<br>-</td><td>-<br>-</td><td>+(so_luong)<br>+(so_luong_ton)</td></tr>
+<tr><td>RB3</td><td>phieu_nhap<br>chi_tiet_phieu_nhap</td><td>+<br>+</td><td>-<br>+</td><td>+(tong_tien)<br>+(so_luong, don_gia)</td></tr>
+<tr><td>RB4</td><td>hoa_don<br>don_hang</td><td>+<br>-</td><td>-<br>+</td><td>+(tong_tien)<br>+(tong_tien)</td></tr>
+<tr><td>RB5</td><td>danh_gia<br>don_hang</td><td>+<br>-</td><td>-<br>-</td><td>-+(trang_thai)</td></tr>
+<tr><td>RB6</td><td>thanh_toan<br>don_hang</td><td>+<br>-</td><td>-<br>+</td><td>+(so_tien)<br>+(tong_tien)</td></tr>
+</table>
+
+</body>
+</html>

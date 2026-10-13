@@ -27,4 +27,7 @@ public class TaiKhoan {
     private String providerId;
     @Column(nullable = false)
     private LocalDateTime ngayTao = LocalDateTime.now();
+
+    @Column(name = "token_version", nullable = false)
+    private Integer tokenVersion = 1;
 }

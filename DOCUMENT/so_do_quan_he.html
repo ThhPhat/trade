@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8"/>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html, body { width:297mm; height:210mm; background:#fff; }
+  @page { size: A4 landscape; margin: 0; }
+  svg { display:block; width:297mm; height:210mm; }
+
+  /* Table boxes */
+  .tbl rect { rx:4; ry:4; }
+  .tbl text { font-family: 'Segoe UI', Arial, sans-serif; font-size:7.5px; font-weight:600; fill:#fff; text-anchor:middle; dominant-baseline:middle; }
+
+  /* Colors per subsystem */
+  .c1 { fill:#2563EB; }   /* Tài khoản */
+  .c2 { fill:#059669; }   /* Sản phẩm */
+  .c3 { fill:#D97706; }   /* Đơn hàng */
+  .c4 { fill:#7C3AED; }   /* Khuyến mãi */
+  .c5 { fill:#DC2626; }   /* Kho */
+  .c6 { fill:#475569; }   /* Quản trị */
+
+  /* Connector lines */
+  line, path { stroke-width:1; fill:none; }
+  .rel  { stroke:#94a3b8; }
+  .rel2 { stroke:#cbd5e1; stroke-dasharray:3 2; }
+
+  /* Legend */
+  .leg text { font-family:'Segoe UI',Arial,sans-serif; font-size:7.5px; fill:#1e293b; dominant-baseline:middle; }
+
+  /* Title */
+  .title { font-family:'Segoe UI',Arial,sans-serif; font-size:11px; font-weight:700; fill:#0f172a; text-anchor:middle; }
+  .sub   { font-family:'Segoe UI',Arial,sans-serif; font-size:7px; fill:#64748b; text-anchor:middle; }
+
+  /* Group label */
+  .glabel { font-family:'Segoe UI',Arial,sans-serif; font-size:7px; font-weight:700; fill:#94a3b8; text-anchor:middle; letter-spacing:0.5px; }
+</style>
+</head>
+<body>
+<svg viewBox="0 0 1122 793" xmlns="http://www.w3.org/2000/svg">
+
+<!-- ══════════════════ BACKGROUND ══════════════════ -->
+<rect width="1122" height="793" fill="#f8fafc"/>
+
+<!-- ══════════════════ TITLE ══════════════════ -->
+<text x="561" y="22" class="title">SƠ ĐỒ QUAN HỆ CƠ SỞ DỮ LIỆU — HỆ THỐNG THE4BOOKSTORE</text>
+<text x="561" y="34" class="sub">Database: QL_NhaSach · 40 bảng · 6 phân hệ · Chuẩn 3NF</text>
+
+<!-- ══════════════════ GROUP BACKGROUNDS ══════════════════ -->
+<!-- Tài khoản -->
+<rect x="14" y="42" width="188" height="245" rx="6" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1"/>
+<text x="108" y="54" class="glabel">① TÀI KHOẢN &amp; NGƯỜI DÙNG</text>
+
+<!-- Sản phẩm -->
+<rect x="210" y="42" width="278" height="300" rx="6" fill="#ecfdf5" stroke="#a7f3d0" stroke-width="1"/>
+<text x="349" y="54" class="glabel">② SẢN PHẨM &amp; TƯƠNG TÁC</text>
+
+<!-- Đơn hàng -->
+<rect x="496" y="42" width="270" height="230" rx="6" fill="#fffbeb" stroke="#fde68a" stroke-width="1"/>
+<text x="631" y="54" class="glabel">③ ĐƠN HÀNG &amp; THANH TOÁN</text>
+
+<!-- Khuyến mãi -->
+<rect x="496" y="280" width="132" height="88" rx="6" fill="#f5f3ff" stroke="#ddd6fe" stroke-width="1"/>
+<text x="562" y="292" class="glabel">④ KHUYẾN MÃI</text>
+
+<!-- Kho -->
+<rect x="14" y="295" width="474" height="302" rx="6" fill="#fef2f2" stroke="#fecaca" stroke-width="1"/>
+<text x="251" y="307" class="glabel">⑤ KHO &amp; NHẬP XUẤT</text>
+
+<!-- Quản trị -->
+<rect x="775" y="42" width="335" height="555" rx="6" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+<text x="942" y="54" class="glabel">⑥ QUẢN TRỊ &amp; HỆ THỐNG</text>
+
+<!-- ══════════════════ CONNECTOR LINES ══════════════════ -->
+<!-- Tài khoản → khach_hang -->
+<line x1="108" y1="90" x2="108" y2="110" class="rel"/>
+<!-- Tài khoản → nhan_vien -->
+<line x1="108" y1="90" x2="60" y2="140" class="rel"/>
+<!-- Tài khoản → shop -->
+<line x1="108" y1="90" x2="155" y2="140" class="rel"/>
+<!-- Tài khoản → password_reset_token -->
+<line x1="108" y1="90" x2="108" y2="225" class="rel"/>
+<!-- khach_hang → dia_chi_giao_hang -->
+<line x1="108" y1="130" x2="60" y2="175" class="rel"/>
+<!-- khach_hang → gio_hang (cross group) -->
+<line x1="108" y1="130" x2="510" y2="175" class="rel2"/>
+<!-- khach_hang → don_hang -->
+<line x1="108" y1="130" x2="510" y2="130" class="rel2"/>
+
+<!-- shop → san_pham -->
+<line x1="188" y1="155" x2="215" y2="130" class="rel"/>
+<!-- shop → don_hang -->
+<line x1="192" y1="155" x2="503" y2="115" class="rel2"/>
+<!-- shop → khuyen_mai -->
+<line x1="192" y1="165" x2="503" y2="310" class="rel2"/>
+<!-- shop → phieu_nhap -->
+<line x1="155" y1="175" x2="80" y2="360" class="rel2"/>
+<!-- shop → phieu_kiem_ke -->
+<line x1="145" y1="175" x2="60" y2="435" class="rel2"/>
+
+<!-- Sản phẩm relations -->
+<!-- san_pham → chi_tiet_gio_hang -->
+<line x1="280" y1="130" x2="510" y2="195" class="rel"/>
+<!-- san_pham → chi_tiet_don_hang -->
+<line x1="285" y1="130" x2="510" y2="150" class="rel"/>
+<!-- san_pham → san_pham_tac_gia -->
+<line x1="280" y1="140" x2="280" y2="200" class="rel"/>
+<!-- san_pham → san_pham_yeu_thich -->
+<line x1="300" y1="130" x2="380" y2="175" class="rel"/>
+<!-- san_pham → san_pham_da_xem -->
+<line x1="310" y1="130" x2="400" y2="200" class="rel"/>
+<!-- san_pham → danh_gia -->
+<line x1="320" y1="140" x2="340" y2="250" class="rel"/>
+<!-- san_pham → kho_hang -->
+<line x1="270" y1="140" x2="190" y2="360" class="rel"/>
+<!-- san_pham → chi_tiet_phieu_nhap -->
+<line x1="260" y1="140" x2="160" y2="435" class="rel"/>
+<!-- san_pham → chi_tiet_kiem_ke -->
+<line x1="255" y1="140" x2="130" y2="485" class="rel"/>
+<!-- san_pham → chi_tiet_cap_hang -->
+<line x1="250" y1="140" x2="100" y2="535" class="rel"/>
+<!-- danh_muc → san_pham -->
+<line x1="265" y1="175" x2="265" y2="120" class="rel"/>
+<!-- nha_xuat_ban → san_pham -->
+<line x1="340" y1="200" x2="275" y2="130" class="rel"/>
+<!-- nha_cung_cap → san_pham -->
+<line x1="430" y1="175" x2="290" y2="130" class="rel"/>
+<!-- nha_cung_cap → phieu_nhap -->
+<line x1="420" y1="195" x2="130" y2="360" class="rel"/>
+<!-- tac_gia → san_pham_tac_gia -->
+<line x1="385" y1="250" x2="310" y2="210" class="rel"/>
+<!-- danh_gia → danh_gia_media -->
+<line x1="340" y1="275" x2="340" y2="310" class="rel"/>
+
+<!-- Đơn hàng relations -->
+<!-- don_hang → chi_tiet_don_hang -->
+<line x1="575" y1="115" x2="575" y2="145" class="rel"/>
+<!-- don_hang → hoa_don -->
+<line x1="620" y1="115" x2="680" y2="145" class="rel"/>
+<!-- don_hang → thanh_toan -->
+<line x1="630" y1="115" x2="700" y2="175" class="rel"/>
+<!-- nha_van_chuyen → don_hang -->
+<line x1="700" y1="115" x2="640" y2="115" class="rel"/>
+<!-- gio_hang → chi_tiet_gio_hang -->
+<line x1="530" y1="175" x2="540" y2="195" class="rel"/>
+
+<!-- Khuyến mãi -->
+<!-- khuyen_mai → voucher_da_luu -->
+<line x1="540" y1="315" x2="540" y2="330" class="rel"/>
+<line x1="540" y1="330" x2="540" y2="345" class="rel"/>
+
+<!-- Kho relations -->
+<!-- kho → kho_hang -->
+<line x1="90" y1="360" x2="190" y2="375" class="rel"/>
+<!-- kho → phieu_nhap -->
+<line x1="80" y1="375" x2="80" y2="430" class="rel"/>
+<!-- kho → phieu_kiem_ke -->
+<line x1="75" y1="390" x2="65" y2="430" class="rel"/>
+<!-- kho → yeu_cau_cap_hang -->
+<line x1="85" y1="390" x2="210" y2="510" class="rel"/>
+<!-- phieu_nhap → chi_tiet_phieu_nhap -->
+<line x1="80" y1="455" x2="150" y2="455" class="rel"/>
+<!-- phieu_kiem_ke → chi_tiet_kiem_ke -->
+<line x1="65" y1="460" x2="130" y2="480" class="rel"/>
+<!-- yeu_cau_cap_hang → chi_tiet_cap_hang -->
+<line x1="230" y1="530" x2="230" y2="545" class="rel"/>
+<!-- phieu_tra_hang → chi_tiet_tra_hang -->
+<line x1="330" y1="455" x2="390" y2="470" class="rel"/>
+
+<!-- Quản trị group: standalone mostly -->
+
+<!-- ══════════════════ TABLE BOXES ══════════════════ -->
+
+<!-- ① Tài khoản group -->
+<g class="tbl" id="tai_khoan">
+  <rect x="60" y="63" width="96" height="22" rx="4" class="c1"/>
+  <text x="108" y="74">tai_khoan</text>
+</g>
+<g class="tbl" id="khach_hang">
+  <rect x="60" y="110" width="96" height="22" rx="4" class="c1"/>
+  <text x="108" y="121">khach_hang</text>
+</g>
+<g class="tbl" id="nhan_vien">
+  <rect x="18" y="140" width="84" height="22" rx="4" class="c1"/>
+  <text x="60" y="151">nhan_vien</text>
+</g>
+<g class="tbl" id="shop">
+  <rect x="110" y="140" width="84" height="22" rx="4" class="c1"/>
+  <text x="152" y="151">shop</text>
+</g>
+<g class="tbl" id="dia_chi">
+  <rect x="18" y="175" width="84" height="22" rx="4" class="c1"/>
+  <text x="60" y="186">dia_chi_giao_hang</text>
+</g>
+<g class="tbl" id="pwd_token">
+  <rect x="60" y="220" width="96" height="22" rx="4" class="c1"/>
+  <text x="108" y="231">password_reset_token</text>
+</g>
+
+<!-- ② Sản phẩm group -->
+<g class="tbl" id="san_pham">
+  <rect x="222" y="110" width="96" height="22" rx="4" class="c2"/>
+  <text x="270" y="121">san_pham</text>
+</g>
+<g class="tbl" id="danh_muc">
+  <rect x="222" y="165" width="84" height="22" rx="4" class="c2"/>
+  <text x="264" y="176">danh_muc</text>
+</g>
+<g class="tbl" id="nha_xuat_ban">
+  <rect x="296" y="190" width="88" height="22" rx="4" class="c2"/>
+  <text x="340" y="201">nha_xuat_ban</text>
+</g>
+<g class="tbl" id="nha_cung_cap">
+  <rect x="386" y="165" width="88" height="22" rx="4" class="c2"/>
+  <text x="430" y="176">nha_cung_cap</text>
+</g>
+<g class="tbl" id="san_pham_tac_gia">
+  <rect x="234" y="198" width="96" height="22" rx="4" class="c2"/>
+  <text x="282" y="209">san_pham_tac_gia</text>
+</g>
+<g class="tbl" id="tac_gia">
+  <rect x="342" y="240" width="84" height="22" rx="4" class="c2"/>
+  <text x="384" y="251">tac_gia</text>
+</g>
+<g class="tbl" id="san_pham_yeu_thich">
+  <rect x="342" y="165" width="96" height="22" rx="4" class="c2"/>
+  <text x="390" y="176">san_pham_yeu_thich</text>
+</g>
+<g class="tbl" id="san_pham_da_xem">
+  <rect x="366" y="195" width="92" height="22" rx="4" class="c2"/>
+  <text x="412" y="206">san_pham_da_xem</text>
+</g>
+<g class="tbl" id="danh_gia">
+  <rect x="296" y="248" width="84" height="22" rx="4" class="c2"/>
+  <text x="338" y="259">danh_gia</text>
+</g>
+<g class="tbl" id="danh_gia_media">
+  <rect x="296" y="300" width="92" height="22" rx="4" class="c2"/>
+  <text x="342" y="311">danh_gia_media</text>
+</g>
+
+<!-- ③ Đơn hàng group -->
+<g class="tbl" id="don_hang">
+  <rect x="503" y="100" width="88" height="22" rx="4" class="c3"/>
+  <text x="547" y="111">don_hang</text>
+</g>
+<g class="tbl" id="chi_tiet_don_hang">
+  <rect x="503" y="143" width="100" height="22" rx="4" class="c3"/>
+  <text x="553" y="154">chi_tiet_don_hang</text>
+</g>
+<g class="tbl" id="gio_hang">
+  <rect x="503" y="168" width="80" height="22" rx="4" class="c3"/>
+  <text x="543" y="179">gio_hang</text>
+</g>
+<g class="tbl" id="chi_tiet_gio_hang">
+  <rect x="503" y="193" width="104" height="22" rx="4" class="c3"/>
+  <text x="555" y="204">chi_tiet_gio_hang</text>
+</g>
+<g class="tbl" id="nha_van_chuyen">
+  <rect x="642" y="100" width="100" height="22" rx="4" class="c3"/>
+  <text x="692" y="111">nha_van_chuyen</text>
+</g>
+<g class="tbl" id="hoa_don">
+  <rect x="642" y="143" width="80" height="22" rx="4" class="c3"/>
+  <text x="682" y="154">hoa_don</text>
+</g>
+<g class="tbl" id="thanh_toan">
+  <rect x="642" y="168" width="84" height="22" rx="4" class="c3"/>
+  <text x="684" y="179">thanh_toan</text>
+</g>
+
+<!-- ④ Khuyến mãi group -->
+<g class="tbl" id="khuyen_mai">
+  <rect x="503" y="300" width="84" height="22" rx="4" class="c4"/>
+  <text x="545" y="311">khuyen_mai</text>
+</g>
+<g class="tbl" id="voucher_da_luu">
+  <rect x="503" y="335" width="92" height="22" rx="4" class="c4"/>
+  <text x="549" y="346">voucher_da_luu</text>
+</g>
+
+<!-- ⑤ Kho group -->
+<g class="tbl" id="kho">
+  <rect x="24" y="318" width="72" height="22" rx="4" class="c5"/>
+  <text x="60" y="329">kho</text>
+</g>
+<g class="tbl" id="kho_hang">
+  <rect x="150" y="363" width="80" height="22" rx="4" class="c5"/>
+  <text x="190" y="374">kho_hang</text>
+</g>
+<g class="tbl" id="phieu_nhap">
+  <rect x="24" y="430" width="80" height="22" rx="4" class="c5"/>
+  <text x="64" y="441">phieu_nhap</text>
+</g>
+<g class="tbl" id="chi_tiet_phieu_nhap">
+  <rect x="114" y="430" width="108" height="22" rx="4" class="c5"/>
+  <text x="168" y="441">chi_tiet_phieu_nhap</text>
+</g>
+<g class="tbl" id="phieu_kiem_ke">
+  <rect x="24" y="460" width="96" height="22" rx="4" class="c5"/>
+  <text x="72" y="471">phieu_kiem_ke</text>
+</g>
+<g class="tbl" id="chi_tiet_kiem_ke">
+  <rect x="134" y="475" width="96" height="22" rx="4" class="c5"/>
+  <text x="182" y="486">chi_tiet_kiem_ke</text>
+</g>
+<g class="tbl" id="yeu_cau_cap_hang">
+  <rect x="180" y="508" width="108" height="22" rx="4" class="c5"/>
+  <text x="234" y="519">yeu_cau_cap_hang</text>
+</g>
+<g class="tbl" id="chi_tiet_cap_hang">
+  <rect x="180" y="543" width="104" height="22" rx="4" class="c5"/>
+  <text x="232" y="554">chi_tiet_cap_hang</text>
+</g>
+<g class="tbl" id="phieu_tra_hang">
+  <rect x="306" y="430" width="96" height="22" rx="4" class="c5"/>
+  <text x="354" y="441">phieu_tra_hang</text>
+</g>
+<g class="tbl" id="chi_tiet_tra_hang">
+  <rect x="356" y="465" width="104" height="22" rx="4" class="c5"/>
+  <text x="408" y="476">chi_tiet_tra_hang</text>
+</g>
+
+<!-- ⑥ Quản trị group -->
+<g class="tbl" id="cau_hinh">
+  <rect x="790" y="63" width="108" height="22" rx="4" class="c6"/>
+  <text x="844" y="74">cau_hinh_he_thong</text>
+</g>
+<g class="tbl" id="nhat_ky_bao_mat">
+  <rect x="790" y="100" width="104" height="22" rx="4" class="c6"/>
+  <text x="842" y="111">nhat_ky_bao_mat</text>
+</g>
+<g class="tbl" id="nhat_ky_thay_doi">
+  <rect x="790" y="135" width="124" height="22" rx="4" class="c6"/>
+  <text x="852" y="146">nhat_ky_thay_doi_du_lieu</text>
+</g>
+<g class="tbl" id="lich_su_sao_luu">
+  <rect x="790" y="170" width="104" height="22" rx="4" class="c6"/>
+  <text x="842" y="181">lich_su_sao_luu</text>
+</g>
+<g class="tbl" id="lich_su_phuc_hoi">
+  <rect x="790" y="205" width="108" height="22" rx="4" class="c6"/>
+  <text x="844" y="216">lich_su_phuc_hoi</text>
+</g>
+
+<!-- ══════════════════ LEGEND ══════════════════ -->
+<rect x="14" y="610" width="470" height="76" rx="5" fill="#fff" stroke="#e2e8f0"/>
+<text x="24" y="625" class="glabel" style="font-size:8px;fill:#475569;">CHÚ THÍCH</text>
+
+<rect x="24" y="634" width="14" height="10" rx="2" class="c1"/><text x="42" y="640" class="leg">① Tài khoản &amp; Người dùng (6 bảng)</text>
+<rect x="170" y="634" width="14" height="10" rx="2" class="c2"/><text x="188" y="640" class="leg">② Sản phẩm &amp; Tương tác (10 bảng)</text>
+<rect x="340" y="634" width="14" height="10" rx="2" class="c3"/><text x="358" y="640" class="leg">③ Đơn hàng &amp; Thanh toán (7 bảng)</text>
+
+<rect x="24" y="652" width="14" height="10" rx="2" class="c4"/><text x="42" y="658" class="leg">④ Khuyến mãi (2 bảng)</text>
+<rect x="170" y="652" width="14" height="10" rx="2" class="c5"/><text x="188" y="658" class="leg">⑤ Kho &amp; Nhập xuất (10 bảng)</text>
+<rect x="340" y="652" width="14" height="10" rx="2" class="c6"/><text x="358" y="658" class="leg">⑥ Quản trị &amp; Hệ thống (5 bảng)</text>
+
+<line x1="24" y1="672" x2="60" y2="672" stroke="#94a3b8" stroke-width="1.2"/>
+<text x="64" y="672" class="leg">Quan hệ trực tiếp (Foreign Key)</text>
+<line x1="200" y1="672" x2="236" y2="672" stroke="#cbd5e1" stroke-width="1.2" stroke-dasharray="4 2"/>
+<text x="240" y="672" class="leg">Quan hệ gián tiếp (Cross-group)</text>
+
+<!-- ══════════════════ STATS BOX ══════════════════ -->
+<rect x="496" y="380" width="265" height="130" rx="5" fill="#fff" stroke="#e2e8f0"/>
+<text x="628" y="397" class="glabel" style="font-size:8px;fill:#475569;">THỐNG KÊ HỆ THỐNG</text>
+
+<text x="510" y="415" class="leg" style="font-size:8px;">📦  Tổng số bảng</text><text x="735" y="415" class="leg" style="font-size:8px;font-weight:700;fill:#1e293b;text-anchor:end;">40 bảng</text>
+<text x="510" y="432" class="leg" style="font-size:8px;">🔗  Quan hệ FK</text><text x="735" y="432" class="leg" style="font-size:8px;font-weight:700;fill:#1e293b;text-anchor:end;">&gt; 45 ràng buộc</text>
+<text x="510" y="449" class="leg" style="font-size:8px;">📐  Chuẩn hóa</text><text x="735" y="449" class="leg" style="font-size:8px;font-weight:700;fill:#1e293b;text-anchor:end;">3NF</text>
+<text x="510" y="466" class="leg" style="font-size:8px;">🛡️  Triggers</text><text x="735" y="466" class="leg" style="font-size:8px;font-weight:700;fill:#1e293b;text-anchor:end;">4 triggers bảo mật</text>
+<text x="510" y="483" class="leg" style="font-size:8px;">👁️  Views</text><text x="735" y="483" class="leg" style="font-size:8px;font-weight:700;fill:#1e293b;text-anchor:end;">4 views bảo mật</text>
+<text x="510" y="500" class="leg" style="font-size:8px;">🗄️  RDBMS</text><text x="735" y="500" class="leg" style="font-size:8px;font-weight:700;fill:#1e293b;text-anchor:end;">MySQL 8.0</text>
+
+<!-- ══════════════════ CARDINALITY SYMBOLS ══════════════════ -->
+<!-- "1" mark tại một số điểm chính -->
+
+<!-- Footer -->
+<text x="561" y="785" class="sub">Nhóm 05 — Môn Thiết kế Hệ thống Thông tin — Khoa Công nghệ Thông tin</text>
+
+</svg>
+</body>
+</html>

@@ -22,10 +22,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.security.access.prepost.PreAuthorize;
+
 @Slf4j
 @Controller
 @RequestMapping("/vendor/stock-requests")
 @RequiredArgsConstructor
+@PreAuthorize("hasAnyRole('VENDOR', 'ADMIN', 'MANAGER')")
 public class VendorStockController {
 
     private final CapHangService capHangService;

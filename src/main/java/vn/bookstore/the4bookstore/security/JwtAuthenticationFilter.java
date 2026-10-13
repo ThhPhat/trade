@@ -63,6 +63,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     filterChain.doFilter(request, response);
                     return;
                 }
+
+                Integer tokenVer = jwtService.extractTokenVersion(token);
+                if (tokenVer != null && !tokenVer.equals(taiKhoan.getTokenVersion())) {
+                    // Token version mismatch - token has been invalidated
+                    org.springframework.http.ResponseCookie cleanCookie = jwtService.cleanJwtCookie();
+                    response.addHeader(org.springframework.http.HttpHeaders.SET_COOKIE, cleanCookie.toString());
+                    SecurityContextHolder.clearContext();
+                    filterChain.doFilter(request, response);
+                    return;
+                }
+
                 CustomUserDetails userDetails = new CustomUserDetails(taiKhoan);
 
                 org.springframework.security.core.Authentication currentAuth = SecurityContextHolder.getContext().getAuthentication();

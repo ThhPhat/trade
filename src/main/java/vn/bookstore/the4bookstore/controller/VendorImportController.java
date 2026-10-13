@@ -22,9 +22,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.security.access.prepost.PreAuthorize;
+
 @Controller
 @RequestMapping("/vendor/imports")
 @RequiredArgsConstructor
+@PreAuthorize("hasAnyRole('VENDOR', 'ADMIN', 'MANAGER')")
 public class VendorImportController {
 
     private final ShopService shopService;

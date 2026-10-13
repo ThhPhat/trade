@@ -38,12 +38,15 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
+import org.springframework.security.access.prepost.PreAuthorize;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 @Controller
 @RequestMapping("/admin")
+@PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'QUANLY')")
 public class AdminController {
 
     private final SanPhamRepository sanPhamRepository;
@@ -87,9 +90,14 @@ public class AdminController {
         this.donHangRepository = donHangRepository;
     }
 
-    // ==================== DASHBOARD ====================
     @GetMapping({"", "/"})
     public String adminRoot() {
+        return "redirect:/admin/dashboard";
+    }
+
+    @GetMapping("/publishers")
+    public String publishers(RedirectAttributes ra) {
+        ra.addFlashAttribute("infoMessage", "Quản lý nhà xuất bản đã được tích hợp vào hệ thống.");
         return "redirect:/admin/dashboard";
     }
 

@@ -36,6 +36,8 @@ import java.util.Map;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.security.access.prepost.PreAuthorize;
+
 @Slf4j
 @Controller
 @RequestMapping("/vendor")

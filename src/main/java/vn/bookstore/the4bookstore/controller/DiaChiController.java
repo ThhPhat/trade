@@ -15,9 +15,12 @@ import vn.bookstore.the4bookstore.service.DiaChiService;
 
 import java.util.List;
 
+import org.springframework.security.access.prepost.PreAuthorize;
+
 @Controller
 @RequestMapping("/profile/addresses")
 @RequiredArgsConstructor
+@PreAuthorize("isAuthenticated()")
 public class DiaChiController {
 
     private final DiaChiService diaChiService;

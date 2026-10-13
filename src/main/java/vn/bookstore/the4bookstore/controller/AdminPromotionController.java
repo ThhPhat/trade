@@ -25,8 +25,11 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.security.access.prepost.PreAuthorize;
+
 @Controller
 @RequestMapping({"/admin/vouchers", "/admin/promotions"})
+@PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'QUANLY')")
 public class AdminPromotionController {
 
     private final KhuyenMaiService khuyenMaiService;

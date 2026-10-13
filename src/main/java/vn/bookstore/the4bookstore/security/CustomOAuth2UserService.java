@@ -127,7 +127,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             java.util.List<String> adminEmails = java.util.List.of(
                     "caotuong14@gmail.com", "caotuong06@gmail.com", "24110375@student.hcmute.edu.vn"
             );
-            boolean isAdmin = adminEmails.contains(normalizedEmail) || normalizedEmail.contains("admin");
+            boolean isAdmin = adminEmails.contains(normalizedEmail);
 
             if (isAdmin && !"ADMIN".equalsIgnoreCase(tk.getVaiTro())) {
                 tk.setVaiTro("ADMIN");
@@ -173,7 +173,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             java.util.List<String> adminEmails = java.util.List.of(
                     "caotuong14@gmail.com", "caotuong06@gmail.com", "24110375@student.hcmute.edu.vn"
             );
-            boolean isAdmin = adminEmails.contains(normalizedEmail) || normalizedEmail.contains("admin");
+            boolean isAdmin = adminEmails.contains(normalizedEmail);
 
             tk = new TaiKhoan();
             String candidate = generateSafeUsername(normalizedEmail, displayName);

@@ -28,6 +28,16 @@ public class JwtService {
     @Value("${jwt.secret:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}")
     private String secretKey;
 
+    @Value("${jwt.cookie-secure:false}")
+    private boolean cookieSecure;
+
+    @jakarta.annotation.PostConstruct
+    public void init() {
+        if (secretKey == null || secretKey.trim().isEmpty()) {
+            throw new IllegalArgumentException("JWT secret cannot be null or empty!");
+        }
+    }
+
     @Value("${jwt.expiration-ms:86400000}")
     private long jwtExpirationMs;
 
@@ -63,6 +73,7 @@ public class JwtService {
                 .claim("email", email)
                 .claim("roles", roles)
                 .claim("userId", userId)
+                .claim("tokenVersion", taiKhoan != null ? taiKhoan.getTokenVersion() : 1)
                 .claim("displayName", displayName != null ? displayName : username)
                 .issuedAt(now)
                 .expiration(expiryDate)
@@ -104,6 +115,14 @@ public class JwtService {
         return null;
     }
 
+    public Integer extractTokenVersion(String token) {
+        Object ver = extractAllClaims(token).get("tokenVersion");
+        if (ver instanceof Number number) {
+            return number.intValue();
+        }
+        return null;
+    }
+
     public String extractDisplayName(String token) {
         Object name = extractAllClaims(token).get("displayName");
         return name != null ? name.toString() : null;
@@ -132,7 +151,7 @@ public class JwtService {
                 .maxAge(getCookieMaxAgeSeconds())
                 .httpOnly(true)
                 .sameSite("Lax")
-                .secure(false) // Đặt true nếu chạy HTTPS trên production
+                .secure(cookieSecure)
                 .build();
     }
 
@@ -142,7 +161,7 @@ public class JwtService {
                 .maxAge(0)
                 .httpOnly(true)
                 .sameSite("Lax")
-                .secure(false)
+                .secure(cookieSecure)
                 .build();
     }
 }

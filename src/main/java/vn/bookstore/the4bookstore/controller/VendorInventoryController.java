@@ -21,10 +21,13 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.security.access.prepost.PreAuthorize;
+
 @Slf4j
 @Controller
 @RequestMapping("/vendor/inventory")
 @RequiredArgsConstructor
+@PreAuthorize("hasAnyRole('VENDOR', 'ADMIN', 'MANAGER')")
 public class VendorInventoryController {
 
     private final ShopService shopService;

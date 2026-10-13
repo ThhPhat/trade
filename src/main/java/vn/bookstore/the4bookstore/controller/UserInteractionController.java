@@ -18,8 +18,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.security.access.prepost.PreAuthorize;
+
 @Controller
 @RequiredArgsConstructor
+@PreAuthorize("isAuthenticated()")
 public class UserInteractionController {
 
     private final UserInteractionService interactionService;

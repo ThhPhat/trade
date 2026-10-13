@@ -36,8 +36,11 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 
+import org.springframework.security.access.prepost.PreAuthorize;
+
 @Controller
 @org.springframework.web.bind.annotation.RequestMapping("/profile")
+@PreAuthorize("isAuthenticated()")
 public class ProfileController {
 
     private final TaiKhoanRepository taiKhoanRepository;

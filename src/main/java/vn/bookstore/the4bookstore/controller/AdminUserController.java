@@ -24,6 +24,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import vn.bookstore.the4bookstore.security.CustomOAuth2User;
 import vn.bookstore.the4bookstore.security.CustomUserDetails;
 
+import org.springframework.security.access.prepost.PreAuthorize;
+import vn.bookstore.the4bookstore.service.SecurityAuditService;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -31,6 +34,7 @@ import java.util.Optional;
 @Controller
 @RequestMapping("/admin/users")
 @RequiredArgsConstructor
+@PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'QUANLY')")
 public class AdminUserController {
 
     private final TaiKhoanRepository taiKhoanRepository;
@@ -39,6 +43,8 @@ public class AdminUserController {
     private final ShopRepository shopRepository;
     private final PasswordEncoder passwordEncoder;
     private final org.springframework.security.core.session.SessionRegistry sessionRegistry;
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private SecurityAuditService securityAuditService;
 
     private boolean isSuperAdmin(Authentication auth) {
         if (auth == null || !auth.isAuthenticated()) return false;
@@ -135,10 +141,19 @@ public class AdminUserController {
 
         boolean willLock = !"BiKhoa".equalsIgnoreCase(tk.getTrangThai());
         tk.setTrangThai(willLock ? "BiKhoa" : "HoatDong");
+        // Tăng tokenVersion để vô hiệu hóa tất cả JWT đang lưu hành của tài khoản này
+        tk.setTokenVersion(tk.getTokenVersion() == null ? 1 : tk.getTokenVersion() + 1);
         taiKhoanRepository.save(tk);
 
         if (willLock) {
             invalidateUserSessions(tk);
+            if (securityAuditService != null) {
+                securityAuditService.logAccountLocked(tk.getTenDangNhap(), auth != null ? auth.getName() : "SYSTEM");
+            }
+        } else {
+            if (securityAuditService != null) {
+                securityAuditService.logAccountUnlocked(tk.getTenDangNhap(), auth != null ? auth.getName() : "SYSTEM");
+            }
         }
 
         String msg = willLock ? "Đã KHÓA tài khoản @" + tk.getTenDangNhap() + " thành công (đã hủy phiên đăng nhập nếu có)!" : "Đã MỞ KHÓA tài khoản @" + tk.getTenDangNhap() + " thành công!";
@@ -175,8 +190,14 @@ public class AdminUserController {
         }
 
         String upperRole = newRole.trim().toUpperCase();
+        String oldRole = tk.getVaiTro();
         tk.setVaiTro(upperRole);
+        // Tăng tokenVersion để buộc người dùng đăng nhập lại với quyền mới
+        tk.setTokenVersion(tk.getTokenVersion() == null ? 1 : tk.getTokenVersion() + 1);
         taiKhoanRepository.save(tk);
+        if (securityAuditService != null) {
+            securityAuditService.logRoleChange(tk.getTenDangNhap(), oldRole, upperRole, auth != null ? auth.getName() : "SYSTEM");
+        }
 
         // Tự động đồng bộ / tạo hồ sơ Nhân viên (NhanVien) chỉ khi là vai trò nhân viên kho
         if ("NHANVIENKHO".equals(upperRole)) {

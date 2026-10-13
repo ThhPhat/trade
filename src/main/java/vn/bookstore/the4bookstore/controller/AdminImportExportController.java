@@ -26,9 +26,12 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.security.access.prepost.PreAuthorize;
+
 @Controller
 @RequestMapping("/admin/import-export")
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('ADMIN')")
 public class AdminImportExportController {
 
     private final SanPhamRepository sanPhamRepository;
@@ -47,6 +50,25 @@ public class AdminImportExportController {
         return "admin/import_export";
     }
 
+
+    // ==================== TẢI FILE CSV MẪU SẢN PHẨM ====================
+    @GetMapping("/sample/products")
+    public void downloadSampleProductsCsv(HttpServletResponse response) throws IOException {
+        response.setContentType("text/csv; charset=UTF-8");
+        response.setHeader("Content-Disposition", "attachment; filename=\"mau_nhap_san_pham.csv\"");
+
+        try (OutputStream os = response.getOutputStream();
+             PrintWriter writer = new PrintWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8))) {
+            os.write(0xEF);
+            os.write(0xBB);
+            os.write(0xBF);
+
+            writer.println("ISBN,TenSP,GiaBan,SoLuongTon,LoaiSP,MaDanhMuc,MaNXB,MoTa");
+            writer.println("9786043658999,Đắc Nhân Tâm - Khổ Tiêu Chuẩn,85000,100,Sach,1,1,Sách kinh điển về nghệ thuật ứng xử và kết nối.");
+            writer.println("8935244855523,Sổ Tay Dot Grid Bìa Da Cao Cấp,45000,50,VanPhongPham,2,1,Sổ tay kẻ chấm dot ghi chép bullet journal.");
+            writer.flush();
+        }
+    }
 
     // ==================== XUẤT TOÀN BỘ SẢN PHẨM ====================
     @GetMapping("/export/products")
@@ -195,6 +217,101 @@ public class AdminImportExportController {
         }
     }
 
+
+    // ==================== NHẬP SẢN PHẨM TỪ FILE CSV ====================
+    @PostMapping("/import/products")
+    public String importProductsCsv(@RequestParam("file") MultipartFile file, RedirectAttributes ra) {
+        if (file == null || file.isEmpty()) {
+            ra.addFlashAttribute("errorMessage", "Vui lòng chọn file CSV để tải lên!");
+            return "redirect:/admin/import-export";
+        }
+
+        String filename = file.getOriginalFilename();
+        if (filename == null || !filename.toLowerCase().endsWith(".csv")) {
+            ra.addFlashAttribute("errorMessage", "Định dạng file không hợp lệ! Vui lòng tải lên file đuôi .csv");
+            return "redirect:/admin/import-export";
+        }
+
+        int addedCount = 0;
+        int updatedCount = 0;
+        int rowIdx = 0;
+
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
+            String line;
+            Shop defaultShop = shopRepository.findById(1).orElse(null);
+
+            while ((line = reader.readLine()) != null) {
+                rowIdx++;
+                if (rowIdx == 1) {
+                    continue;
+                }
+                if (line.trim().isEmpty()) continue;
+
+                String[] cols = parseCsvLine(line);
+                if (cols.length < 4) continue;
+
+                String isbn = cols[0].trim();
+                String tenSP = cols[1].trim();
+                int giaBan = parseIntSafe(cols[2], 0);
+                int tonKho = parseIntSafe(cols[3], 0);
+                String loaiSP = cols.length > 4 && !cols[4].isBlank() ? cols[4].trim() : "Sach";
+                Integer maDanhMuc = cols.length > 5 ? parseIntegerSafe(cols[5]) : 1;
+                Integer maNxb = cols.length > 6 ? parseIntegerSafe(cols[6]) : null;
+                String moTa = cols.length > 7 ? cols[7].trim() : "";
+
+                if (tenSP.isEmpty()) continue;
+
+                Optional<SanPham> existingOpt = Optional.empty();
+                if (!isbn.isEmpty()) {
+                    existingOpt = sanPhamRepository.findByISBN(isbn);
+                }
+
+                if (existingOpt.isPresent()) {
+                    SanPham sp = existingOpt.get();
+                    sp.setTenSP(tenSP);
+                    sp.setGiaBan(giaBan);
+                    sp.setSoLuongTon(sp.getSoLuongTon() + tonKho);
+                    if (!moTa.isEmpty()) sp.setMoTa(moTa);
+                    sanPhamRepository.save(sp);
+                    updatedCount++;
+                } else {
+                    SanPham sp = new SanPham();
+                    sp.setISBN(!isbn.isEmpty() ? isbn : "ISBN-" + System.currentTimeMillis() % 1000000000L);
+                    sp.setTenSP(tenSP);
+                    sp.setGiaBan(giaBan);
+                    sp.setSoLuongTon(tonKho);
+                    sp.setSoLuongDaBan(0);
+                    sp.setMucTonToiThieu(5);
+                    sp.setLoaiSP(loaiSP);
+                    sp.setMoTa(moTa);
+                    sp.setTrangThai("DangBan");
+                    sp.setTrangThaiKhoa("BinhThuong");
+                    sp.setNgayTao(LocalDateTime.now());
+                    sp.setShop(defaultShop);
+
+                    if (maDanhMuc != null) {
+                        danhMucRepository.findById(maDanhMuc).ifPresent(sp::setDanhMuc);
+                    }
+                    if (sp.getDanhMuc() == null) {
+                        danhMucRepository.findAll().stream().findFirst().ifPresent(sp::setDanhMuc);
+                    }
+                    if (maNxb != null) {
+                        nhaXuatBanRepository.findById(maNxb).ifPresent(sp::setNhaXuatBan);
+                    }
+
+                    sanPhamRepository.save(sp);
+                    addedCount++;
+                }
+            }
+
+            ra.addFlashAttribute("successMessage",
+                    String.format("Xử lý file CSV thành công: Thêm mới %d sản phẩm, Cập nhật tồn kho %d sản phẩm!", addedCount, updatedCount));
+        } catch (Exception ex) {
+            ra.addFlashAttribute("errorMessage", "Lỗi xử lý file CSV tại dòng " + rowIdx + ": " + ex.getMessage());
+        }
+
+        return "redirect:/admin/import-export";
+    }
 
     private String escapeCsv(String value) {
         if (value == null) return "";
