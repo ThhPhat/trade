@@ -27,9 +27,9 @@ import java.util.Map;
 import org.springframework.security.access.prepost.PreAuthorize;
 
 @Controller
-@RequestMapping("/admin")
+@RequestMapping({"/admin", "/manager"})
 @RequiredArgsConstructor
-@PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'QUANLY')")
+@PreAuthorize("hasAnyRole('MANAGER', 'QUANLY', 'ADMIN')")
 public class ManagerDisputeController {
 
     private final ShopService shopService;

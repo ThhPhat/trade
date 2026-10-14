@@ -38,11 +38,19 @@ class AvatarUtilsTest {
     }
 
     @Test
+    void testGenerateDefaultAvatarSvg() {
+        String svgUri = AvatarUtils.generateDefaultAvatarSvg();
+        assertNotNull(svgUri);
+        assertTrue(svgUri.startsWith("data:image/svg+xml;base64,"));
+    }
+
+    @Test
     void testHasCustomAvatar() {
         assertFalse(AvatarUtils.hasCustomAvatar(null));
         assertFalse(AvatarUtils.hasCustomAvatar(""));
         assertFalse(AvatarUtils.hasCustomAvatar("/images/manager-avatar.png"));
         assertFalse(AvatarUtils.hasCustomAvatar("data:image/svg+xml;utf8,..."));
+        assertFalse(AvatarUtils.hasCustomAvatar("data:image/svg+xml;base64,..."));
         assertTrue(AvatarUtils.hasCustomAvatar("https://lh3.googleusercontent.com/photo.jpg"));
         assertTrue(AvatarUtils.hasCustomAvatar("/uploads/avatars/avatar_1.png"));
     }
