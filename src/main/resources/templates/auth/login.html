@@ -55,6 +55,14 @@
                 <span>Sai tên đăng nhập hoặc mật khẩu!</span>
             </div>
 
+            <div th:if="${param.oauthError}" class="mb-4 p-4 rounded-2xl bg-amber-50 border-2 border-amber-500/60 text-amber-950 text-xs sm:text-sm font-semibold flex flex-col gap-1.5 shadow-md animate-in fade-in duration-300">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[22px] text-amber-600 shrink-0">warning</span>
+                    <span class="font-bold text-amber-800">Đăng nhập Google không thành công:</span>
+                </div>
+                <p class="text-xs text-amber-900 break-words font-normal pl-7" th:text="${param.oauthError}">Lỗi xử lý tài khoản Google</p>
+            </div>
+
             <div th:if="${param.logout}" class="mb-4 px-4 py-3 rounded-2xl bg-white/95 border-2 border-primary/50 text-primary text-xs sm:text-sm font-bold flex items-center gap-2.5 shadow-md animate-in fade-in duration-300">
                 <span class="material-symbols-outlined text-[20px]">check_circle</span>
                 <span>Bạn đã đăng xuất thành công.</span>

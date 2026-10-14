@@ -136,10 +136,13 @@ public class SecurityConfig {
                 )
                 .successHandler(oauth2LoginSuccessHandler)
                 .failureHandler((request, response, exception) -> {
+                    org.slf4j.LoggerFactory.getLogger("OAuth2Security").error("Google OAuth2 login failed: {}", exception != null ? exception.getMessage() : "Unknown error", exception);
                     if (exception != null && exception.getMessage() != null && (exception.getMessage().contains("account_locked") || exception.getMessage().contains("khóa"))) {
                         response.sendRedirect(request.getContextPath() + "/login?locked=true");
                     } else {
-                        response.sendRedirect(request.getContextPath() + "/login?error=true");
+                        String msg = (exception != null && exception.getMessage() != null) ? exception.getMessage() : "Đăng nhập Google thất bại";
+                        String encodedMsg = java.net.URLEncoder.encode(msg, java.nio.charset.StandardCharsets.UTF_8);
+                        response.sendRedirect(request.getContextPath() + "/login?oauthError=" + encodedMsg);
                     }
                 })
             )
