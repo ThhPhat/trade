@@ -55,16 +55,16 @@ public final class AvatarUtils {
     }
 
     /**
-     * Tự động sinh chuỗi Data URI chứa hình vector SVG icon người đơn giản
-     * khi tài khoản chưa có avatar cá nhân.
+     * Tự động sinh chuỗi Data URI chứa hình vector SVG icon người màu trắng
+     * trên nền xám nhạt tròn phong cách Facebook khi tài khoản chưa có avatar cá nhân.
      */
     public static String generateDefaultAvatarSvg() {
         String svg = "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' width='100%' height='100%'>"
-                + "<rect width='100' height='100' rx='50' fill='#E2E8F0'/>"
-                + "<circle cx='50' cy='36' r='18' fill='#64748B'/>"
-                + "<path d='M20 84 C20 66, 34 58, 50 58 C66 58, 80 66, 80 84 Z' fill='#64748B'/>"
+                + "<rect width='100' height='100' rx='50' fill='#CBD5E1'/>"
+                + "<circle cx='50' cy='36' r='18' fill='#FFFFFF'/>"
+                + "<path d='M20 84 C20 66, 34 58, 50 58 C66 58, 80 66, 80 84 Z' fill='#FFFFFF'/>"
                 + "</svg>";
-        return "data:image/svg+xml;utf8," + URLEncoder.encode(svg, StandardCharsets.UTF_8).replace("+", "%20");
+        return "data:image/svg+xml;base64," + java.util.Base64.getEncoder().encodeToString(svg.getBytes(StandardCharsets.UTF_8));
     }
 
     /**

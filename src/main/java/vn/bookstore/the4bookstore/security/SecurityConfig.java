@@ -83,9 +83,10 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**", "/api/webhooks/**", "/don-hang/api/**", "/ws/**"))
             .authorizeHttpRequests(auth -> auth
                 // Phân quyền cho Vendor Portal
-                .requestMatchers("/vendor/register", "/vendor/register/**", "/vendor/pending", "/vendor/blocked").authenticated()
-                .requestMatchers("/vendor", "/vendor/**").hasAnyRole("VENDOR", "ADMIN", "MANAGER")
-                // Phân quyền cho Quản trị Admin & Manager
+                .requestMatchers("/vendor", "/vendor/register", "/vendor/register/**", "/vendor/pending", "/vendor/blocked").authenticated()
+                .requestMatchers("/vendor/**").hasAnyRole("VENDOR", "ADMIN", "MANAGER", "QUANLY")
+                // Phân quyền cho Quản trị Admin & Manager (Manager duyệt gian hàng)
+                .requestMatchers("/admin/shops", "/admin/shops/**", "/manager/shops", "/manager/shops/**").hasAnyRole("MANAGER", "QUANLY", "ADMIN")
                 .requestMatchers("/admin/platform-fees", "/admin/platform-fees/**").hasAnyRole("ADMIN", "QUANLY", "MANAGER")
                 .requestMatchers("/admin/system/**", "/admin/managers/**").hasRole("ADMIN")
                 .requestMatchers("/admin/users", "/admin/users/**").hasAnyRole("ADMIN", "QUANLY", "MANAGER")

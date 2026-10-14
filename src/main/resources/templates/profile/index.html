@@ -76,7 +76,8 @@
                                     <div class="relative group cursor-pointer" onclick="document.getElementById('avatarFileInput').click()" title="Bấm để tải lên ảnh đại diện">
                                         <img alt="Ảnh đại diện"
                                              class="w-16 h-16 rounded-full object-cover shadow-sm ring-4 ring-surface-container-low group-hover:ring-primary/40 transition-all"
-                                             th:src="${userAvatar}"/>
+                                             th:src="${userAvatar}"
+                                             onerror="this.src='/images/default-avatar.svg'"/>
                                         <button type="button" aria-label="Đổi ảnh đại diện" class="absolute bottom-0 right-0 w-6 h-6 rounded-full bg-primary text-on-primary flex items-center justify-center shadow hover:bg-primary-container transition-colors">
                                             <span class="material-symbols-outlined text-[14px]">photo_camera</span>
                                         </button>
