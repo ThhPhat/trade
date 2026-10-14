@@ -1063,6 +1063,7 @@ CREATE TABLE `tai_khoan` (
   `vai_tro` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `auth_provider` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `provider_id` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `token_version` int NOT NULL DEFAULT '1',
   PRIMARY KEY (`ma_tai_khoan`),
   UNIQUE KEY `UKd0golrlr34gkql6so1i4gbuw5` (`email`),
   UNIQUE KEY `UKgkh4qh51gkiu8ccu1ybn1q7h7` (`ten_dang_nhap`),
@@ -1076,7 +1077,7 @@ CREATE TABLE `tai_khoan` (
 
 LOCK TABLES `tai_khoan` WRITE;
 /*!40000 ALTER TABLE `tai_khoan` DISABLE KEYS */;
-INSERT INTO `tai_khoan` VALUES (1,'hoasen@the4bookstore.vn','$2a$10$zy.Yv/2Zg1BC7QQLdoWnQeJXy41ezIntm35/DOymvhDpVpqhTHGci','2026-09-21 17:59:56.441901','vendor_hoasen','HoatDong','VENDOR',NULL,NULL),(4,'admin@the4bookstore.vn','$2a$10$zy.Yv/2Zg1BC7QQLdoWnQeJXy41ezIntm35/DOymvhDpVpqhTHGci','2026-09-21 17:59:56.500059','admin','HoatDong','ADMIN',NULL,NULL),(5,'manager@the4bookstore.vn','$2a$10$zy.Yv/2Zg1BC7QQLdoWnQeJXy41ezIntm35/DOymvhDpVpqhTHGci','2026-09-21 17:59:56.503747','manager','HoatDong','MANAGER',NULL,NULL),(16,'fahasa@the4bookstore.vn','$2a$10$zy.Yv/2Zg1BC7QQLdoWnQeJXy41ezIntm35/DOymvhDpVpqhTHGci','2026-09-24 07:49:19.934471','vendor_fahasa','HoatDong','VENDOR','GOOGLE','107848872169038249996'),(17,'user@the4bookstore.vn','$2a$10$zy.Yv/2Zg1BC7QQLdoWnQeJXy41ezIntm35/DOymvhDpVpqhTHGci','2026-09-25 14:59:02.302868','user','HoatDong','USER','GOOGLE','114426590934798871845'),(22,'vendor@the4bookstore.vn','$2a$10$zy.Yv/2Zg1BC7QQLdoWnQeJXy41ezIntm35/DOymvhDpVpqhTHGci','2026-10-05 13:11:31.000000','vendor_demo','HoatDong','VENDOR','LOCAL',NULL);
+INSERT INTO `tai_khoan` VALUES (1,'hoasen@the4bookstore.vn','$2a$10$zy.Yv/2Zg1BC7QQLdoWnQeJXy41ezIntm35/DOymvhDpVpqhTHGci','2026-09-21 17:59:56.441901','vendor_hoasen','HoatDong','VENDOR',NULL,NULL,1),(4,'admin@the4bookstore.vn','$2a$10$zy.Yv/2Zg1BC7QQLdoWnQeJXy41ezIntm35/DOymvhDpVpqhTHGci','2026-09-21 17:59:56.500059','admin','HoatDong','ADMIN',NULL,NULL,1),(5,'manager@the4bookstore.vn','$2a$10$zy.Yv/2Zg1BC7QQLdoWnQeJXy41ezIntm35/DOymvhDpVpqhTHGci','2026-09-21 17:59:56.503747','manager','HoatDong','MANAGER',NULL,NULL,1),(16,'fahasa@the4bookstore.vn','$2a$10$zy.Yv/2Zg1BC7QQLdoWnQeJXy41ezIntm35/DOymvhDpVpqhTHGci','2026-09-24 07:49:19.934471','vendor_fahasa','HoatDong','VENDOR','GOOGLE','107848872169038249996',1),(17,'user@the4bookstore.vn','$2a$10$zy.Yv/2Zg1BC7QQLdoWnQeJXy41ezIntm35/DOymvhDpVpqhTHGci','2026-09-25 14:59:02.302868','user','HoatDong','USER','GOOGLE','114426590934798871845',1),(22,'vendor@the4bookstore.vn','$2a$10$zy.Yv/2Zg1BC7QQLdoWnQeJXy41ezIntm35/DOymvhDpVpqhTHGci','2026-10-05 13:11:31.000000','vendor_demo','HoatDong','VENDOR','LOCAL',NULL,1);
 /*!40000 ALTER TABLE `tai_khoan` ENABLE KEYS */;
 UNLOCK TABLES;
 

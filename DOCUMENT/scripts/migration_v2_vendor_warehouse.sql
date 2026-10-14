@@ -58,3 +58,6 @@ CREATE TABLE IF NOT EXISTS chi_tiet_cap_hang (
   CONSTRAINT fk_ctch_yeucau FOREIGN KEY (ma_yeu_cau) REFERENCES yeu_cau_cap_hang (ma_yeu_cau) ON DELETE CASCADE,
   CONSTRAINT fk_ctch_sanpham FOREIGN KEY (masp) REFERENCES san_pham (masp) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 5. Bổ sung cột token_version cho bảng tai_khoan (Hỗ trợ JWT Revocation)
+ALTER TABLE tai_khoan ADD COLUMN IF NOT EXISTS token_version INT NOT NULL DEFAULT 1;
