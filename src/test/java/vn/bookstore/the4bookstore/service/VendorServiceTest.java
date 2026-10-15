@@ -31,6 +31,7 @@ class VendorServiceTest {
     @Mock private TacGiaRepository tacGiaRepository;
     @Mock private SanPhamTacGiaRepository sanPhamTacGiaRepository;
     @Mock private SanPhamService sanPhamService;
+    @Mock private ThanhToanRepository thanhToanRepository;
 
     @InjectMocks
     private VendorService vendorService;
