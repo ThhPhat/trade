@@ -98,8 +98,20 @@
                     </div>
                     <div>
                         <span class="font-bold text-on-surface">Thanh toán &amp; Vận chuyển:</span>
-                        <div>PTTT: <strong th:text="${dh.phuongThucThanhToan}">COD</strong> (<span th:text="${dh.trangThaiThanhToan}">ChuaThanhToan</span>)</div>
-                        <div>ĐVVC: <strong th:text="${dh.nhaVanChuyen != null ? dh.nhaVanChuyen.tenNvc : 'Giao Hàng Tiêu Chuẩn'}">GHN</strong></div>
+                        <div class="flex items-center gap-1.5 flex-wrap mt-0.5">
+                            <span>PTTT: <strong th:text="${dh.phuongThucThanhToan}">COD</strong></span>
+                            <span th:if="${dh.trangThaiThanhToan == 'DaThanhToan'}" class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 flex items-center gap-0.5">
+                                <span class="material-symbols-outlined text-[12px]">check_circle</span>
+                                <span>Đã thanh toán</span>
+                            </span>
+                            <span th:if="${dh.trangThaiThanhToan == 'ChoDuyetThanhToan'}" class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800 flex items-center gap-0.5">
+                                <span class="material-symbols-outlined text-[12px]">hourglass_empty</span>
+                                <span>Chờ duyệt thanh toán</span>
+                            </span>
+                            <span th:if="${dh.trangThaiThanhToan == 'DaHoanTien'}" class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-purple-100 text-purple-800">Đã hoàn tiền</span>
+                            <span th:if="${dh.trangThaiThanhToan != 'DaThanhToan' and dh.trangThaiThanhToan != 'ChoDuyetThanhToan' and dh.trangThaiThanhToan != 'DaHoanTien'}" class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-rose-100 text-rose-800" th:text="${dh.trangThaiThanhToan != null ? dh.trangThaiThanhToan : 'Chưa thanh toán'}">Chưa thanh toán</span>
+                        </div>
+                        <div class="mt-0.5">ĐVVC: <strong th:text="${dh.nhaVanChuyen != null ? dh.nhaVanChuyen.tenNvc : 'Giao Hàng Tiêu Chuẩn'}">GHN</strong></div>
                     </div>
                 </div>
 
@@ -158,6 +170,16 @@
 
                     <!-- Workflow Action Buttons -->
                     <div class="flex items-center gap-2 flex-wrap">
+                        <!-- 0. Xác nhận đã nhận tiền thanh toán -->
+                        <form th:if="${dh.trangThaiThanhToan != 'DaThanhToan' and dh.trangThai != 'DaHuy' and dh.trangThai != 'Huy' and dh.trangThai != 'DaHoan'}"
+                              th:action="@{'/vendor/orders/' + ${dh.maDH} + '/confirm-payment'}" method="post"
+                              onsubmit="return confirm('Xác nhận đã nhận tiền thanh toán thành công cho đơn hàng #' + ${dh.maDH} + '?');">
+                            <button type="submit" class="px-3.5 py-2 bg-emerald-600 text-white font-bold text-xs rounded-xl hover:bg-emerald-700 shadow-sm transition-all flex items-center gap-1 cursor-pointer">
+                                <span class="material-symbols-outlined text-sm">paid</span>
+                                <span>Xác Nhận Đã Thanh Toán</span>
+                            </button>
+                        </form>
+
                         <!-- 1. Xác nhận đơn (Tự động sinh mã vận đơn) -->
                         <form th:if="${dh.trangThai == 'DonHangMoi' or dh.trangThai == 'ChoXuLy'}" th:action="@{'/vendor/orders/' + ${dh.maDH} + '/confirm'}" method="post">
                             <button type="submit" class="px-4 py-2 bg-primary text-on-primary font-bold text-xs rounded-xl hover:bg-primary-container shadow-sm transition-all flex items-center gap-1 cursor-pointer">

@@ -527,6 +527,20 @@ public class VendorController {
         return "vendor/orders";
     }
 
+    @PostMapping("/orders/{id}/confirm-payment")
+    public String confirmPayment(Authentication auth, @PathVariable Integer id, RedirectAttributes redirectAttributes) {
+        Shop shop = getCurrentShop(auth);
+        String redirect = checkShopAccess(shop);
+        if (redirect != null) return redirect;
+        try {
+            vendorService.xacNhanThanhToan(id, shop.getMaShop());
+            redirectAttributes.addFlashAttribute("successMessage", "Đã xác nhận thanh toán thành công cho đơn hàng #" + id);
+        } catch (Exception ex) {
+            redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+        }
+        return "redirect:/vendor/orders";
+    }
+
     @PostMapping("/orders/{id}/confirm")
     public String confirmOrder(Authentication auth, @PathVariable Integer id, RedirectAttributes redirectAttributes) {
         Shop shop = getCurrentShop(auth);

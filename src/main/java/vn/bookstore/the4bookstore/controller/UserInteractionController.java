@@ -17,6 +17,7 @@ import vn.bookstore.the4bookstore.service.UserInteractionService;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.security.access.prepost.PreAuthorize;
 
@@ -29,13 +30,88 @@ public class UserInteractionController {
     private final KhachHangRepository khachHangRepository;
     private final TaiKhoanRepository taiKhoanRepository;
 
+    private TaiKhoan getCurrentTaiKhoan(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getPrincipal())) {
+            return null;
+        }
+
+        Object principal = authentication.getPrincipal();
+
+        if (principal instanceof vn.bookstore.the4bookstore.security.CustomUserDetails userDetails) {
+            if (userDetails.getTaiKhoan() != null && userDetails.getTaiKhoan().getMaTaiKhoan() != null) {
+                return taiKhoanRepository.findById(userDetails.getTaiKhoan().getMaTaiKhoan())
+                        .orElse(userDetails.getTaiKhoan());
+            }
+        }
+
+        if (principal instanceof vn.bookstore.the4bookstore.security.CustomOAuth2User oAuth2User) {
+            if (oAuth2User.getTaiKhoan() != null && oAuth2User.getTaiKhoan().getMaTaiKhoan() != null) {
+                return taiKhoanRepository.findById(oAuth2User.getTaiKhoan().getMaTaiKhoan())
+                        .orElse(oAuth2User.getTaiKhoan());
+            }
+            if (oAuth2User.getEmail() != null && !oAuth2User.getEmail().isBlank()) {
+                Optional<TaiKhoan> tkOpt = taiKhoanRepository.findByEmail(oAuth2User.getEmail());
+                if (tkOpt.isPresent()) return tkOpt.get();
+            }
+        }
+
+        if (principal instanceof vn.bookstore.the4bookstore.security.CustomOidcUser oidcUser) {
+            if (oidcUser.getTaiKhoan() != null && oidcUser.getTaiKhoan().getMaTaiKhoan() != null) {
+                return taiKhoanRepository.findById(oidcUser.getTaiKhoan().getMaTaiKhoan())
+                        .orElse(oidcUser.getTaiKhoan());
+            }
+            if (oidcUser.getEmail() != null && !oidcUser.getEmail().isBlank()) {
+                Optional<TaiKhoan> tkOpt = taiKhoanRepository.findByEmail(oidcUser.getEmail());
+                if (tkOpt.isPresent()) return tkOpt.get();
+            }
+        }
+
+        if (principal instanceof org.springframework.security.oauth2.core.oidc.user.OidcUser oidcUser) {
+            String email = oidcUser.getEmail();
+            if (email != null && !email.isBlank()) {
+                Optional<TaiKhoan> tkOpt = taiKhoanRepository.findByEmail(email);
+                if (tkOpt.isPresent()) return tkOpt.get();
+            }
+        }
+
+        if (principal instanceof org.springframework.security.oauth2.core.user.OAuth2User oauth2User) {
+            Object emailObj = oauth2User.getAttribute("email");
+            if (emailObj != null && !emailObj.toString().isBlank()) {
+                Optional<TaiKhoan> tkOpt = taiKhoanRepository.findByEmail(emailObj.toString());
+                if (tkOpt.isPresent()) return tkOpt.get();
+            }
+        }
+
+        String authName = authentication.getName();
+        if (authName != null && !authName.isBlank()) {
+            return taiKhoanRepository.findByEmail(authName)
+                    .or(() -> taiKhoanRepository.findByTenDangNhap(authName))
+                    .orElse(null);
+        }
+
+        return null;
+    }
+
     private KhachHang getCurrentKhachHang(Authentication auth) {
-        if (auth == null || !auth.isAuthenticated()) return null;
-        TaiKhoan tk = taiKhoanRepository.findByEmail(auth.getName())
-                .or(() -> taiKhoanRepository.findByTenDangNhap(auth.getName()))
-                .orElse(null);
+        TaiKhoan tk = getCurrentTaiKhoan(auth);
         if (tk == null) return null;
-        return khachHangRepository.findByTaiKhoan(tk).orElse(null);
+
+        KhachHang kh = khachHangRepository.findByTaiKhoan(tk).orElse(null);
+        if (kh == null && tk.getEmail() != null && !tk.getEmail().isBlank()) {
+            kh = khachHangRepository.findByEmail(tk.getEmail()).orElse(null);
+        }
+        if (kh == null) {
+            kh = new KhachHang();
+            kh.setHoTen(tk.getTenDangNhap() != null ? tk.getTenDangNhap() : "Khách Hàng");
+            kh.setEmail(tk.getEmail());
+            kh.setTaiKhoan(tk);
+            kh.setNgayDangKy(java.time.LocalDateTime.now());
+            try {
+                kh = khachHangRepository.save(kh);
+            } catch (Exception ignored) {
+            }
+        }
+        return kh;
     }
 
     // --- DANH SÁCH YÊU THÍCH (WISHLIST) ---

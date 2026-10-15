@@ -1,7 +1,6 @@
 package vn.bookstore.the4bookstore.controller;
 
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -30,7 +29,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 
 @Controller
 @RequestMapping("/admin/import-export")
-@RequiredArgsConstructor
 @PreAuthorize("hasRole('ADMIN')")
 public class AdminImportExportController {
 
@@ -40,6 +38,20 @@ public class AdminImportExportController {
     private final ShopRepository shopRepository;
     private final DanhMucRepository danhMucRepository;
     private final NhaXuatBanRepository nhaXuatBanRepository;
+
+    public AdminImportExportController(SanPhamRepository sanPhamRepository,
+                                       DonHangRepository donHangRepository,
+                                       TaiKhoanRepository taiKhoanRepository,
+                                       ShopRepository shopRepository,
+                                       DanhMucRepository danhMucRepository,
+                                       NhaXuatBanRepository nhaXuatBanRepository) {
+        this.sanPhamRepository = sanPhamRepository;
+        this.donHangRepository = donHangRepository;
+        this.taiKhoanRepository = taiKhoanRepository;
+        this.shopRepository = shopRepository;
+        this.danhMucRepository = danhMucRepository;
+        this.nhaXuatBanRepository = nhaXuatBanRepository;
+    }
 
     @GetMapping
     public String index(Model model) {

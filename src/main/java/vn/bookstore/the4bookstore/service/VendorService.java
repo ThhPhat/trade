@@ -29,6 +29,7 @@ public class VendorService {
     private final DanhMucRepository danhMucRepository;
     private final NhaXuatBanRepository nhaXuatBanRepository;
     private final SanPhamService sanPhamService;
+    private final ThanhToanRepository thanhToanRepository;
 
     public VendorService(ShopRepository shopRepository,
                          SanPhamRepository sanPhamRepository,
@@ -36,7 +37,8 @@ public class VendorService {
                          KhuyenMaiRepository khuyenMaiRepository,
                          DanhMucRepository danhMucRepository,
                          NhaXuatBanRepository nhaXuatBanRepository,
-                         SanPhamService sanPhamService) {
+                         SanPhamService sanPhamService,
+                         ThanhToanRepository thanhToanRepository) {
         this.shopRepository = shopRepository;
         this.sanPhamRepository = sanPhamRepository;
         this.donHangRepository = donHangRepository;
@@ -44,6 +46,7 @@ public class VendorService {
         this.danhMucRepository = danhMucRepository;
         this.nhaXuatBanRepository = nhaXuatBanRepository;
         this.sanPhamService = sanPhamService;
+        this.thanhToanRepository = thanhToanRepository;
     }
 
     // --- DASHBOARD THỐNG KÊ CỦA SHOP ---
@@ -247,6 +250,34 @@ public class VendorService {
             return donHangRepository.findByShop_MaShopAndTrangThaiOrderByNgayDatDesc(maShop, trangThai, pageable);
         }
         return donHangRepository.findByShop_MaShopOrderByNgayDatDesc(maShop, pageable);
+    }
+
+    // 0. Xác nhận đã thanh toán thành công
+    public DonHang xacNhanThanhToan(Integer maDH, Integer maShop) {
+        DonHang dh = checkAndGetShopOrder(maDH, maShop);
+        if ("DaThanhToan".equalsIgnoreCase(dh.getTrangThaiThanhToan())) {
+            return dh;
+        }
+        dh.setTrangThaiThanhToan("DaThanhToan");
+        if ("ChoThanhToan".equalsIgnoreCase(dh.getTrangThai())) {
+            dh.setTrangThai("ChoXuLy");
+        }
+        ThanhToan tt = thanhToanRepository.findFirstByDonHangOrderByMaThanhToanDesc(dh).orElse(null);
+        if (tt != null) {
+            tt.setTrangThai("ThanhCong");
+            tt.setNgayThanhToan(LocalDateTime.now());
+            thanhToanRepository.save(tt);
+        } else {
+            ThanhToan newTt = new ThanhToan();
+            newTt.setDonHang(dh);
+            newTt.setPhuongThuc(dh.getPhuongThucThanhToan() != null ? dh.getPhuongThucThanhToan() : "COD");
+            newTt.setSoTien(dh.getTongTien() != null ? dh.getTongTien() : 0);
+            newTt.setTrangThai("ThanhCong");
+            newTt.setNgayThanhToan(LocalDateTime.now());
+            newTt.setNoiDung("Shop xác nhận đã thanh toán thành công");
+            thanhToanRepository.save(newTt);
+        }
+        return donHangRepository.save(dh);
     }
 
     // 1. Xác nhận đơn: Tự động sinh mã vận đơn, chuyển DaXacNhan

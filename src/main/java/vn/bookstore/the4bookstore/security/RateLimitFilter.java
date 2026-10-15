@@ -35,8 +35,8 @@ public class RateLimitFilter extends OncePerRequestFilter {
     private static final long LOGIN_TIME_WINDOW = 15 * 60 * 1000; // 15 minutes
     private static final int LOGIN_MAX_REQUESTS = 10;
 
-    private static final long OTP_TIME_WINDOW = 10 * 60 * 1000; // 10 minutes
-    private static final int OTP_MAX_REQUESTS = 5;
+    private static final long OTP_TIME_WINDOW = 5 * 60 * 1000; // 5 minutes
+    private static final int OTP_MAX_REQUESTS = 15;
 
 
     @Override
@@ -50,12 +50,19 @@ public class RateLimitFilter extends OncePerRequestFilter {
             String ipAddress = getClientIp(request);
             if ("/process-login".equals(path)) {
                 if (!isAllowed(loginAttempts, ipAddress, LOGIN_TIME_WINDOW, LOGIN_MAX_REQUESTS)) {
-                    sendRateLimitError(response, "Quá nhiều lần thử đăng nhập. Vui lòng thử lại sau.");
+                    sendRateLimitError(request, response, "Quá nhiều lần thử đăng nhập. Vui lòng thử lại sau.", "/login?error=true");
                     return;
                 }
             } else if ("/forgot-password".equals(path) || "/resend-otp".equals(path) || "/reset-password".equals(path)) {
                 if (!isAllowed(otpAttempts, ipAddress, OTP_TIME_WINDOW, OTP_MAX_REQUESTS)) {
-                    sendRateLimitError(response, "Quá nhiều yêu cầu OTP. Vui lòng thử lại sau.");
+                    String redirectUrl = "/forgot-password?rateLimited=true";
+                    if ("/reset-password".equals(path) || "/resend-otp".equals(path)) {
+                        String email = request.getParameter("email");
+                        if (email != null && !email.isBlank()) {
+                            redirectUrl = "/reset-password?email=" + java.net.URLEncoder.encode(email.trim(), java.nio.charset.StandardCharsets.UTF_8) + "&rateLimited=true";
+                        }
+                    }
+                    sendRateLimitError(request, response, "Quá nhiều yêu cầu OTP. Vui lòng thử lại sau 5 phút.", redirectUrl);
                     return;
                 }
             }
@@ -81,7 +88,16 @@ public class RateLimitFilter extends OncePerRequestFilter {
         return true;
     }
 
-    private void sendRateLimitError(HttpServletResponse response, String message) throws IOException {
+    private void sendRateLimitError(HttpServletRequest request, HttpServletResponse response, String message, String formRedirectUrl) throws IOException {
+        String accept = request.getHeader("Accept");
+        boolean isApiOrJson = (accept != null && accept.contains(MediaType.APPLICATION_JSON_VALUE))
+                || "XMLHttpRequest".equalsIgnoreCase(request.getHeader("X-Requested-With"));
+
+        if (!isApiOrJson && formRedirectUrl != null) {
+            response.sendRedirect(request.getContextPath() + formRedirectUrl);
+            return;
+        }
+
         response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setCharacterEncoding("UTF-8");
