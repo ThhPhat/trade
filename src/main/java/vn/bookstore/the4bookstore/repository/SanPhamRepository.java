@@ -65,6 +65,7 @@ public interface SanPhamRepository extends JpaRepository<SanPham, Integer> {
                                                       @Param("categoryIds") List<Integer> categoryIds,
                                                       Pageable pageable);
 
+    @EntityGraph(attributePaths = {"danhMuc", "shop", "nhaXuatBan"})
     @Query("SELECT s FROM SanPham s WHERE (LOWER(s.loaiSP) = 'sach' OR s.loaiSP IS NULL) " +
            "AND s.danhMuc.maDanhMuc IN :categoryIds " +
            "AND s.trangThai IN :trangThais " +
