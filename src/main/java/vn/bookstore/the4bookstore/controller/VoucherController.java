@@ -1,6 +1,7 @@
 package vn.bookstore.the4bookstore.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -82,7 +83,7 @@ public class VoucherController {
     }
 
     // ==================== API: Lưu mã voucher vào ví cá nhân ====================
-    @PostMapping("/api/voucher/luu")
+    @PostMapping(value = "/api/voucher/luu", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public Map<String, Object> saveVoucher(@RequestParam("maKM") Integer maKM,
                                            Authentication authentication) {
@@ -134,7 +135,7 @@ public class VoucherController {
     }
 
     // ==================== API: Lấy Ví Voucher (dùng cho cart modal) ====================
-    @GetMapping("/api/voucher/vi")
+    @GetMapping(value = "/api/voucher/vi", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public Map<String, Object> getMyWallet(@RequestParam(value = "subtotal", defaultValue = "0") Integer subtotal,
                                            Authentication authentication) {
@@ -205,7 +206,7 @@ public class VoucherController {
     }
 
     // ==================== API: Lấy danh sách voucher công khai (cho homepage) ====================
-    @GetMapping("/api/voucher/public")
+    @GetMapping(value = "/api/voucher/public", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public Map<String, Object> getPublicVouchers(Authentication authentication) {
         Map<String, Object> result = new HashMap<>();
