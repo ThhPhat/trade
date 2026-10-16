@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 @Service
 public class JwtService {
 
-    @Value("${jwt.secret:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}")
+    @Value("${jwt.secret:}")
     private String secretKey;
 
     @Value("${jwt.cookie-secure:false}")
@@ -34,7 +34,7 @@ public class JwtService {
     @jakarta.annotation.PostConstruct
     public void init() {
         if (secretKey == null || secretKey.trim().isEmpty()) {
-            throw new IllegalArgumentException("JWT secret cannot be null or empty!");
+            throw new IllegalArgumentException("JWT secret cannot be null or empty! Please configure JWT_SECRET in your .env file or environment variables.");
         }
     }
 
