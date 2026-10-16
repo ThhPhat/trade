@@ -6,11 +6,11 @@
 
     <aside th:replace="~{admin/fragments/admin_fragments :: admin_sidebar('shops')}"></aside>
 
-    <div class="pl-64">
+    <div class="pl-64 min-w-0 max-w-full">
         <header th:replace="~{admin/fragments/admin_fragments :: admin_header}"></header>
 
-        <main class="w-full pt-16 px-gutter-desktop py-space-lg bg-background">
-            <div class="flex flex-col w-full">
+        <main class="w-full min-w-0 max-w-full pt-16 px-gutter-desktop py-space-lg bg-background">
+            <div class="flex flex-col w-full min-w-0">
                 <!-- Breadcrumbs & Back -->
                 <div class="mb-4">
                     <a th:href="@{/admin/shops}" class="inline-flex items-center gap-1.5 text-xs font-bold text-on-surface-variant hover:text-primary transition-colors">
@@ -158,140 +158,142 @@
                         </div>
                     </div>
 
-                    <table class="w-full text-left text-xs">
-                        <thead class="bg-surface-container-low text-on-surface-variant uppercase font-bold text-[11px] border-b border-surface-container">
-                            <tr>
-                                <th class="p-4 w-12 text-center">STT</th>
-                                <th class="p-4">Sản phẩm</th>
-                                <th class="p-4">Danh mục</th>
-                                <th class="p-4">Tác giả / NXB</th>
-                                <th class="p-4">Đơn giá</th>
-                                <th class="p-4">Kho / Đã bán</th>
-                                <th class="p-4">Trạng thái bán</th>
-                                <th class="p-4">Kiểm duyệt sàn</th>
-                                <th class="p-4 text-right">Hành động</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-surface-container">
-                            <tr th:each="p, iterStat : ${products}" class="hover:bg-surface-container-low/50 transition-colors">
-                                <td class="p-4 text-center font-bold text-outline" th:text="${page.number * page.size + iterStat.count}">1</td>
-                                <!-- Info & Image -->
-                                <td class="p-4">
-                                    <div class="flex items-center gap-3">
-                                        <img th:src="${p.hinhAnh != null and !p.hinhAnh.isEmpty() ? p.hinhAnh : 'https://lh3.googleusercontent.com/aida-public/AB6AXuAJxhxEUoGYZXYaOldMaT7d3dcCRrYvCD-3AWG8q4nOBMKeBIhtPi1dKb9NiDZHTXWMxMULBn3rsm5dU8_IVOjwK8Bnkg8xf-IGsBbsQoLtc5D6EWqcU1KfQ1LzI9jMW8JHZBBy9sHF_7t1onS8pagaubUOfOqYifnPkQMRgKeMgWgWQ71XMqmHdC9fJzuMiB3aqbLZt8bE5qj4HVtt62KzVUKztkjut685dS6dOCMbTJ_WPnz-9N7y'}" 
-                                             class="w-12 h-16 rounded-lg object-cover ring-1 ring-surface-container shadow-2xs"/>
-                                        <div class="max-w-xs">
-                                            <div class="font-bold text-on-surface text-sm line-clamp-1" th:text="${p.tenSP}">Tên sản phẩm</div>
-                                            <div class="text-[11px] text-on-surface-variant font-mono mt-0.5" th:if="${p.ISBN != null}" th:text="'ISBN: ' + ${p.ISBN}"></div>
-                                            <div class="text-[11px] text-outline mt-0.5" th:text="'Mã SP: #' + ${p.maSP}"></div>
+                    <div class="overflow-x-auto w-full admin-table-scroll">
+                        <table class="w-full text-left text-xs min-w-[1080px]">
+                            <thead class="bg-surface-container-low text-on-surface-variant uppercase font-bold text-[11px] border-b border-surface-container">
+                                <tr>
+                                    <th class="p-4 w-12 text-center whitespace-nowrap">STT</th>
+                                    <th class="p-4 whitespace-nowrap min-w-[220px]">Sản phẩm</th>
+                                    <th class="p-4 whitespace-nowrap">Danh mục</th>
+                                    <th class="p-4 whitespace-nowrap">Tác giả / NXB</th>
+                                    <th class="p-4 whitespace-nowrap">Đơn giá</th>
+                                    <th class="p-4 whitespace-nowrap">Kho / Đã bán</th>
+                                    <th class="p-4 whitespace-nowrap">Trạng thái bán</th>
+                                    <th class="p-4 whitespace-nowrap">Kiểm duyệt sàn</th>
+                                    <th class="p-4 text-right whitespace-nowrap">Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-surface-container">
+                                <tr th:each="p, iterStat : ${products}" class="hover:bg-surface-container-low/50 transition-colors">
+                                    <td class="p-4 text-center font-bold text-outline whitespace-nowrap" th:text="${page.number * page.size + iterStat.count}">1</td>
+                                    <!-- Info & Image -->
+                                    <td class="p-4">
+                                        <div class="flex items-center gap-3">
+                                            <img th:src="${p.hinhAnh != null and !p.hinhAnh.isEmpty() ? p.hinhAnh : 'https://lh3.googleusercontent.com/aida-public/AB6AXuAJxhxEUoGYZXYaOldMaT7d3dcCRrYvCD-3AWG8q4nOBMKeBIhtPi1dKb9NiDZHTXWMxMULBn3rsm5dU8_IVOjwK8Bnkg8xf-IGsBbsQoLtc5D6EWqcU1KfQ1LzI9jMW8JHZBBy9sHF_7t1onS8pagaubUOfOqYifnPkQMRgKeMgWgWQ71XMqmHdC9fJzuMiB3aqbLZt8bE5qj4HVtt62KzVUKztkjut685dS6dOCMbTJ_WPnz-9N7y'}" 
+                                                 class="w-12 h-16 rounded-lg object-cover ring-1 ring-surface-container shadow-2xs shrink-0"/>
+                                            <div class="max-w-xs min-w-0">
+                                                <div class="font-bold text-on-surface text-sm line-clamp-1" th:text="${p.tenSP}">Tên sản phẩm</div>
+                                                <div class="text-[11px] text-on-surface-variant font-mono mt-0.5" th:if="${p.ISBN != null}" th:text="'ISBN: ' + ${p.ISBN}"></div>
+                                                <div class="text-[11px] text-outline mt-0.5" th:text="'Mã SP: #' + ${p.maSP}"></div>
+                                            </div>
                                         </div>
-                                    </div>
-                                </td>
+                                    </td>
 
-                                <!-- Category -->
-                                <td class="p-4">
-                                    <span class="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-surface-container text-on-surface" 
-                                          th:text="${p.danhMuc != null ? p.danhMuc.tenDanhMuc : 'Chưa phân loại'}">
-                                    </span>
-                                </td>
+                                    <!-- Category -->
+                                    <td class="p-4 whitespace-nowrap">
+                                        <span class="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-surface-container text-on-surface" 
+                                              th:text="${p.danhMuc != null ? p.danhMuc.tenDanhMuc : 'Chưa phân loại'}">
+                                        </span>
+                                    </td>
 
-                                <!-- Author / Publisher -->
-                                <td class="p-4 text-on-surface-variant">
-                                    <div class="font-medium text-on-surface" th:text="${p.danhSachTacGia != null and !p.danhSachTacGia.isEmpty() ? p.danhSachTacGia : 'N/A'}">Tác giả</div>
-                                    <div class="text-[11px] text-outline mt-0.5" th:text="${p.nhaXuatBan != null ? p.nhaXuatBan.tenNXB : 'N/A'}">NXB</div>
-                                </td>
+                                    <!-- Author / Publisher -->
+                                    <td class="p-4 text-on-surface-variant whitespace-nowrap">
+                                        <div class="font-medium text-on-surface truncate max-w-[140px]" th:text="${p.danhSachTacGia != null and !p.danhSachTacGia.isEmpty() ? p.danhSachTacGia : 'N/A'}">Tác giả</div>
+                                        <div class="text-[11px] text-outline mt-0.5 truncate max-w-[140px]" th:text="${p.nhaXuatBan != null ? p.nhaXuatBan.tenNXB : 'N/A'}">NXB</div>
+                                    </td>
 
-                                <!-- Price -->
-                                <td class="p-4 font-mono font-bold text-primary text-sm" 
-                                    th:text="${#numbers.formatDecimal(p.giaBan, 0, 'POINT', 0, 'COMMA') + ' đ'}">
-                                </td>
+                                    <!-- Price -->
+                                    <td class="p-4 font-mono font-bold text-primary text-sm whitespace-nowrap" 
+                                        th:text="${#numbers.formatDecimal(p.giaBan, 0, 'POINT', 0, 'COMMA') + ' đ'}">
+                                    </td>
 
-                                <!-- Stock / Sold -->
-                                <td class="p-4">
-                                    <div class="font-semibold text-on-surface" th:text="'Tồn: ' + ${p.soLuongTon}">0</div>
-                                    <div class="text-[11px] text-on-surface-variant mt-0.5" th:text="'Đã bán: ' + ${p.soLuongDaBan != null ? p.soLuongDaBan : 0}">Đã bán: 0</div>
-                                </td>
+                                    <!-- Stock / Sold -->
+                                    <td class="p-4 whitespace-nowrap">
+                                        <div class="font-semibold text-on-surface" th:text="'Tồn: ' + ${p.soLuongTon}">0</div>
+                                        <div class="text-[11px] text-on-surface-variant mt-0.5" th:text="'Đã bán: ' + ${p.soLuongDaBan != null ? p.soLuongDaBan : 0}">Đã bán: 0</div>
+                                    </td>
 
-                                <!-- Business Status -->
-                                <td class="p-4">
-                                    <span th:switch="${p.trangThai}">
-                                        <span th:case="'DangBan'" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700">Đang bán</span>
-                                        <span th:case="'HetHang'" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-700">Hết hàng</span>
-                                        <span th:case="*" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-700">Ngừng bán</span>
-                                    </span>
-                                </td>
+                                    <!-- Business Status -->
+                                    <td class="p-4 whitespace-nowrap">
+                                        <span th:switch="${p.trangThai}">
+                                            <span th:case="'DangBan'" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700">Đang bán</span>
+                                            <span th:case="'HetHang'" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-700">Hết hàng</span>
+                                            <span th:case="*" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-700">Ngừng bán</span>
+                                        </span>
+                                    </td>
 
-                                <!-- Platform Moderation Status -->
-                                <td class="p-4">
-                                    <span th:if="${p.trangThaiKhoa == 'ChoDuyet'}" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500 text-white flex items-center gap-1 w-fit">
-                                        <span class="material-symbols-outlined text-[12px]">hourglass_top</span>
-                                        <span>Chờ duyệt</span>
-                                    </span>
-                                    <span th:if="${p.trangThaiKhoa == 'BiKhoaBoiAdmin' or p.trangThaiKhoa == 'Khoa'}" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-600 text-white flex items-center gap-1 w-fit">
-                                        <span class="material-symbols-outlined text-[12px]">lock</span>
-                                        <span>Bị Khóa</span>
-                                    </span>
-                                    <span th:if="${p.trangThaiKhoa == 'BinhThuong' or p.trangThaiKhoa == null}" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1 w-fit">
-                                        <span class="material-symbols-outlined text-[12px]">check_circle</span>
-                                        <span>Đã duyệt</span>
-                                    </span>
-                                </td>
+                                    <!-- Platform Moderation Status -->
+                                    <td class="p-4 whitespace-nowrap">
+                                        <span th:if="${p.trangThaiKhoa == 'ChoDuyet'}" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500 text-white flex items-center gap-1 w-fit">
+                                            <span class="material-symbols-outlined text-[12px]">hourglass_top</span>
+                                            <span>Chờ duyệt</span>
+                                        </span>
+                                        <span th:if="${p.trangThaiKhoa == 'BiKhoaBoiAdmin' or p.trangThaiKhoa == 'Khoa'}" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-600 text-white flex items-center gap-1 w-fit">
+                                            <span class="material-symbols-outlined text-[12px]">lock</span>
+                                            <span>Bị Khóa</span>
+                                        </span>
+                                        <span th:if="${p.trangThaiKhoa == 'BinhThuong' or p.trangThaiKhoa == null}" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1 w-fit">
+                                            <span class="material-symbols-outlined text-[12px]">check_circle</span>
+                                            <span>Đã duyệt</span>
+                                        </span>
+                                    </td>
 
-                                <!-- Actions (Read-Only Detail + Moderation Lock/Approve) -->
-                                <td class="p-4 text-right">
-                                    <div class="inline-flex items-center gap-1.5">
-                                        <!-- Xem chi tiết sản phẩm (Modal chỉ đọc) -->
-                                        <button type="button" th:onclick="'openViewDetailModal(' + ${p.maSP} + ')'"
-                                                class="px-3 py-1.5 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface font-bold text-xs transition-all flex items-center gap-1 shadow-2xs"
-                                                title="Xem chi tiết đầy đủ sản phẩm">
-                                            <span class="material-symbols-outlined text-[15px] text-primary">visibility</span>
-                                            <span>Chi tiết</span>
-                                        </button>
-
-                                        <!-- Duyệt sản phẩm (khi đang Chờ duyệt) -->
-                                        <form th:if="${p.trangThaiKhoa == 'ChoDuyet'}" th:action="@{'/admin/products/' + ${p.maSP} + '/approve'}" method="post">
-                                            <input type="hidden" name="returnUrl" th:value="@{'/admin/shops/' + ${shop.maShop} + '/products'(moderationStatus=${moderationStatus},keyword=${keyword})}"/>
-                                            <button type="submit" class="px-2.5 py-1.5 rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 font-bold text-xs transition-all flex items-center gap-1 shadow-2xs"
-                                                    title="Phê duyệt sản phẩm lên sàn">
-                                                <span class="material-symbols-outlined text-[15px]">check</span>
-                                                <span>Duyệt SP</span>
+                                    <!-- Actions (Read-Only Detail + Moderation Lock/Approve) -->
+                                    <td class="p-4 text-right whitespace-nowrap">
+                                        <div class="inline-flex items-center gap-1.5 flex-nowrap justify-end">
+                                            <!-- Xem chi tiết sản phẩm (Modal chỉ đọc) -->
+                                            <button type="button" th:onclick="'openViewDetailModal(' + ${p.maSP} + ')'"
+                                                    class="px-3 py-1.5 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface font-bold text-xs transition-all flex items-center gap-1 shadow-2xs"
+                                                    title="Xem chi tiết đầy đủ sản phẩm">
+                                                <span class="material-symbols-outlined text-[15px] text-primary">visibility</span>
+                                                <span>Chi tiết</span>
                                             </button>
-                                        </form>
 
-                                        <!-- Khóa vi phạm / Từ chối (khi Chưa bị khóa) -->
-                                        <form th:if="${p.trangThaiKhoa != 'BiKhoaBoiAdmin' and p.trangThaiKhoa != 'Khoa'}" th:action="@{'/admin/products/' + ${p.maSP} + '/lock'}" method="post"
-                                              onsubmit="return confirm('Bạn có chắc muốn KHÓA / TỪ CHỐI sản phẩm này do vi phạm quy định sàn?');">
-                                            <input type="hidden" name="returnUrl" th:value="@{'/admin/shops/' + ${shop.maShop} + '/products'(moderationStatus=${moderationStatus},keyword=${keyword})}"/>
-                                            <button type="submit" class="px-2.5 py-1.5 rounded-xl bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 font-bold text-xs transition-all flex items-center gap-1"
-                                                    th:title="${p.trangThaiKhoa == 'ChoDuyet' ? 'Từ chối kiểm duyệt' : 'Khóa sản phẩm vi phạm'}">
-                                                <span class="material-symbols-outlined text-[15px]">gavel</span>
-                                                <span th:text="${p.trangThaiKhoa == 'ChoDuyet' ? 'Từ chối' : 'Khóa'}">Khóa</span>
-                                            </button>
-                                        </form>
+                                            <!-- Duyệt sản phẩm (khi đang Chờ duyệt) -->
+                                            <form th:if="${p.trangThaiKhoa == 'ChoDuyet'}" th:action="@{'/admin/products/' + ${p.maSP} + '/approve'}" method="post">
+                                                <input type="hidden" name="returnUrl" th:value="@{'/admin/shops/' + ${shop.maShop} + '/products'(moderationStatus=${moderationStatus},keyword=${keyword})}"/>
+                                                <button type="submit" class="px-2.5 py-1.5 rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 font-bold text-xs transition-all flex items-center gap-1 shadow-2xs"
+                                                        title="Phê duyệt sản phẩm lên sàn">
+                                                    <span class="material-symbols-outlined text-[15px]">check</span>
+                                                    <span>Duyệt SP</span>
+                                                </button>
+                                            </form>
 
-                                        <!-- Mở khóa (khi Bị khóa) -->
-                                        <form th:if="${p.trangThaiKhoa == 'BiKhoaBoiAdmin' or p.trangThaiKhoa == 'Khoa'}" th:action="@{'/admin/products/' + ${p.maSP} + '/unlock'}" method="post">
-                                            <input type="hidden" name="returnUrl" th:value="@{'/admin/shops/' + ${shop.maShop} + '/products'(moderationStatus=${moderationStatus},keyword=${keyword})}"/>
-                                            <button type="submit" class="px-2.5 py-1.5 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 font-bold text-xs transition-all flex items-center gap-1"
-                                                    title="Mở khóa sản phẩm">
-                                                <span class="material-symbols-outlined text-[15px]">lock_open</span>
-                                                <span>Mở</span>
-                                            </button>
-                                        </form>
-                                    </div>
-                                </td>
-                            </tr>
+                                            <!-- Khóa vi phạm / Từ chối (khi Chưa bị khóa) -->
+                                            <form th:if="${p.trangThaiKhoa != 'BiKhoaBoiAdmin' and p.trangThaiKhoa != 'Khoa'}" th:action="@{'/admin/products/' + ${p.maSP} + '/lock'}" method="post"
+                                                  onsubmit="return confirm('Bạn có chắc muốn KHÓA / TỪ CHỐI sản phẩm này do vi phạm quy định sàn?');">
+                                                <input type="hidden" name="returnUrl" th:value="@{'/admin/shops/' + ${shop.maShop} + '/products'(moderationStatus=${moderationStatus},keyword=${keyword})}"/>
+                                                <button type="submit" class="px-2.5 py-1.5 rounded-xl bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 font-bold text-xs transition-all flex items-center gap-1"
+                                                        th:title="${p.trangThaiKhoa == 'ChoDuyet' ? 'Từ chối kiểm duyệt' : 'Khóa sản phẩm vi phạm'}">
+                                                    <span class="material-symbols-outlined text-[15px]">gavel</span>
+                                                    <span th:text="${p.trangThaiKhoa == 'ChoDuyet' ? 'Từ chối' : 'Khóa'}">Khóa</span>
+                                                </button>
+                                            </form>
 
-                            <tr th:if="${products.isEmpty()}">
-                                <td colspan="9" class="p-8 text-center text-on-surface-variant">
-                                    <div class="flex flex-col items-center justify-center gap-2">
-                                        <span class="material-symbols-outlined text-4xl text-outline">menu_book</span>
-                                        <p class="font-medium">Gian hàng này chưa có sản phẩm nào hoặc không khớp từ khóa tìm kiếm.</p>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                                            <!-- Mở khóa (khi Bị khóa) -->
+                                            <form th:if="${p.trangThaiKhoa == 'BiKhoaBoiAdmin' or p.trangThaiKhoa == 'Khoa'}" th:action="@{'/admin/products/' + ${p.maSP} + '/unlock'}" method="post">
+                                                <input type="hidden" name="returnUrl" th:value="@{'/admin/shops/' + ${shop.maShop} + '/products'(moderationStatus=${moderationStatus},keyword=${keyword})}"/>
+                                                <button type="submit" class="px-2.5 py-1.5 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 font-bold text-xs transition-all flex items-center gap-1"
+                                                        title="Mở khóa sản phẩm">
+                                                    <span class="material-symbols-outlined text-[15px]">lock_open</span>
+                                                    <span>Mở</span>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr th:if="${products.isEmpty()}">
+                                    <td colspan="9" class="p-8 text-center text-on-surface-variant">
+                                        <div class="flex flex-col items-center justify-center gap-2">
+                                            <span class="material-symbols-outlined text-4xl text-outline">menu_book</span>
+                                            <p class="font-medium">Gian hàng này chưa có sản phẩm nào hoặc không khớp từ khóa tìm kiếm.</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
 
                     <!-- Pagination -->
                     <div th:if="${page.totalPages > 1}" class="p-4 border-t border-surface-container flex items-center justify-between text-xs">
