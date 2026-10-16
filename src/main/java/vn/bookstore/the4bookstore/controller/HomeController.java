@@ -70,6 +70,12 @@ public class HomeController {
         return kh;
     }
 
+    @RequestMapping(value = "/", method = org.springframework.web.bind.annotation.RequestMethod.HEAD)
+    @org.springframework.web.bind.annotation.ResponseBody
+    public org.springframework.http.ResponseEntity<Void> healthCheck() {
+        return org.springframework.http.ResponseEntity.ok().build();
+    }
+
     @GetMapping("/")
     public String home(
             @RequestParam(name = "catPage", required = false) Integer catPage,
