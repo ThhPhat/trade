@@ -68,17 +68,51 @@ public class SanPham {
     private List<SanPhamTacGia> sanPhamTacGias = new java.util.ArrayList<>();
 
     public String getDanhSachTacGia() {
-        if (sanPhamTacGias == null || sanPhamTacGias.isEmpty()) {
+        try {
+            if (sanPhamTacGias == null || !org.hibernate.Hibernate.isInitialized(sanPhamTacGias) || sanPhamTacGias.isEmpty()) {
+                return "";
+            }
+            return sanPhamTacGias.stream()
+                    .filter(sptg -> sptg != null && org.hibernate.Hibernate.isInitialized(sptg) && sptg.getTacGia() != null && org.hibernate.Hibernate.isInitialized(sptg.getTacGia()))
+                    .map(sptg -> sptg.getTacGia().getTenTacGia())
+                    .filter(name -> name != null && !name.isBlank())
+                    .collect(java.util.stream.Collectors.joining(", "));
+        } catch (Exception e) {
             return "";
         }
-        return sanPhamTacGias.stream()
-                .filter(sptg -> sptg.getTacGia() != null)
-                .map(sptg -> sptg.getTacGia().getTenTacGia())
-                .collect(java.util.stream.Collectors.joining(", "));
     }
 
     public String getTenNhaXuatBan() {
-        return nhaXuatBan != null ? nhaXuatBan.getTenNXB() : "";
+        try {
+            if (nhaXuatBan != null && org.hibernate.Hibernate.isInitialized(nhaXuatBan)) {
+                return nhaXuatBan.getTenNXB() != null ? nhaXuatBan.getTenNXB() : "";
+            }
+            return "";
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
+    public String getTenShop() {
+        try {
+            if (shop != null && org.hibernate.Hibernate.isInitialized(shop)) {
+                return shop.getTenShop() != null ? shop.getTenShop() : "";
+            }
+            return "";
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
+    public String getShopSlug() {
+        try {
+            if (shop != null && org.hibernate.Hibernate.isInitialized(shop)) {
+                return shop.getSlug() != null ? shop.getSlug() : "";
+            }
+            return "";
+        } catch (Exception e) {
+            return "";
+        }
     }
 
     public String getHinhAnh() {

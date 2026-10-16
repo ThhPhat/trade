@@ -159,12 +159,12 @@
                             </h3>
                             
                             <p class="text-xs text-on-surface-variant mt-1.5 truncate block"
-                               th:title="${(sp.danhSachTacGia != null ? sp.danhSachTacGia : '') + (sp.nhaXuatBan != null ? ' • ' + sp.nhaXuatBan.tenNXB : '')}">
+                               th:title="${(sp.danhSachTacGia != null ? sp.danhSachTacGia : '') + (sp.tenNhaXuatBan != null and !sp.tenNhaXuatBan.isEmpty() ? ' • ' + sp.tenNhaXuatBan : '')}">
                                 <span th:if="${sp.danhSachTacGia != null and !sp.danhSachTacGia.isEmpty()}" 
                                       class="font-medium text-primary" th:text="${sp.danhSachTacGia}">Tác giả</span>
-                                <span th:if="${sp.danhSachTacGia != null and !sp.danhSachTacGia.isEmpty() and sp.nhaXuatBan != null}" class="text-outline text-[10px] mx-1">•</span>
-                                <span th:if="${sp.nhaXuatBan != null}" class="text-on-surface-variant/80" th:text="${sp.nhaXuatBan.tenNXB}">Nhà Xuất Bản</span>
-                                <span th:if="${(sp.danhSachTacGia == null or sp.danhSachTacGia.isEmpty()) and sp.nhaXuatBan == null}">The4BookStore</span>
+                                <span th:if="${sp.danhSachTacGia != null and !sp.danhSachTacGia.isEmpty() and sp.tenNhaXuatBan != null and !sp.tenNhaXuatBan.isEmpty()}" class="text-outline text-[10px] mx-1">•</span>
+                                <span th:if="${sp.tenNhaXuatBan != null and !sp.tenNhaXuatBan.isEmpty()}" class="text-on-surface-variant/80" th:text="${sp.tenNhaXuatBan}">Nhà Xuất Bản</span>
+                                <span th:if="${(sp.danhSachTacGia == null or sp.danhSachTacGia.isEmpty()) and (sp.tenNhaXuatBan == null or sp.tenNhaXuatBan.isEmpty())}">The4BookStore</span>
                             </p>
 
                             <!-- Stock & Sales info row -->

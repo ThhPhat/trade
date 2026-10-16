@@ -61,7 +61,10 @@ public class SanPhamService {
         if (candidates.isEmpty()) {
             Pageable p = PageRequest.of(0, 1);
             List<SanPham> fallbackList = sanPhamRepository.findTopBooksByTrangThais(CUSTOMER_STATUSES, p);
-            return fallbackList.isEmpty() ? null : fallbackList.get(0);
+            if (fallbackList.isEmpty()) return null;
+            SanPham fb = fallbackList.get(0);
+            initializeSanPhamRelations(fb);
+            return fb;
         }
 
         java.time.LocalDateTime thirtyDaysAgo = java.time.LocalDateTime.now().minusDays(30);
@@ -124,7 +127,9 @@ public class SanPhamService {
             }
         }
 
-        return bestBook != null ? bestBook : candidates.get(0);
+        SanPham result = bestBook != null ? bestBook : candidates.get(0);
+        initializeSanPhamRelations(result);
+        return result;
     }
 
     @Cacheable("home_featured_books")
@@ -133,23 +138,62 @@ public class SanPhamService {
         List<Integer> bookCatIds = bookCategories.stream().map(DanhMuc::getMaDanhMuc).toList();
 
         Pageable pageable = PageRequest.of(0, 8);
+        List<SanPham> books;
         if (!bookCatIds.isEmpty()) {
-            List<SanPham> books = sanPhamRepository.findTopBooksByCategoriesAndTrangThais(CUSTOMER_STATUSES, bookCatIds, pageable);
+            books = sanPhamRepository.findTopBooksByCategoriesAndTrangThais(CUSTOMER_STATUSES, bookCatIds, pageable);
             if (!books.isEmpty()) {
+                initializeSanPhamRelations(books);
                 return books;
             }
         }
-        return sanPhamRepository.findTopBooksByTrangThais(CUSTOMER_STATUSES, pageable);
+        books = sanPhamRepository.findTopBooksByTrangThais(CUSTOMER_STATUSES, pageable);
+        initializeSanPhamRelations(books);
+        return books;
     }
 
     @Cacheable(value = "home_preview", key = "#loaiSP")
     public List<SanPham> getPreviewByLoaiSP(String loaiSP) {
-        return sanPhamRepository.findTop4ByLoaiSPAndTrangThaiIn(loaiSP, CUSTOMER_STATUSES);
+        List<SanPham> list = sanPhamRepository.findTop4ByLoaiSPAndTrangThaiIn(loaiSP, CUSTOMER_STATUSES);
+        initializeSanPhamRelations(list);
+        return list;
     }
 
     @Cacheable("guest_top_sold")
     public List<SanPham> getGuestTopSold() {
-        return sanPhamRepository.findTopProductsForGuest();
+        List<SanPham> list = sanPhamRepository.findTopProductsForGuest();
+        initializeSanPhamRelations(list);
+        return list;
+    }
+
+    public void initializeSanPhamRelations(List<SanPham> list) {
+        if (list == null || list.isEmpty()) return;
+        for (SanPham sp : list) {
+            initializeSanPhamRelations(sp);
+        }
+    }
+
+    public void initializeSanPhamRelations(SanPham sp) {
+        if (sp == null) return;
+        try {
+            if (sp.getDanhMuc() != null) {
+                sp.getDanhMuc().getTenDanhMuc();
+            }
+            if (sp.getNhaXuatBan() != null) {
+                sp.getNhaXuatBan().getTenNXB();
+            }
+            if (sp.getShop() != null) {
+                sp.getShop().getTenShop();
+                sp.getShop().getSlug();
+            }
+            if (sp.getSanPhamTacGias() != null) {
+                sp.getSanPhamTacGias().size();
+                for (var sptg : sp.getSanPhamTacGias()) {
+                    if (sptg != null && sptg.getTacGia() != null) {
+                        sptg.getTacGia().getTenTacGia();
+                    }
+                }
+            }
+        } catch (Exception ignored) {}
     }
 
     @Cacheable(value = "categories", key = "#loaiSP")
