@@ -54,49 +54,63 @@ public class ReportService {
     }
 
     public List<MonthlyRevenueDTO> getRevenueByMonth() {
-        String sql = "CALL sp_DoanhThuTheoThang()";
+        try {
+            String sql = "CALL sp_DoanhThuTheoThang()";
+            Query query = entityManager.createNativeQuery(sql);
+            @SuppressWarnings("unchecked")
+            List<Object[]> results = query.getResultList();
 
-        Query query = entityManager.createNativeQuery(sql);
-        @SuppressWarnings("unchecked")
-        List<Object[]> results = query.getResultList();
+            Map<String, BigDecimal> dbMap = new HashMap<>();
+            if (results != null) {
+                for (Object[] row : results) {
+                    if (row != null && row.length >= 3 && row[0] != null && row[1] != null) {
+                        Integer year = ((Number) row[0]).intValue();
+                        Integer month = ((Number) row[1]).intValue();
+                        BigDecimal revenue = row[2] != null ? new BigDecimal(((Number) row[2]).longValue()) : BigDecimal.ZERO;
+                        String monthStr = String.format("%04d-%02d", year, month);
+                        dbMap.put(monthStr, revenue);
+                    }
+                }
+            }
 
-        Map<String, BigDecimal> dbMap = new HashMap<>();
-        for (Object[] row : results) {
-            Integer year = ((Number) row[0]).intValue();
-            Integer month = ((Number) row[1]).intValue();
-            BigDecimal revenue = new BigDecimal(((Number) row[2]).longValue());
-            String monthStr = String.format("%04d-%02d", year, month);
-            dbMap.put(monthStr, revenue);
+            List<MonthlyRevenueDTO> dtos = new ArrayList<>();
+            int currentYear = LocalDate.now().getYear();
+            int currentMonth = LocalDate.now().getMonthValue();
+            for (int m = currentMonth; m >= 1; m--) {
+                String monthStr = String.format("%04d-%02d", currentYear, m);
+                BigDecimal revenue = dbMap.getOrDefault(monthStr, BigDecimal.ZERO);
+                dtos.add(new MonthlyRevenueDTO(monthStr, revenue));
+            }
+            return dtos;
+        } catch (Exception e) {
+            return new ArrayList<>();
         }
-
-        List<MonthlyRevenueDTO> dtos = new ArrayList<>();
-        int currentYear = LocalDate.now().getYear();
-        int currentMonth = LocalDate.now().getMonthValue();
-        for (int m = currentMonth; m >= 1; m--) {
-            String monthStr = String.format("%04d-%02d", currentYear, m);
-            BigDecimal revenue = dbMap.getOrDefault(monthStr, BigDecimal.ZERO);
-            dtos.add(new MonthlyRevenueDTO(monthStr, revenue));
-        }
-        return dtos;
     }
 
     public List<TopSellingBookDTO> getTopSellingBooks() {
-        String sql = "CALL sp_TopSachBanChay(10)";
+        try {
+            String sql = "CALL sp_TopSachBanChay(10)";
+            Query query = entityManager.createNativeQuery(sql);
+            @SuppressWarnings("unchecked")
+            List<Object[]> results = query.getResultList();
 
-        Query query = entityManager.createNativeQuery(sql);
-        @SuppressWarnings("unchecked")
-        List<Object[]> results = query.getResultList();
-
-        List<TopSellingBookDTO> dtos = new ArrayList<>();
-        for (Object[] row : results) {
-            Long maSP = ((Number) row[0]).longValue();
-            String tenSP = (String) row[1];
-            Long soLuongBan = ((Number) row[2]).longValue();
-            Integer giaBan = (row.length > 3 && row[3] != null) ? ((Number) row[3]).intValue() : null;
-            Long doanhThuDongGop = (row.length > 4 && row[4] != null) ? ((Number) row[4]).longValue() : null;
-            dtos.add(new TopSellingBookDTO(maSP, tenSP, soLuongBan, giaBan, doanhThuDongGop));
+            List<TopSellingBookDTO> dtos = new ArrayList<>();
+            if (results != null) {
+                for (Object[] row : results) {
+                    if (row != null && row.length >= 3 && row[0] != null) {
+                        Long maSP = ((Number) row[0]).longValue();
+                        String tenSP = row[1] != null ? (String) row[1] : "Sản phẩm #" + maSP;
+                        Long soLuongBan = row[2] != null ? ((Number) row[2]).longValue() : 0L;
+                        Integer giaBan = (row.length > 3 && row[3] != null) ? ((Number) row[3]).intValue() : 0;
+                        Long doanhThuDongGop = (row.length > 4 && row[4] != null) ? ((Number) row[4]).longValue() : 0L;
+                        dtos.add(new TopSellingBookDTO(maSP, tenSP, soLuongBan, giaBan, doanhThuDongGop));
+                    }
+                }
+            }
+            return dtos;
+        } catch (Exception e) {
+            return new ArrayList<>();
         }
-        return dtos;
     }
 
     public Long getTodayOrderCount() {

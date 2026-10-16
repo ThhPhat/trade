@@ -11,7 +11,7 @@ FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
 
-# Render dynamic port and memory optimization for Free Tier (512MB RAM)
+# Render dynamic port and strict memory optimization for Free Tier (512MB RAM)
 ENV PORT=8080
 EXPOSE 8080
-ENTRYPOINT ["sh", "-c", "java -Xmx384m -Xms128m -XX:+UseSerialGC -Dserver.port=${PORT} -Djava.security.egd=file:/dev/./urandom -jar app.jar"]
+ENTRYPOINT ["sh", "-c", "java -Xmx224m -Xms96m -XX:MaxMetaspaceSize=96m -XX:ReservedCodeCacheSize=32m -Xss384k -XX:+UseSerialGC -Dserver.port=${PORT} -Djava.security.egd=file:/dev/./urandom -jar app.jar"]

@@ -103,16 +103,53 @@ public class AdminController {
 
     @GetMapping("/dashboard")
     public String dashboard(Model model) {
-        model.addAttribute("thisMonthRevenue", reportService.getThisMonthRevenue());
-        model.addAttribute("monthlyRevenue", reportService.getRevenueByMonth());
-        model.addAttribute("topBooks", reportService.getTopSellingBooks());
-        model.addAttribute("monthlyOrders", reportService.getThisMonthOrderCount());
-        model.addAttribute("todayOrders", reportService.getTodayOrderCount());
-        model.addAttribute("totalSold", reportService.getTotalBooksSold());
+        try {
+            model.addAttribute("thisMonthRevenue", reportService.getThisMonthRevenue());
+        } catch (Exception e) {
+            model.addAttribute("thisMonthRevenue", java.math.BigDecimal.ZERO);
+        }
+        try {
+            model.addAttribute("monthlyRevenue", reportService.getRevenueByMonth());
+        } catch (Exception e) {
+            model.addAttribute("monthlyRevenue", java.util.Collections.emptyList());
+        }
+        try {
+            model.addAttribute("topBooks", reportService.getTopSellingBooks());
+        } catch (Exception e) {
+            model.addAttribute("topBooks", java.util.Collections.emptyList());
+        }
+        try {
+            model.addAttribute("monthlyOrders", reportService.getThisMonthOrderCount());
+        } catch (Exception e) {
+            model.addAttribute("monthlyOrders", 0L);
+        }
+        try {
+            model.addAttribute("todayOrders", reportService.getTodayOrderCount());
+        } catch (Exception e) {
+            model.addAttribute("todayOrders", 0L);
+        }
+        try {
+            model.addAttribute("totalSold", reportService.getTotalBooksSold());
+        } catch (Exception e) {
+            model.addAttribute("totalSold", 0L);
+        }
 
-        long totalBooks = sanPhamRepository.count();
-        long lowStock = sanPhamRepository.countLowStock();
-        long outOfStock = sanPhamRepository.countOutOfStock();
+        long totalBooks = 0;
+        try {
+            totalBooks = sanPhamRepository.count();
+        } catch (Exception ignored) {}
+
+        long lowStock = 0;
+        try {
+            Long ls = sanPhamRepository.countLowStock();
+            if (ls != null) lowStock = ls;
+        } catch (Exception ignored) {}
+
+        long outOfStock = 0;
+        try {
+            Long os = sanPhamRepository.countOutOfStock();
+            if (os != null) outOfStock = os;
+        } catch (Exception ignored) {}
 
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("'Ngày' dd 'tháng' MM, yyyy");
         String formattedDate = LocalDate.now().format(dtf);
