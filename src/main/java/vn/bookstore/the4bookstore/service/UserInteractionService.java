@@ -66,11 +66,25 @@ public class UserInteractionService {
                 .stream().map(SanPhamYeuThich::getSanPham).collect(Collectors.toList());
     }
 
-    // --- SẢN PHẨM ĐÃ XEM (RECENTLY VIEWED) ---
+    // --- SẢN PHẨM ĐÃ XEM (RECENTLY VIEWED - LƯU TRONG 1 TIẾNG) ---
     public void recordView(KhachHang khachHang, Integer maSP) {
         if (khachHang == null || maSP == null) return;
         try {
-            daXemRepository.upsertRecentlyViewed(khachHang.getMaKH(), maSP);
+            SanPhamDaXemId id = new SanPhamDaXemId(khachHang.getMaKH(), maSP);
+            SanPhamDaXem daXem = daXemRepository.findById(id).orElse(null);
+            if (daXem != null) {
+                daXem.setThoiGianXem(LocalDateTime.now());
+                daXemRepository.save(daXem);
+            } else {
+                SanPham sanPham = sanPhamRepository.findById(maSP).orElse(null);
+                if (sanPham != null) {
+                    daXem = new SanPhamDaXem(id, khachHang, sanPham, LocalDateTime.now());
+                    daXemRepository.save(daXem);
+                }
+            }
+            // Dọn dẹp bản ghi cũ hơn 1 tiếng
+            LocalDateTime oneHourAgo = LocalDateTime.now().minusHours(1);
+            daXemRepository.deleteByThoiGianXemBefore(oneHourAgo);
         } catch (Exception ignored) {}
     }
 
@@ -82,14 +96,27 @@ public class UserInteractionService {
     @Transactional(readOnly = true)
     public List<SanPham> getRecentlyViewed(KhachHang khachHang) {
         if (khachHang == null) return List.of();
-        return daXemRepository.findTop10ByKhachHangOrderByThoiGianXemDesc(khachHang)
+        // Chỉ lấy các sản phẩm đã xem trong vòng 1 tiếng
+        LocalDateTime oneHourAgo = LocalDateTime.now().minusHours(1);
+        return daXemRepository.findTop10ByKhachHangAndThoiGianXemAfterOrderByThoiGianXemDesc(khachHang, oneHourAgo)
                 .stream().map(SanPhamDaXem::getSanPham).collect(Collectors.toList());
     }
 
+    // Cron job tự động dọn dẹp các bản ghi đã xem quá 1 tiếng định kỳ mỗi 15 phút
+    @org.springframework.scheduling.annotation.Scheduled(fixedRate = 15 * 60 * 1000)
+    @Transactional
+    public void cleanupExpiredRecentlyViewed() {
+        try {
+            LocalDateTime oneHourAgo = LocalDateTime.now().minusHours(1);
+            daXemRepository.deleteByThoiGianXemBefore(oneHourAgo);
+        } catch (Exception ignored) {}
+    }
+
     // --- ĐÁNH GIÁ SẢN PHẨM ĐÃ MUA ---
+    @Transactional
     public DanhGia submitReview(KhachHang khachHang, Integer maSP, Integer maDH, int soSao, String noiDung, List<String> mediaUrls) {
-        if (noiDung == null || noiDung.trim().length() < 50) {
-            throw new IllegalArgumentException("Nội dung đánh giá phải có tối thiểu 50 ký tự!");
+        if (noiDung == null || noiDung.trim().length() < 10) {
+            throw new IllegalArgumentException("Nội dung đánh giá phải có tối thiểu 10 ký tự!");
         }
 
         DonHang donHang = donHangRepository.findById(maDH)
@@ -99,12 +126,16 @@ public class UserInteractionService {
             throw new SecurityException("Bạn không thể đánh giá đơn hàng của người khác!");
         }
 
-        if (!"DaGiao".equalsIgnoreCase(donHang.getTrangThai())) {
-            throw new IllegalStateException("Chỉ có thể đánh giá sau khi đơn hàng đã được giao thành công!");
+        if (!"DaGiao".equalsIgnoreCase(donHang.getTrangThai()) && !"HoanTat".equalsIgnoreCase(donHang.getTrangThai())) {
+            throw new IllegalStateException("Chỉ có thể đánh giá sau khi đơn hàng đã được giao thành công hoặc hoàn tất!");
         }
 
         SanPham sanPham = sanPhamRepository.findById(maSP)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy sản phẩm"));
+
+        if (danhGiaRepository.existsByKhachHangAndSanPhamAndDonHang(khachHang, sanPham, donHang)) {
+            throw new IllegalStateException("Bạn đã gửi đánh giá cho sản phẩm này trong đơn hàng #" + maDH + " rồi!");
+        }
 
         DanhGia danhGia = new DanhGia();
         danhGia.setKhachHang(khachHang);
@@ -114,6 +145,9 @@ public class UserInteractionService {
         danhGia.setNoiDung(noiDung.trim());
         danhGia.setNgayDanhGia(LocalDateTime.now());
         danhGia.setTrangThai("HienThi");
+        if (mediaUrls != null && !mediaUrls.isEmpty()) {
+            danhGia.setHinhAnhDanhGia(mediaUrls.get(0));
+        }
 
         DanhGia saved = danhGiaRepository.save(danhGia);
 
@@ -123,9 +157,10 @@ public class UserInteractionService {
                     String loai = (url.endsWith(".mp4") || url.endsWith(".webm")) ? "VIDEO" : "IMAGE";
                     DanhGiaMedia media = new DanhGiaMedia();
                     media.setDanhGia(saved);
-                    media.setUrl(url);
+                    media.setUrl(url.trim());
                     media.setLoaiMedia(loai);
                     danhGiaMediaRepository.save(media);
+                    saved.getMediaList().add(media);
                 }
             }
         }
@@ -150,5 +185,12 @@ public class UserInteractionService {
     public List<Integer> getEligibleOrderIdsForReview(KhachHang khachHang, Integer maSP) {
         if (khachHang == null || maSP == null) return List.of();
         return chiTietDonHangRepository.findEligibleOrderIdsForReview(khachHang.getMaKH(), maSP);
+    }
+
+    @Transactional(readOnly = true)
+    public boolean hasPurchasedProduct(KhachHang khachHang, Integer maSP) {
+        if (khachHang == null || maSP == null) return false;
+        List<Integer> list = chiTietDonHangRepository.findDeliveredOrderIdsByCustomerAndProduct(khachHang.getMaKH(), maSP);
+        return list != null && !list.isEmpty();
     }
 }

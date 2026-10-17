@@ -29,7 +29,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 
 @Controller
 @RequestMapping("/admin/import-export")
-@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'QUANLY')")
 public class AdminImportExportController {
 
     private final SanPhamRepository sanPhamRepository;

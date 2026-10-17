@@ -14,14 +14,20 @@ public class DanhGia {
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "maKH", nullable = false)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private KhachHang khachHang;
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "maSP", nullable = false)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private SanPham sanPham;
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "maDH", nullable = false)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private DonHang donHang;
     
     @Column(nullable = false)
@@ -33,7 +39,11 @@ public class DanhGia {
     @Column(nullable = false, length = 20)
     private String trangThai = "HienThi";
 
-    @OneToMany(mappedBy = "danhGia", cascade = CascadeType.ALL, orphanRemoval = true)
-    @org.hibernate.annotations.BatchSize(size = 30)
+    @Column(name = "hinh_anh_danh_gia", length = 500)
+    private String hinhAnhDanhGia;
+
+    @OneToMany(mappedBy = "danhGia", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private java.util.List<DanhGiaMedia> mediaList = new java.util.ArrayList<>();
 }

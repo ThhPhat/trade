@@ -82,33 +82,39 @@ public class SecurityConfig {
             )
             .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**", "/api/webhooks/**", "/don-hang/api/**", "/ws/**"))
             .authorizeHttpRequests(auth -> auth
-                // Phân quyền cho Vendor Portal
+                // Phân quyền cho Vendor Portal (Chủ shop, Quản trị, Manager)
                 .requestMatchers("/vendor", "/vendor/register", "/vendor/register/**", "/vendor/pending", "/vendor/blocked").authenticated()
-                .requestMatchers("/vendor/**").hasAnyRole("VENDOR", "ADMIN", "MANAGER", "QUANLY")
-                // Phân quyền cho Quản trị Admin & Manager (Manager duyệt gian hàng)
-                .requestMatchers("/admin/shops", "/admin/shops/**", "/manager/shops", "/manager/shops/**").hasAnyRole("MANAGER", "QUANLY", "ADMIN")
-                .requestMatchers("/admin/platform-fees", "/admin/platform-fees/**").hasAnyRole("ADMIN", "QUANLY", "MANAGER")
+                .requestMatchers("/vendor/**").hasAnyRole("VENDOR", "ADMIN", "MANAGER")
+
+                // Phân quyền cho Quản trị Admin & Manager (4 role chính: ADMIN, MANAGER, VENDOR, KHACHHANG)
+                .requestMatchers("/admin/shops", "/admin/shops/**", "/manager/shops", "/manager/shops/**").hasAnyRole("ADMIN", "MANAGER")
+                .requestMatchers("/admin/platform-fees", "/admin/platform-fees/**").hasAnyRole("ADMIN", "MANAGER")
                 .requestMatchers("/admin/system/**", "/admin/managers/**").hasRole("ADMIN")
-                .requestMatchers("/admin/users", "/admin/users/**").hasAnyRole("ADMIN", "QUANLY", "MANAGER")
-                .requestMatchers("/admin/kho", "/admin/kho/**", "/kho/**").hasAnyRole("ADMIN", "QUANLY", "MANAGER", "NHANVIENKHO")
-                .requestMatchers("/admin/orders", "/admin/orders/**").hasAnyRole("ADMIN", "QUANLY", "MANAGER", "NHANVIENBANHANG")
-                .requestMatchers("/admin", "/admin/**", "/manager", "/manager/**").hasAnyRole("ADMIN", "QUANLY", "MANAGER")
-                .requestMatchers("/ban-hang/**").hasAnyRole("ADMIN", "QUANLY", "MANAGER", "NHANVIENBANHANG")
-                .requestMatchers("/khach-hang/**").hasAnyRole("KHACHHANG", "USER", "ADMIN", "QUANLY", "MANAGER")
-                // Webhook và API kiểm tra trạng thái thanh toán công khai
-                .requestMatchers("/don-hang/api/vietqr-webhook", "/don-hang/api/webhooks/**", "/don-hang/api/*/trang-thai-thanh-toan").permitAll()
-                // Yêu cầu xác thực tài khoản
+                .requestMatchers("/admin/users", "/admin/users/**").hasAnyRole("ADMIN", "MANAGER")
+                .requestMatchers("/admin/kho", "/admin/kho/**", "/kho/**").hasAnyRole("ADMIN", "MANAGER")
+                .requestMatchers("/admin/orders", "/admin/orders/**").hasAnyRole("ADMIN", "MANAGER")
+                .requestMatchers("/admin", "/admin/**", "/manager", "/manager/**").hasAnyRole("ADMIN", "MANAGER")
+                .requestMatchers("/ban-hang/**").hasAnyRole("ADMIN", "MANAGER")
+                .requestMatchers("/khach-hang/**").hasAnyRole("KHACHHANG", "USER", "ADMIN", "MANAGER")
+
+                // Yêu cầu xác thực tài khoản (Hồ sơ, địa chỉ, đơn hàng, giỏ hàng, voucher)
                 .requestMatchers("/profile", "/profile/**", "/dia-chi/**", "/api/dia-chi/**", "/api/favorites/**", "/api/danh-gia/**").authenticated()
-                .requestMatchers("/don-hang", "/don-hang/**", "/gio-hang/dat-hang", "/thanh-toan/**").authenticated()
-                // Công khai (Public routes)
+                .requestMatchers("/don-hang", "/don-hang/**", "/thanh-toan/**").authenticated()
+                .requestMatchers("/gio-hang", "/gio-hang/**").authenticated()
+                .requestMatchers("/san-voucher", "/san-voucher/**", "/vouchers/**", "/khuyen-mai/**", "/api/voucher/**").authenticated()
+
+                // Webhook và API kiểm tra trạng thái thanh toán công khai
+                .requestMatchers("/don-hang/api/vietqr-webhook", "/don-hang/api/webhooks/**", "/don-hang/api/*/trang-thai-thanh-toan", "/api/webhooks/**").permitAll()
+
+                // API giỏ hàng hỗ trợ AJAX (trả requireLogin: true nếu chưa đăng nhập)
                 .requestMatchers("/api/gio-hang/**").permitAll()
-                .requestMatchers("/gio-hang", "/gio-hang/**").permitAll()
+
+                // Công khai (Public routes: chỉ xem web, xem sản phẩm, xem shop, tìm kiếm)
                 .requestMatchers("/shop", "/shop/**").permitAll()
-                .requestMatchers("/san-voucher", "/san-voucher/**", "/vouchers/**", "/api/voucher/**").permitAll()
                 .requestMatchers("/register", "/register/**", "/login", "/process-login", "/forgot-password", "/forgot-password/**", "/reset-password", "/reset-password/**", "/verify-otp", "/resend-otp").permitAll()
                 .requestMatchers("/", "/home", "/san-pham/**", "/products/**", "/search/**", "/css/**", "/js/**", "/images/**", "/webjars/**", "/error", "/favicon.ico", "/favicon.png").permitAll()
-                .requestMatchers("/api/webhooks/**").permitAll()
                 .requestMatchers("/ws", "/ws/**").permitAll()
+
                 // Fail-Close policy: Bất kỳ URL nào khác đều phải xác thực
                 .anyRequest().authenticated()
             )

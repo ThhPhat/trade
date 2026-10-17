@@ -50,17 +50,16 @@ public class KhuyenMai {
     @Column(nullable = false)
     private Boolean hienThiCongKhai = true;
 
-    // Khối 3: Điều kiện áp dụng: ALL (tất cả), DANHMUC (danh mục cụ thể), SANPHAM (sản phẩm cụ thể)
-    @Column(length = 20)
+    @Transient
     private String apDungCho = "ALL";
 
-    @Column(length = 500)
+    @Transient
     private String danhSachDanhMucIds;
 
-    @Column(length = 1000)
+    @Transient
     private String danhSachSanPhamIds;
 
-    @Column(length = 1000)
+    @Transient
     private String loaiTruSanPhamIds;
 
     // ALL (mọi người), NEW (khách mới), VIP (thành viên VIP)
@@ -79,6 +78,8 @@ public class KhuyenMai {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ma_shop")
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private Shop shop;
 
     /**

@@ -326,6 +326,14 @@
                                     <span class="text-on-surface-variant">Thành tiền: <strong class="font-mono text-secondary font-bold text-sm" th:text="${#numbers.formatDecimal(ct.donGia * ct.soLuong, 0, 'POINT', 0, 'COMMA') + ' đ'}">0 đ</strong></span>
                                 </div>
                             </div>
+                            <!-- Action button for review if order is DaGiao or HoanTat -->
+                            <div th:if="${donHang.trangThai == 'DaGiao' or donHang.trangThai == 'HoanTat'}" class="shrink-0 flex flex-col gap-2">
+                                <a th:href="@{'/san-pham/' + ${ct.sanPham.maSP} + '#reviews-section'}"
+                                   class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs transition-all flex items-center gap-1.5 shadow-xs cursor-pointer">
+                                    <span class="material-symbols-outlined text-[16px]">rate_review</span>
+                                    <span>Đánh giá sách</span>
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>

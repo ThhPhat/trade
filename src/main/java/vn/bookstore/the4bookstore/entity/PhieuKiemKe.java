@@ -17,23 +17,20 @@ public class PhieuKiemKe {
     private LocalDateTime ngayKiemKe = LocalDateTime.now();
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "maNV")
-    private NhanVien nhanVien;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "maKho")
-    private Kho kho;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ma_shop")
+    @JoinColumn(name = "ma_shop", nullable = false)
     private Shop shop;
 
-    @Column(nullable = false, length = 30)
-    private String trangThai = "ChoDuyet";
+    @Transient
+    private Kho kho;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "maNVPheDuyet")
+    @Transient
+    private NhanVien nhanVien;
+
+    @Transient
     private NhanVien nvPheDuyet;
+
+    @Column(nullable = false, length = 30)
+    private String trangThai = "DangKiemKe";
 
     private LocalDateTime ngayPheDuyet;
     @Column(length = 500)

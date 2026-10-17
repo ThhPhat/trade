@@ -21,6 +21,8 @@ public class Shop {
 
     @OneToOne
     @JoinColumn(name = "ma_tai_khoan", nullable = false, unique = true)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private TaiKhoan taiKhoan;
 
     @Column(name = "ten_shop", nullable = false, unique = true, length = 150)

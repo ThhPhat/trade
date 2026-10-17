@@ -1,20 +1,29 @@
 package vn.bookstore.the4bookstore.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import vn.bookstore.the4bookstore.entity.KhachHang;
 import vn.bookstore.the4bookstore.entity.SanPham;
 import vn.bookstore.the4bookstore.entity.SanPhamDaXem;
 import vn.bookstore.the4bookstore.entity.SanPhamDaXemId;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
 public interface SanPhamDaXemRepository extends JpaRepository<SanPhamDaXem, SanPhamDaXemId> {
     List<SanPhamDaXem> findTop10ByKhachHangOrderByThoiGianXemDesc(KhachHang khachHang);
+
+    // Lấy top 10 sản phẩm xem gần đây trong khoảng thời gian hiệu lực (ví dụ trong vòng 1 tiếng)
+    List<SanPhamDaXem> findTop10ByKhachHangAndThoiGianXemAfterOrderByThoiGianXemDesc(KhachHang khachHang, LocalDateTime after);
+
     boolean existsByKhachHangAndSanPham(KhachHang khachHang, SanPham sanPham);
 
-    @org.springframework.data.jpa.repository.Modifying
-    @org.springframework.data.jpa.repository.Query(value = "INSERT INTO san_pham_da_xem (makh, masp, thoi_gian_xem) VALUES (:maKH, :maSP, NOW()) ON DUPLICATE KEY UPDATE thoi_gian_xem = NOW()", nativeQuery = true)
-    void upsertRecentlyViewed(@org.springframework.data.repository.query.Param("maKH") Integer maKH, @org.springframework.data.repository.query.Param("maSP") Integer maSP);
+    // Tự động dọn dẹp các bản ghi quá hạn (quá 1 tiếng)
+    @Modifying
+    @Query("DELETE FROM SanPhamDaXem s WHERE s.thoiGianXem < :cutoff")
+    int deleteByThoiGianXemBefore(@Param("cutoff") LocalDateTime cutoff);
 }

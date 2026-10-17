@@ -151,12 +151,44 @@ public class AdminController {
             if (os != null) outOfStock = os;
         } catch (Exception ignored) {}
 
+        long activeShops = 0;
+        if (shopRepository != null) {
+            try {
+                activeShops = shopRepository.countByTrangThai("HoatDong");
+            } catch (Exception ignored) {}
+        }
+
+        long pendingOrders = 0;
+        try {
+            pendingOrders = donHangRepository.countByTrangThaiIn(java.util.List.of("ChoXuLy", "ChoDuyet", "DonHangMoi", "ChoXacNhan"));
+        } catch (Exception ignored) {}
+
+        // Danh sách sản phẩm mới nhất trên sàn (8 sản phẩm)
+        try {
+            var recentProducts = sanPhamRepository.findAll(
+                PageRequest.of(0, 8, org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "ngayTao"))
+            ).getContent();
+            model.addAttribute("recentProducts", recentProducts);
+        } catch (Exception e) {
+            model.addAttribute("recentProducts", java.util.Collections.emptyList());
+        }
+
+        // Danh sách đơn hàng gần đây trên sàn (6 đơn)
+        try {
+            var recentOrders = donHangRepository.findAllByOrderByNgayDatDesc(PageRequest.of(0, 6)).getContent();
+            model.addAttribute("recentOrders", recentOrders);
+        } catch (Exception e) {
+            model.addAttribute("recentOrders", java.util.Collections.emptyList());
+        }
+
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("'Ngày' dd 'tháng' MM, yyyy");
         String formattedDate = LocalDate.now().format(dtf);
 
         model.addAttribute("totalBooksCount", totalBooks);
         model.addAttribute("lowStockCount", lowStock);
         model.addAttribute("outOfStockCount", outOfStock);
+        model.addAttribute("activeShopsCount", activeShops);
+        model.addAttribute("pendingOrdersCount", pendingOrders);
         model.addAttribute("currentDate", formattedDate);
 
         return "admin/dashboard";

@@ -21,6 +21,8 @@ public class ChiTietKiemKe {
     private Integer soLuongHeThong;
     @Column(nullable = false)
     private Integer soLuongThucTe;
+    @Column(name = "chenh_lech")
+    private Integer chenhLech = 0;
     @Column(length = 500)
     private String lyDo;
 }

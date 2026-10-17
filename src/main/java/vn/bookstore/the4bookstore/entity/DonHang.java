@@ -19,6 +19,8 @@ public class DonHang {
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "maKH", nullable = false)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private KhachHang khachHang;
     
     @Column(nullable = false, length = 20)
@@ -30,6 +32,8 @@ public class DonHang {
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "maKM")
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private KhuyenMai khuyenMai;
     
     @Column(nullable = false)
@@ -48,10 +52,14 @@ public class DonHang {
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ma_shop")
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private Shop shop;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ma_nvc")
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private NhaVanChuyen nhaVanChuyen;
 
     @Column(name = "phi_van_chuyen", nullable = false)
@@ -80,8 +88,12 @@ public class DonHang {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "nguoi_xu_ly_tranh_chap")
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private TaiKhoan nguoiXuLyTranhChap;
 
     @OneToMany(mappedBy = "donHang", cascade = CascadeType.ALL)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private List<ChiTietDonHang> chiTietDonHangs;
 }

@@ -16,6 +16,7 @@ target/
 *.ipr
 .env
 .env.*
+!.env.example
 cookies.txt
 docx_temp/
 docx_text.txt

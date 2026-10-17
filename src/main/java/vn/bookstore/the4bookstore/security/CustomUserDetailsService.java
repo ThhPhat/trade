@@ -19,6 +19,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         TaiKhoan taiKhoan = taiKhoanRepository.findByTenDangNhap(username)
+                .or(() -> taiKhoanRepository.findByEmail(username))
                 .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy tài khoản: " + username));
         return new CustomUserDetails(taiKhoan);
     }

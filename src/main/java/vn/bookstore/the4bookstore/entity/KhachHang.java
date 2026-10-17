@@ -22,6 +22,8 @@ public class KhachHang {
     
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "maTaiKhoan", unique = true)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private TaiKhoan taiKhoan;
     
     @Column(nullable = false)

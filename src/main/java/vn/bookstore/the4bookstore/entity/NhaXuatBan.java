@@ -21,7 +21,7 @@ public class NhaXuatBan {
     @Column(length = 100)
     private String email;
 
-    @OneToMany(mappedBy = "nhaXuatBan", fetch = FetchType.LAZY)
+    @Transient
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     private List<SanPham> sanPhams = new ArrayList<>();

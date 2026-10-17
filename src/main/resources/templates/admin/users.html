@@ -64,11 +64,10 @@
                         </div>
                         <select name="role" class="w-full sm:w-48 px-3 py-2 rounded-xl border border-surface-container bg-surface-container-low text-xs focus:outline-none focus:ring-2 focus:ring-primary">
                             <option value="">-- Tất cả vai trò --</option>
-                            <option value="USER" th:selected="${selectedRole == 'USER'}">USER (Khách hàng)</option>
-                            <option value="VENDOR" th:selected="${selectedRole == 'VENDOR'}">VENDOR (Người bán)</option>
-                            <option value="MANAGER" th:selected="${selectedRole == 'MANAGER'}">MANAGER (Quản lý)</option>
-                            <option value="NHANVIENKHO" th:selected="${selectedRole == 'NHANVIENKHO'}">NHANVIENKHO (Thủ kho)</option>
-                            <option value="ADMIN" th:selected="${selectedRole == 'ADMIN'}">ADMIN (Quản trị viên)</option>
+                            <option value="USER" th:selected="${selectedRole == 'USER'}">KHACHHANG / USER (Khách hàng)</option>
+                            <option value="VENDOR" th:selected="${selectedRole == 'VENDOR'}">VENDOR (Người bán / Shop)</option>
+                            <option value="MANAGER" th:selected="${selectedRole == 'MANAGER'}">MANAGER (Quản lý vận hành)</option>
+                            <option value="ADMIN" th:selected="${selectedRole == 'ADMIN'}">ADMIN (Quản trị viên tối cao)</option>
                         </select>
                         <div class="flex items-center gap-2 w-full sm:w-auto">
                             <button type="submit" class="flex-1 sm:flex-none px-5 py-2 bg-primary text-on-primary font-bold text-xs rounded-xl hover:bg-primary-container transition-all">Lọc Dữ Liệu</button>
@@ -216,10 +215,9 @@
                 <div class="mb-4">
                     <label class="block text-xs font-bold text-on-surface mb-1.5">Chọn vai trò mới</label>
                     <select name="newRole" id="modalRoleSelect" class="w-full px-3.5 py-2.5 rounded-xl border border-surface-container bg-surface-container-low text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-primary">
-                        <option value="USER">USER - Khách mua hàng</option>
-                        <option value="VENDOR">VENDOR - Người bán / Chủ shop</option>
-                        <option value="MANAGER">MANAGER - Quản lý vận hành sàn</option>
-                        <option value="NHANVIENKHO">NHANVIENKHO - Nhân viên thủ kho</option>
+                        <option value="USER">KHACHHANG / USER - Khách mua hàng</option>
+                        <option value="VENDOR">VENDOR - Người bán / Chủ gian hàng</option>
+                        <option value="MANAGER">MANAGER - Quản lý vận hành hệ thống</option>
                         <option sec:authorize="hasRole('ADMIN')" value="ADMIN">ADMIN - Super Admin toàn quyền</option>
                     </select>
                 </div>

@@ -16,10 +16,10 @@ import java.util.List;
 
 public interface DonHangRepository extends JpaRepository<DonHang, Integer> {
 
-    @Query(value = "SELECT fn_TinhDoanhThu(:startDate, :endDate)", nativeQuery = true)
+    @Query(value = "SELECT dbo.fn_TinhDoanhThu(:startDate, :endDate)", nativeQuery = true)
     Long getRevenueByDateRange(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 
-    @Query(value = "SELECT fn_DemDonHang(:startDate, :endDate)", nativeQuery = true)
+    @Query(value = "SELECT dbo.fn_DemDonHang(:startDate, :endDate)", nativeQuery = true)
     Long getOrderCountByDateRange(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 
     List<DonHang> findByKhachHangOrderByNgayDatDesc(KhachHang khachHang);
@@ -44,10 +44,10 @@ public interface DonHangRepository extends JpaRepository<DonHang, Integer> {
 
     Long countByKhuyenMai(KhuyenMai khuyenMai);
 
-    @Query(value = "SELECT fn_TinhTienGiamKhuyenMai(:#{#km.maKM})", nativeQuery = true)
+    @Query(value = "SELECT dbo.fn_TinhTienGiamKhuyenMai(:#{#km.maKM})", nativeQuery = true)
     Long sumTienGiamByKhuyenMai(@Param("km") KhuyenMai km);
 
-    @Query(value = "SELECT fn_TinhDoanhThuKhuyenMai(:#{#km.maKM})", nativeQuery = true)
+    @Query(value = "SELECT dbo.fn_TinhDoanhThuKhuyenMai(:#{#km.maKM})", nativeQuery = true)
     Long sumTongTienByKhuyenMai(@Param("km") KhuyenMai km);
 
     // --- MARKETPLACE VENDOR QUERIES ---
@@ -75,11 +75,25 @@ public interface DonHangRepository extends JpaRepository<DonHang, Integer> {
 
     Page<DonHang> findByTrangThaiIn(List<String> trangThais, Pageable pageable);
 
-    @Query(value = "SELECT fn_TinhPhiSan(:tongTien, :maShop)", nativeQuery = true)
+    @Query(value = "SELECT dbo.fn_TinhPhiSan(:tongTien, :maShop)", nativeQuery = true)
     Integer calculatePlatformFee(@Param("tongTien") Integer tongTien, @Param("maShop") Integer maShop);
 
     @org.springframework.data.jpa.repository.Modifying
     @Query("UPDATE DonHang d SET d.shop = null WHERE d.shop.maShop = :maShop")
     void detachShopFromOrders(@Param("maShop") Integer maShop);
+
+    // ====================================================================
+    // ĐỀ TÀI DBMS330284: GỌI TRỰC TIẾP STORED PROCEDURES TỪ SQL SERVER
+    // ====================================================================
+
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.transaction.annotation.Transactional
+    @Query(nativeQuery = true, value = "EXEC sp_HuyDonHang :madh, :lyDo")
+    void executeSpHuyDonHang(@Param("madh") Integer madh, @Param("lyDo") String lyDo);
+
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.transaction.annotation.Transactional
+    @Query(nativeQuery = true, value = "EXEC sp_ShopXacNhanDonHang :madh, :maShop, :maVanDon")
+    void executeSpShopXacNhanDonHang(@Param("madh") Integer madh, @Param("maShop") Integer maShop, @Param("maVanDon") String maVanDon);
 }
 

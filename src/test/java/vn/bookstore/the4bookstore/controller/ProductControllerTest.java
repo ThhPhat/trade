@@ -42,6 +42,7 @@ class ProductControllerTest {
     @MockitoBean private TaiKhoanRepository taiKhoanRepository;
     @MockitoBean private KhachHangRepository khachHangRepository;
     @MockitoBean private UserInteractionService userInteractionService;
+    @MockitoBean private CurrentUserService currentUserService;
     @MockitoBean private PasswordEncoder passwordEncoder;
     @MockitoBean private JwtAuthenticationFilter jwtAuthenticationFilter;
     @MockitoBean private JwtLogoutSuccessHandler jwtLogoutSuccessHandler;

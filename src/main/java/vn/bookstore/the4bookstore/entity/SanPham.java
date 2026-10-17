@@ -23,16 +23,11 @@ public class SanPham {
     @JoinColumn(name = "maDanhMuc", nullable = false)
     private DanhMuc danhMuc;
     
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "maNXB")
-    private NhaXuatBan nhaXuatBan;
-    
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "maNCC")
-    private NhaCungCap nhaCungCap;
+    @Column(name = "ten_nha_xuat_ban", length = 150)
+    private String tenNhaXuatBan;
     
     @Column(nullable = false, length = 30)
-    private String loaiSP;
+    private String loaiSP = "SACH";
     @Column(unique = true, length = 20)
     private String ISBN;
     @Column(nullable = false)
@@ -82,15 +77,40 @@ public class SanPham {
         }
     }
 
-    public String getTenNhaXuatBan() {
-        try {
-            if (nhaXuatBan != null && org.hibernate.Hibernate.isInitialized(nhaXuatBan)) {
-                return nhaXuatBan.getTenNXB() != null ? nhaXuatBan.getTenNXB() : "";
-            }
-            return "";
-        } catch (Exception e) {
-            return "";
+    public static class NxbProxy {
+        private final String tenNXB;
+        private final Integer maNXB;
+        public NxbProxy(String tenNXB, Integer maNXB) {
+            this.tenNXB = tenNXB;
+            this.maNXB = maNXB != null ? maNXB : 1;
         }
+        public String getTenNXB() { return tenNXB; }
+        public Integer getMaNXB() { return maNXB; }
+    }
+
+    public NxbProxy getNhaXuatBan() {
+        if (tenNhaXuatBan != null && !tenNhaXuatBan.isBlank()) {
+            return new NxbProxy(tenNhaXuatBan, 1);
+        }
+        return null;
+    }
+
+    public void setNhaXuatBan(NhaXuatBan nxb) {
+        if (nxb != null) {
+            this.tenNhaXuatBan = nxb.getTenNXB();
+        }
+    }
+
+    public void setNhaCungCap(NhaCungCap ncc) {
+        // No-op for marketplace
+    }
+
+    public NhaCungCap getNhaCungCap() {
+        return null;
+    }
+
+    public String getTenNhaXuatBan() {
+        return tenNhaXuatBan != null ? tenNhaXuatBan : "";
     }
 
     public String getTenShop() {

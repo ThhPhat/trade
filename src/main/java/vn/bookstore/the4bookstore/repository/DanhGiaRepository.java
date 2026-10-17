@@ -10,7 +10,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface DanhGiaRepository extends JpaRepository<DanhGia, Integer> {
-    @org.springframework.data.jpa.repository.EntityGraph(attributePaths = {"khachHang"})
+    @org.springframework.data.jpa.repository.EntityGraph(attributePaths = {"khachHang", "mediaList"})
     List<DanhGia> findBySanPhamAndTrangThaiOrderByNgayDanhGiaDesc(SanPham sanPham, String trangThai);
     boolean existsByKhachHangAndSanPhamAndDonHang(KhachHang khachHang, SanPham sanPham, DonHang donHang);
     long countBySanPhamAndTrangThai(SanPham sanPham, String trangThai);

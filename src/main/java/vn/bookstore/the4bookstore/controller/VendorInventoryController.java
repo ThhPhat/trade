@@ -49,6 +49,11 @@ public class VendorInventoryController {
         } else if (p instanceof CustomOAuth2User o && o.getEmail() != null) {
             tk = taiKhoanRepository.findByEmail(o.getEmail()).orElse(null);
         }
+        if (tk == null && auth.getName() != null) {
+            tk = taiKhoanRepository.findByEmail(auth.getName())
+                    .or(() -> taiKhoanRepository.findByTenDangNhap(auth.getName()))
+                    .orElse(null);
+        }
         return tk;
     }
 

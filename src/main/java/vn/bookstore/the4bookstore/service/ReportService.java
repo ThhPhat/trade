@@ -54,42 +54,44 @@ public class ReportService {
     }
 
     public List<MonthlyRevenueDTO> getRevenueByMonth() {
+        int currentYear = LocalDate.now().getYear();
+        int currentMonth = LocalDate.now().getMonthValue();
+        Map<Integer, BigDecimal> dbMap = new HashMap<>();
+
         try {
-            String sql = "CALL sp_DoanhThuTheoThang()";
+            String sql = "EXEC dbo.sp_DoanhThuTheoThang";
             Query query = entityManager.createNativeQuery(sql);
             @SuppressWarnings("unchecked")
             List<Object[]> results = query.getResultList();
 
-            Map<String, BigDecimal> dbMap = new HashMap<>();
             if (results != null) {
                 for (Object[] row : results) {
                     if (row != null && row.length >= 3 && row[0] != null && row[1] != null) {
                         Integer year = ((Number) row[0]).intValue();
                         Integer month = ((Number) row[1]).intValue();
-                        BigDecimal revenue = row[2] != null ? new BigDecimal(((Number) row[2]).longValue()) : BigDecimal.ZERO;
-                        String monthStr = String.format("%04d-%02d", year, month);
-                        dbMap.put(monthStr, revenue);
+                        if (year == currentYear) {
+                            BigDecimal revenue = row[2] != null ? new BigDecimal(((Number) row[2]).longValue()) : BigDecimal.ZERO;
+                            dbMap.put(month, revenue);
+                        }
                     }
                 }
             }
-
-            List<MonthlyRevenueDTO> dtos = new ArrayList<>();
-            int currentYear = LocalDate.now().getYear();
-            int currentMonth = LocalDate.now().getMonthValue();
-            for (int m = currentMonth; m >= 1; m--) {
-                String monthStr = String.format("%04d-%02d", currentYear, m);
-                BigDecimal revenue = dbMap.getOrDefault(monthStr, BigDecimal.ZERO);
-                dtos.add(new MonthlyRevenueDTO(monthStr, revenue));
-            }
-            return dtos;
         } catch (Exception e) {
-            return new ArrayList<>();
+            // Keep dbMap empty on query error and continue to build full month list
         }
+
+        List<MonthlyRevenueDTO> dtos = new ArrayList<>();
+        // Trả về từ Tháng 1 đến Tháng hiện tại (Tháng 10) theo thứ tự thời gian tăng dần
+        for (int m = 1; m <= currentMonth; m++) {
+            BigDecimal revenue = dbMap.getOrDefault(m, BigDecimal.ZERO);
+            dtos.add(new MonthlyRevenueDTO(String.format("Tháng %02d", m), revenue));
+        }
+        return dtos;
     }
 
     public List<TopSellingBookDTO> getTopSellingBooks() {
         try {
-            String sql = "CALL sp_TopSachBanChay(10)";
+            String sql = "EXEC dbo.sp_TopSachBanChay 10";
             Query query = entityManager.createNativeQuery(sql);
             @SuppressWarnings("unchecked")
             List<Object[]> results = query.getResultList();
@@ -135,7 +137,7 @@ public class ReportService {
     }
 
     public List<Map<String, Object>> getShopMonthlyRevenue(Integer maShop) {
-        String sql = "CALL sp_DoanhThuShopTheoThang(:maShop)";
+        String sql = "EXEC dbo.sp_DoanhThuShopTheoThang @p_ma_shop = :maShop";
         Query query = entityManager.createNativeQuery(sql);
         query.setParameter("maShop", maShop);
         List<Object[]> results = query.getResultList();

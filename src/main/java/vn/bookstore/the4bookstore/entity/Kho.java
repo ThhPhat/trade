@@ -28,7 +28,5 @@ public class Kho {
 
     @OneToMany(mappedBy = "kho")
     private List<PhieuNhap> danhSachPhieuNhap;
-
-    @OneToMany(mappedBy = "kho")
-    private List<PhieuKiemKe> danhSachPhieuKiemKe;
 }
+

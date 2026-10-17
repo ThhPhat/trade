@@ -13,9 +13,6 @@ import vn.bookstore.the4bookstore.entity.SanPham;
 import vn.bookstore.the4bookstore.service.DanhMucService;
 import vn.bookstore.the4bookstore.service.SanPhamService;
 import vn.bookstore.the4bookstore.entity.KhachHang;
-import vn.bookstore.the4bookstore.entity.TaiKhoan;
-import vn.bookstore.the4bookstore.repository.KhachHangRepository;
-import vn.bookstore.the4bookstore.repository.TaiKhoanRepository;
 import vn.bookstore.the4bookstore.service.TacGiaService;
 import vn.bookstore.the4bookstore.service.NhaXuatBanService;
 import vn.bookstore.the4bookstore.service.UserInteractionService;
@@ -30,9 +27,8 @@ public class ProductController {
     private final TacGiaService tacGiaService;
     private final NhaXuatBanService nhaXuatBanService;
     private final UserInteractionService userInteractionService;
-    private final KhachHangRepository khachHangRepository;
-    private final TaiKhoanRepository taiKhoanRepository;
     private final vn.bookstore.the4bookstore.service.ShopService shopService;
+    private final vn.bookstore.the4bookstore.service.CurrentUserService currentUserService;
 
     private KhachHang getCurrentKhachHang(Authentication auth, jakarta.servlet.http.HttpServletRequest request) {
         if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getPrincipal())) return null;
@@ -41,12 +37,14 @@ public class ProductController {
             if (cached instanceof KhachHang kh) return kh;
             if (Boolean.TRUE.equals(request.getAttribute("CURRENT_KHACH_HANG_CACHE_NULL"))) return null;
         }
-        TaiKhoan tk = taiKhoanRepository.findByEmail(auth.getName())
-                .or(() -> taiKhoanRepository.findByTenDangNhap(auth.getName()))
-                .orElse(null);
-        if (tk == null) return null;
-        KhachHang kh = khachHangRepository.findByTaiKhoan(tk).orElse(null);
-        if (request != null && kh != null) request.setAttribute("CURRENT_KHACH_HANG_CACHE", kh);
+        KhachHang kh = currentUserService.getCurrentKhachHang(auth);
+        if (request != null) {
+            if (kh != null) {
+                request.setAttribute("CURRENT_KHACH_HANG_CACHE", kh);
+            } else {
+                request.setAttribute("CURRENT_KHACH_HANG_CACHE_NULL", true);
+            }
+        }
         return kh;
     }
 
@@ -227,11 +225,13 @@ public class ProductController {
         KhachHang kh = getCurrentKhachHang(auth, request);
         boolean isFavorite = false;
         List<Integer> eligibleOrderIds = List.of();
+        boolean hasPurchased = false;
 
         if (kh != null) {
             userInteractionService.recordView(kh, sanPham);
             isFavorite = userInteractionService.isFavorite(kh, id);
             eligibleOrderIds = userInteractionService.getEligibleOrderIdsForReview(kh, id);
+            hasPurchased = userInteractionService.hasPurchasedProduct(kh, id);
         }
 
         List<vn.bookstore.the4bookstore.entity.DanhGia> reviews = userInteractionService.getReviewsForProduct(sanPham);
@@ -245,6 +245,7 @@ public class ProductController {
         model.addAttribute("avgRating", avgRating);
         model.addAttribute("eligibleOrderIds", eligibleOrderIds);
         model.addAttribute("canReview", !eligibleOrderIds.isEmpty());
+        model.addAttribute("hasPurchased", hasPurchased);
         model.addAttribute("isLoggedIn", kh != null);
 
         return "products/detail";

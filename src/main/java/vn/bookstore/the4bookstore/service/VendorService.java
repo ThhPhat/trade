@@ -139,19 +139,8 @@ public class VendorService {
             sanPham.setGiaBan(0);
         }
 
-        // Xử lý Nhà Xuất Bản do Vendor tự do nhập hoặc chọn từ gợi ý
-        NhaXuatBan resolvedNXB = null;
-        if (tenNXB != null && !tenNXB.trim().isEmpty()) {
-            String cleanTenNXB = tenNXB.trim();
-            resolvedNXB = nhaXuatBanRepository.findByTenNXBIgnoreCase(cleanTenNXB)
-                    .orElseGet(() -> {
-                        NhaXuatBan newNxb = new NhaXuatBan();
-                        newNxb.setTenNXB(cleanTenNXB);
-                        return nhaXuatBanRepository.save(newNxb);
-                    });
-        } else if (maNXB != null) {
-            resolvedNXB = nhaXuatBanRepository.findById(maNXB).orElse(null);
-        }
+        // Xử lý Nhà Xuất Bản do Vendor tự do nhập (lưu trực tiếp dạng text)
+        String resolvedTenNXB = (tenNXB != null && !tenNXB.trim().isEmpty()) ? tenNXB.trim() : null;
 
         SanPham saved;
         if (sanPham.getMaSP() != null) {
@@ -174,10 +163,8 @@ public class VendorService {
             if (maDanhMuc != null) {
                 existing.setDanhMuc(danhMucRepository.findById(maDanhMuc).orElse(null));
             }
-            if (resolvedNXB != null || (tenNXB != null && tenNXB.trim().isEmpty())) {
-                existing.setNhaXuatBan(resolvedNXB);
-            } else if (maNXB != null) {
-                existing.setNhaXuatBan(resolvedNXB);
+            if (resolvedTenNXB != null) {
+                existing.setTenNhaXuatBan(resolvedTenNXB);
             }
             saved = sanPhamRepository.save(existing);
         } else {
@@ -192,7 +179,7 @@ public class VendorService {
             if (sanPham.getDanhMuc() == null) {
                 sanPham.setDanhMuc(danhMucRepository.findAll().stream().findFirst().orElse(null));
             }
-            sanPham.setNhaXuatBan(resolvedNXB);
+            sanPham.setTenNhaXuatBan(resolvedTenNXB);
             saved = sanPhamRepository.save(sanPham);
         }
 

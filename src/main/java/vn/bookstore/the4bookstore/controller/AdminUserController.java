@@ -33,7 +33,6 @@ import java.util.Optional;
 
 @Controller
 @RequestMapping("/admin/users")
-@RequiredArgsConstructor
 @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'QUANLY')")
 public class AdminUserController {
 
@@ -43,8 +42,23 @@ public class AdminUserController {
     private final ShopRepository shopRepository;
     private final PasswordEncoder passwordEncoder;
     private final org.springframework.security.core.session.SessionRegistry sessionRegistry;
-    @org.springframework.beans.factory.annotation.Autowired(required = false)
-    private SecurityAuditService securityAuditService;
+    private final SecurityAuditService securityAuditService;
+
+    public AdminUserController(TaiKhoanRepository taiKhoanRepository,
+                               KhachHangRepository khachHangRepository,
+                               NhanVienRepository nhanVienRepository,
+                               ShopRepository shopRepository,
+                               PasswordEncoder passwordEncoder,
+                               org.springframework.security.core.session.SessionRegistry sessionRegistry,
+                               @org.springframework.beans.factory.annotation.Autowired(required = false) SecurityAuditService securityAuditService) {
+        this.taiKhoanRepository = taiKhoanRepository;
+        this.khachHangRepository = khachHangRepository;
+        this.nhanVienRepository = nhanVienRepository;
+        this.shopRepository = shopRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.sessionRegistry = sessionRegistry;
+        this.securityAuditService = securityAuditService;
+    }
 
     private boolean isSuperAdmin(Authentication auth) {
         if (auth == null || !auth.isAuthenticated()) return false;
@@ -108,7 +122,7 @@ public class AdminUserController {
         model.addAttribute("totalAccounts", taiKhoanRepository.count());
         model.addAttribute("totalUsers", taiKhoanRepository.countByVaiTro("USER"));
         model.addAttribute("totalVendors", taiKhoanRepository.countByVaiTro("VENDOR"));
-        model.addAttribute("totalStaff", taiKhoanRepository.countByVaiTro("MANAGER") + taiKhoanRepository.countByVaiTro("ADMIN") + taiKhoanRepository.countByVaiTro("NHANVIENKHO"));
+        model.addAttribute("totalStaff", taiKhoanRepository.countByVaiTro("MANAGER") + taiKhoanRepository.countByVaiTro("ADMIN"));
         model.addAttribute("totalLocked", taiKhoanRepository.countByTrangThai("BiKhoa"));
 
         return "admin/users";
@@ -199,20 +213,21 @@ public class AdminUserController {
             securityAuditService.logRoleChange(tk.getTenDangNhap(), oldRole, upperRole, auth != null ? auth.getName() : "SYSTEM");
         }
 
-        // Tự động đồng bộ / tạo hồ sơ Nhân viên (NhanVien) chỉ khi là vai trò nhân viên kho
-        if ("NHANVIENKHO".equals(upperRole)) {
+        // Tự động đồng bộ / tạo hồ sơ Quản trị / Quản lý (Manager)
+        if ("MANAGER".equals(upperRole) || "NHANVIENKHO".equals(upperRole)) {
             Optional<NhanVien> optNv = nhanVienRepository.findByTaiKhoan(tk);
             NhanVien nv;
+            String chucVu = "MANAGER".equals(upperRole) ? "Quản lý hệ thống" : "Nhân viên kho";
             if (optNv.isPresent()) {
                 nv = optNv.get();
                 nv.setTrangThai("DangLam");
-                nv.setChucVu("Nhân viên kho");
+                nv.setChucVu(chucVu);
             } else {
                 nv = new NhanVien();
                 nv.setTaiKhoan(tk);
                 nv.setNgayVaoLam(java.time.LocalDate.now());
                 nv.setTrangThai("DangLam");
-                nv.setChucVu("Nhân viên kho");
+                nv.setChucVu(chucVu);
                 nv.setEmail(tk.getEmail());
 
                 Optional<KhachHang> optKh = khachHangRepository.findByTaiKhoan(tk);
@@ -226,7 +241,7 @@ public class AdminUserController {
             }
             nhanVienRepository.save(nv);
         } else {
-            // Không phải vai trò nhân viên kho (ADMIN, MANAGER, USER, VENDOR) -> đánh dấu Đã Nghỉ
+            // Không phải vai trò quản lý (ADMIN, USER, VENDOR) -> đánh dấu Đã Nghỉ
             nhanVienRepository.findByTaiKhoan(tk).ifPresent(nv -> {
                 nv.setTrangThai("DaNghi");
                 nhanVienRepository.save(nv);

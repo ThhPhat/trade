@@ -119,7 +119,15 @@ public class CartController {
                            @RequestParam(value = "maDH", required = false) Integer maDH,
                            Authentication authentication,
                            jakarta.servlet.http.HttpSession session,
-                           Model model) {
+                           Model model,
+                           RedirectAttributes redirectAttributes) {
+        KhachHang kh = getCurrentKhachHang(authentication);
+
+        if (kh == null) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Vui lòng đăng nhập để xem và quản lý giỏ hàng của bạn!");
+            return "redirect:/login";
+        }
+
         model.addAttribute("datHangThanhCong", Boolean.TRUE.equals(datHangThanhCong));
         if (!model.containsAttribute("orderSuccess")) {
             model.addAttribute("orderSuccess", false);
@@ -128,34 +136,19 @@ public class CartController {
             model.addAttribute("maDH", maDH);
         }
 
-        KhachHang kh = getCurrentKhachHang(authentication);
+        // Tự động gộp giỏ hàng session nếu có
+        gioHangService.mergeSessionCartToDb(kh, session);
 
-        if (kh != null) {
-            // Tự động gộp giỏ hàng session nếu trước đó khách thêm giỏ khi chưa đăng nhập
-            gioHangService.mergeSessionCartToDb(kh, session);
+        List<ChiTietGioHang> cartItems = gioHangService.getCartItems(kh);
+        int subtotal = gioHangService.calculateSubtotal(kh);
+        int cartCount = gioHangService.getCartItemCount(kh);
 
-            List<ChiTietGioHang> cartItems = gioHangService.getCartItems(kh);
-            int subtotal = gioHangService.calculateSubtotal(kh);
-            int cartCount = gioHangService.getCartItemCount(kh);
-
-            model.addAttribute("cartItems", cartItems);
-            model.addAttribute("subtotal", subtotal);
-            model.addAttribute("cartCount", cartCount);
-            model.addAttribute("isAuthenticated", true);
-            model.addAttribute("khachHang", kh);
-            model.addAttribute("diaChiList", diaChiGiaoHangRepository.findByKhachHangOrderByLaMacDinhDescNgayTaoDesc(kh));
-        } else {
-            List<ChiTietGioHang> cartItems = gioHangService.getSessionCartItems(session);
-            int subtotal = gioHangService.calculateSessionSubtotal(session);
-            int cartCount = gioHangService.getSessionCartItemCount(session);
-
-            model.addAttribute("cartItems", cartItems);
-            model.addAttribute("subtotal", subtotal);
-            model.addAttribute("cartCount", cartCount);
-            model.addAttribute("isAuthenticated", false);
-            model.addAttribute("diaChiList", List.of());
-        }
-
+        model.addAttribute("cartItems", cartItems);
+        model.addAttribute("subtotal", subtotal);
+        model.addAttribute("cartCount", cartCount);
+        model.addAttribute("isAuthenticated", true);
+        model.addAttribute("khachHang", kh);
+        model.addAttribute("diaChiList", diaChiGiaoHangRepository.findByKhachHangOrderByLaMacDinhDescNgayTaoDesc(kh));
         model.addAttribute("carriers", nhaVanChuyenRepository.findByTrangThai("HoatDong"));
 
         return "cart/cart";
@@ -172,12 +165,13 @@ public class CartController {
                             RedirectAttributes redirectAttributes) {
         KhachHang kh = getCurrentKhachHang(authentication);
 
+        if (kh == null) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng!");
+            return "redirect:/login";
+        }
+
         try {
-            if (kh != null) {
-                gioHangService.addToCart(kh, maSP, soLuong);
-            } else {
-                gioHangService.addToSessionCart(session, maSP, soLuong);
-            }
+            gioHangService.addToCart(kh, maSP, soLuong);
             redirectAttributes.addFlashAttribute("successMessage", "Đã thêm sản phẩm vào giỏ hàng!");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
@@ -279,7 +273,7 @@ public class CartController {
         if (maDiaChi != null) {
             DiaChiGiaoHang dc = diaChiGiaoHangRepository.findById(maDiaChi).orElse(null);
             if (dc != null && dc.getKhachHang().getMaKH().equals(kh.getMaKH())) {
-                finalDiaChi = dc.getDiaChiChiTiet();
+                finalDiaChi = dc.getDiaChiDayDu();
                 finalSoDienThoai = dc.getSoDienThoai();
             }
         }
@@ -396,15 +390,17 @@ public class CartController {
         Map<String, Object> result = new HashMap<>();
         KhachHang kh = getCurrentKhachHang(authentication);
 
+        if (kh == null) {
+            result.put("success", false);
+            result.put("requireLogin", true);
+            result.put("loginUrl", "/login");
+            result.put("message", "Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng!");
+            return result;
+        }
+
         try {
-            int cartCount;
-            if (kh != null) {
-                gioHangService.addToCart(kh, maSP, soLuong);
-                cartCount = gioHangService.getCartItemCount(kh);
-            } else {
-                gioHangService.addToSessionCart(session, maSP, soLuong);
-                cartCount = gioHangService.getSessionCartItemCount(session);
-            }
+            gioHangService.addToCart(kh, maSP, soLuong);
+            int cartCount = gioHangService.getCartItemCount(kh);
             result.put("success", true);
             result.put("message", "Đã thêm sản phẩm vào giỏ hàng!");
             result.put("cartCount", cartCount);

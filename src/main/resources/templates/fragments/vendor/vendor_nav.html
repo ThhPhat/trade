@@ -25,16 +25,7 @@
                     <span>Sản Phẩm</span>
                 </a>
 
-                <!-- 3. Nhập hàng -->
-                <a th:href="@{/vendor/imports}"
-                   th:class="${activeTab == 'imports'} ?
-                            'inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold bg-primary text-on-primary shadow-xs transition-all' :
-                            'inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-all'">
-                    <span class="material-symbols-outlined text-[18px]">input</span>
-                    <span>Nhập Hàng</span>
-                </a>
-
-                <!-- 4. Kiểm kê kho -->
+                <!-- 3. Kiểm kê kho -->
                 <a th:href="@{/vendor/inventory}"
                    th:class="${activeTab == 'inventory'} ?
                             'inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold bg-emerald-600 text-white shadow-xs transition-all' :
@@ -75,9 +66,9 @@
 
             <!-- Right Quick Action: View Live Shop -->
             <div class="hidden md:flex items-center gap-2 pr-1" th:if="${(shop != null and shop.slug != null and shop.trangThai == 'HoatDong') or (currentShop != null and currentShop.slug != null and currentShop.trangThai == 'HoatDong')}">
-                <a th:href="@{'/shop/' + ${(shop != null ? shop.slug : currentShop.slug)}}" target="_blank"
+                <a th:href="@{'/shop/' + ${(shop != null ? shop.slug : currentShop.slug)}}"
                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-primary hover:bg-primary/10 border border-primary/20 transition-all">
-                    <span class="material-symbols-outlined text-[16px]">open_in_new</span>
+                    <span class="material-symbols-outlined text-[16px]">storefront</span>
                     <span>Xem Gian Hàng</span>
                 </a>
             </div>

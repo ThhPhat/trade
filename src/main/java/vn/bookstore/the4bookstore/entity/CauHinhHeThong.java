@@ -1,13 +1,9 @@
 package vn.bookstore.the4bookstore.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
 
 @Entity
 @Table(name = "cau_hinh_he_thong")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class CauHinhHeThong {
 
     @Id
@@ -19,4 +15,37 @@ public class CauHinhHeThong {
 
     @Column(name = "mo_ta")
     private String moTa;
+
+    public CauHinhHeThong() {
+    }
+
+    public CauHinhHeThong(String maCauHinh, String giaTri, String moTa) {
+        this.maCauHinh = maCauHinh;
+        this.giaTri = giaTri;
+        this.moTa = moTa;
+    }
+
+    public String getMaCauHinh() {
+        return maCauHinh;
+    }
+
+    public void setMaCauHinh(String maCauHinh) {
+        this.maCauHinh = maCauHinh;
+    }
+
+    public String getGiaTri() {
+        return giaTri;
+    }
+
+    public void setGiaTri(String giaTri) {
+        this.giaTri = giaTri;
+    }
+
+    public String getMoTa() {
+        return moTa;
+    }
+
+    public void setMoTa(String moTa) {
+        this.moTa = moTa;
+    }
 }

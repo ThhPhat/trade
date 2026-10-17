@@ -8,37 +8,26 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import vn.bookstore.the4bookstore.entity.DiaChiGiaoHang;
 import vn.bookstore.the4bookstore.entity.KhachHang;
-import vn.bookstore.the4bookstore.entity.TaiKhoan;
-import vn.bookstore.the4bookstore.repository.KhachHangRepository;
-import vn.bookstore.the4bookstore.repository.TaiKhoanRepository;
+import vn.bookstore.the4bookstore.service.CurrentUserService;
 import vn.bookstore.the4bookstore.service.DiaChiService;
 
 import java.util.List;
 
-import org.springframework.security.access.prepost.PreAuthorize;
-
 @Controller
 @RequestMapping("/profile/addresses")
-@RequiredArgsConstructor
-@PreAuthorize("isAuthenticated()")
 public class DiaChiController {
 
     private final DiaChiService diaChiService;
-    private final KhachHangRepository khachHangRepository;
-    private final TaiKhoanRepository taiKhoanRepository;
+    private final CurrentUserService currentUserService;
 
-    private KhachHang getCurrentKhachHang(Authentication auth) {
-        if (auth == null || !auth.isAuthenticated()) return null;
-        TaiKhoan tk = taiKhoanRepository.findByEmail(auth.getName())
-                .or(() -> taiKhoanRepository.findByTenDangNhap(auth.getName()))
-                .orElse(null);
-        if (tk == null) return null;
-        return khachHangRepository.findByTaiKhoan(tk).orElse(null);
+    public DiaChiController(DiaChiService diaChiService, CurrentUserService currentUserService) {
+        this.diaChiService = diaChiService;
+        this.currentUserService = currentUserService;
     }
 
     @GetMapping
     public String addressList(Authentication auth, Model model) {
-        KhachHang kh = getCurrentKhachHang(auth);
+        KhachHang kh = currentUserService.getCurrentKhachHang(auth);
         if (kh == null) return "redirect:/login";
 
         List<DiaChiGiaoHang> addresses = diaChiService.getAddresses(kh);
@@ -52,7 +41,7 @@ public class DiaChiController {
     public String addAddress(Authentication auth,
                              @ModelAttribute DiaChiGiaoHang diaChi,
                              RedirectAttributes redirectAttributes) {
-        KhachHang kh = getCurrentKhachHang(auth);
+        KhachHang kh = currentUserService.getCurrentKhachHang(auth);
         if (kh == null) return "redirect:/login";
 
         try {
@@ -66,7 +55,7 @@ public class DiaChiController {
 
     @PostMapping("/set-default/{id}")
     public String setDefault(Authentication auth, @PathVariable Integer id, RedirectAttributes redirectAttributes) {
-        KhachHang kh = getCurrentKhachHang(auth);
+        KhachHang kh = currentUserService.getCurrentKhachHang(auth);
         if (kh == null) return "redirect:/login";
 
         try {
@@ -80,7 +69,7 @@ public class DiaChiController {
 
     @PostMapping("/delete/{id}")
     public String deleteAddress(Authentication auth, @PathVariable Integer id, RedirectAttributes redirectAttributes) {
-        KhachHang kh = getCurrentKhachHang(auth);
+        KhachHang kh = currentUserService.getCurrentKhachHang(auth);
         if (kh == null) return "redirect:/login";
 
         try {

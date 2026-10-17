@@ -44,6 +44,22 @@ public class DiaChiGiaoHang {
     @Column(name = "ngay_tao", nullable = false)
     private LocalDateTime ngayTao = LocalDateTime.now();
 
+    public Boolean getMacDinh() {
+        return laMacDinh;
+    }
+
+    public boolean isMacDinh() {
+        return Boolean.TRUE.equals(laMacDinh);
+    }
+
+    public String getHoTenNguoiNhan() {
+        return tenNguoiNhan;
+    }
+
+    public void setHoTenNguoiNhan(String hoTenNguoiNhan) {
+        this.tenNguoiNhan = hoTenNguoiNhan;
+    }
+
     public String getDiaChiDayDu() {
         StringBuilder sb = new StringBuilder(diaChiChiTiet != null ? diaChiChiTiet : "");
         if (phuongXa != null && !phuongXa.isBlank()) sb.append(", ").append(phuongXa);

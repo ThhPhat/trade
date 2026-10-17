@@ -27,7 +27,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 @Slf4j
 @Controller
 @RequestMapping("/vendor/stock-requests")
-@RequiredArgsConstructor
 @PreAuthorize("hasAnyRole('VENDOR', 'ADMIN', 'MANAGER')")
 public class VendorStockController {
 
@@ -36,6 +35,18 @@ public class VendorStockController {
     private final KhoService khoService;
     private final SanPhamRepository sanPhamRepository;
     private final TaiKhoanRepository taiKhoanRepository;
+
+    public VendorStockController(CapHangService capHangService,
+                                 ShopService shopService,
+                                 KhoService khoService,
+                                 SanPhamRepository sanPhamRepository,
+                                 TaiKhoanRepository taiKhoanRepository) {
+        this.capHangService = capHangService;
+        this.shopService = shopService;
+        this.khoService = khoService;
+        this.sanPhamRepository = sanPhamRepository;
+        this.taiKhoanRepository = taiKhoanRepository;
+    }
 
     private TaiKhoan getCurrentUser(Authentication auth) {
         if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getPrincipal())) return null;
@@ -49,6 +60,11 @@ public class VendorStockController {
             tk = taiKhoanRepository.findById(o.getTaiKhoan().getMaTaiKhoan()).orElse(o.getTaiKhoan());
         } else if (p instanceof CustomOAuth2User o && o.getEmail() != null) {
             tk = taiKhoanRepository.findByEmail(o.getEmail()).orElse(null);
+        }
+        if (tk == null && auth.getName() != null) {
+            tk = taiKhoanRepository.findByEmail(auth.getName())
+                    .or(() -> taiKhoanRepository.findByTenDangNhap(auth.getName()))
+                    .orElse(null);
         }
         return tk;
     }
