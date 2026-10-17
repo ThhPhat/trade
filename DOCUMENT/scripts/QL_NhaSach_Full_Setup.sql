@@ -107,45 +107,6 @@ GO
 ALTER TABLE [dbo].[tai_khoan] ENABLE TRIGGER [trg_AuditThayDoiVaiTroTaiKhoan]
 GO
 
--- Bảng: nhan_vien
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-SET ANSI_PADDING ON
-GO
-CREATE TABLE [dbo].[nhan_vien](
-	[manv] [int] IDENTITY(1,1) NOT NULL,
-	[ma_tai_khoan] [int] NULL,
-	[ho_ten] [nvarchar](100) COLLATE Vietnamese_CI_AS NOT NULL,
-	[chuc_vu] [nvarchar](50) COLLATE Vietnamese_CI_AS NOT NULL,
-	[email] [varchar](100) COLLATE Vietnamese_CI_AS NULL,
-	[so_dien_thoai] [varchar](20) COLLATE Vietnamese_CI_AS NULL,
-	[ngay_vao_lam] [date] NULL,
-	[trang_thai] [nvarchar](30) COLLATE Vietnamese_CI_AS NOT NULL,
-	[dia_chi] [nvarchar](255) COLLATE Vietnamese_CI_AS NULL,
-PRIMARY KEY CLUSTERED 
-(
-	[manv] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY],
-UNIQUE NONCLUSTERED 
-(
-	[ma_tai_khoan] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
-) ON [PRIMARY]
-
-GO
-SET ANSI_PADDING OFF
-GO
-ALTER TABLE [dbo].[nhan_vien] ADD  CONSTRAINT [DF_nhanvien_trangthai]  DEFAULT (N'HoatDong') FOR [trang_thai]
-GO
-ALTER TABLE [dbo].[nhan_vien]  WITH CHECK ADD  CONSTRAINT [FK_nhanvien_taikhoan] FOREIGN KEY([ma_tai_khoan])
-REFERENCES [dbo].[tai_khoan] ([ma_tai_khoan])
-ON DELETE SET NULL
-GO
-ALTER TABLE [dbo].[nhan_vien] CHECK CONSTRAINT [FK_nhanvien_taikhoan]
-GO
-
 -- Bảng: khach_hang
 SET ANSI_NULLS ON
 GO
@@ -363,35 +324,6 @@ GO
 SET ANSI_PADDING OFF
 GO
 ALTER TABLE [dbo].[nha_cung_cap] ADD  CONSTRAINT [DF_ncc_trangthai]  DEFAULT ('HoatDong') FOR [trang_thai]
-GO
-
--- Bảng: KHO
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-SET ANSI_PADDING ON
-GO
-CREATE TABLE [dbo].[KHO](
-	[ma_kho] [int] IDENTITY(1,1) NOT NULL,
-	[ten_kho] [nvarchar](100) COLLATE Vietnamese_CI_AS NOT NULL,
-	[dia_chi] [nvarchar](255) COLLATE Vietnamese_CI_AS NULL,
-	[so_dien_thoai] [varchar](20) COLLATE Vietnamese_CI_AS NULL,
-	[trang_thai] [varchar](20) COLLATE Vietnamese_CI_AS NOT NULL,
-	[ngay_tao] [datetime2](7) NOT NULL,
-	[ghi_chu] [nvarchar](500) COLLATE Vietnamese_CI_AS NULL,
-PRIMARY KEY CLUSTERED 
-(
-	[ma_kho] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
-) ON [PRIMARY]
-
-GO
-SET ANSI_PADDING OFF
-GO
-ALTER TABLE [dbo].[KHO] ADD  CONSTRAINT [DF_kho_trangthai]  DEFAULT ('HoatDong') FOR [trang_thai]
-GO
-ALTER TABLE [dbo].[KHO] ADD  CONSTRAINT [DF_kho_ngaytao]  DEFAULT (sysutcdatetime()) FOR [ngay_tao]
 GO
 
 -- Bảng: san_pham
@@ -1133,7 +1065,6 @@ GO
 CREATE TABLE [dbo].[hoa_don](
 	[ma_hd] [int] IDENTITY(1,1) NOT NULL,
 	[ma_dh] [int] NOT NULL,
-	[ma_nv] [int] NULL,
 	[ngay_lap] [datetime2](7) NOT NULL,
 	[tong_tien_thanh_toan] [int] NOT NULL,
 	[trang_thai] [nvarchar](30) COLLATE Vietnamese_CI_AS NOT NULL,
@@ -1157,11 +1088,6 @@ REFERENCES [dbo].[don_hang] ([madh])
 ON DELETE CASCADE
 GO
 ALTER TABLE [dbo].[hoa_don] CHECK CONSTRAINT [FK_hoadon_donhang]
-GO
-ALTER TABLE [dbo].[hoa_don]  WITH CHECK ADD  CONSTRAINT [FK_hoadon_nhanvien] FOREIGN KEY([ma_nv])
-REFERENCES [dbo].[nhan_vien] ([manv])
-GO
-ALTER TABLE [dbo].[hoa_don] CHECK CONSTRAINT [FK_hoadon_nhanvien]
 GO
 
 -- Bảng: danh_gia
@@ -1394,130 +1320,6 @@ GO
 ALTER TABLE [dbo].[nhat_ky_bao_mat] ADD  CONSTRAINT [DF_audit_time]  DEFAULT (sysutcdatetime()) FOR [thoi_gian]
 GO
 
--- Bảng: yeu_cau_cap_hang
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-SET ANSI_PADDING ON
-GO
-CREATE TABLE [dbo].[yeu_cau_cap_hang](
-	[ma_yeu_cau] [int] IDENTITY(1,1) NOT NULL,
-	[ma_shop] [int] NOT NULL,
-	[ma_kho] [int] NOT NULL,
-	[ma_nhan_vien_duyet] [int] NULL,
-	[trang_thai] [varchar](30) COLLATE Vietnamese_CI_AS NOT NULL,
-	[ngay_tao] [datetime2](7) NOT NULL,
-	[ngay_duyet] [datetime2](7) NULL,
-	[ghi_chu] [nvarchar](500) COLLATE Vietnamese_CI_AS NULL,
-	[ly_do_tu_choi] [nvarchar](500) COLLATE Vietnamese_CI_AS NULL,
-PRIMARY KEY CLUSTERED 
-(
-	[ma_yeu_cau] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
-) ON [PRIMARY]
-
-GO
-SET ANSI_PADDING OFF
-GO
-ALTER TABLE [dbo].[yeu_cau_cap_hang] ADD  CONSTRAINT [DF_ycch_trangthai]  DEFAULT ('ChoDuyet') FOR [trang_thai]
-GO
-ALTER TABLE [dbo].[yeu_cau_cap_hang] ADD  CONSTRAINT [DF_ycch_ngaytao]  DEFAULT (sysutcdatetime()) FOR [ngay_tao]
-GO
-ALTER TABLE [dbo].[yeu_cau_cap_hang]  WITH CHECK ADD  CONSTRAINT [FK_ycch_kho] FOREIGN KEY([ma_kho])
-REFERENCES [dbo].[KHO] ([ma_kho])
-GO
-ALTER TABLE [dbo].[yeu_cau_cap_hang] CHECK CONSTRAINT [FK_ycch_kho]
-GO
-ALTER TABLE [dbo].[yeu_cau_cap_hang]  WITH CHECK ADD  CONSTRAINT [FK_ycch_nhanvien] FOREIGN KEY([ma_nhan_vien_duyet])
-REFERENCES [dbo].[nhan_vien] ([manv])
-ON DELETE SET NULL
-GO
-ALTER TABLE [dbo].[yeu_cau_cap_hang] CHECK CONSTRAINT [FK_ycch_nhanvien]
-GO
-ALTER TABLE [dbo].[yeu_cau_cap_hang]  WITH CHECK ADD  CONSTRAINT [FK_ycch_shop] FOREIGN KEY([ma_shop])
-REFERENCES [dbo].[shop] ([ma_shop])
-ON DELETE CASCADE
-GO
-ALTER TABLE [dbo].[yeu_cau_cap_hang] CHECK CONSTRAINT [FK_ycch_shop]
-GO
-
--- Bảng: chi_tiet_cap_hang
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-CREATE TABLE [dbo].[chi_tiet_cap_hang](
-	[ma_chi_tiet] [int] IDENTITY(1,1) NOT NULL,
-	[ma_yeu_cau] [int] NOT NULL,
-	[masp] [int] NOT NULL,
-	[so_luong_yeu_cau] [int] NOT NULL,
-	[so_luong_duyet] [int] NULL,
-PRIMARY KEY CLUSTERED 
-(
-	[ma_chi_tiet] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
-) ON [PRIMARY]
-
-GO
-ALTER TABLE [dbo].[chi_tiet_cap_hang]  WITH CHECK ADD  CONSTRAINT [FK_ctch_sanpham] FOREIGN KEY([masp])
-REFERENCES [dbo].[san_pham] ([masp])
-GO
-ALTER TABLE [dbo].[chi_tiet_cap_hang] CHECK CONSTRAINT [FK_ctch_sanpham]
-GO
-ALTER TABLE [dbo].[chi_tiet_cap_hang]  WITH CHECK ADD  CONSTRAINT [FK_ctch_yeucau] FOREIGN KEY([ma_yeu_cau])
-REFERENCES [dbo].[yeu_cau_cap_hang] ([ma_yeu_cau])
-ON DELETE CASCADE
-GO
-ALTER TABLE [dbo].[chi_tiet_cap_hang] CHECK CONSTRAINT [FK_ctch_yeucau]
-GO
-
--- Bảng: KHO_HANG
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-CREATE TABLE [dbo].[KHO_HANG](
-	[ma_kho_hang] [int] IDENTITY(1,1) NOT NULL,
-	[ma_kho] [int] NOT NULL,
-	[masp] [int] NOT NULL,
-	[so_luong_ton] [int] NOT NULL,
-	[muc_toi_thieu] [int] NOT NULL,
-	[muc_toi_da] [int] NOT NULL,
-	[ngay_cap_nhat] [datetime2](7) NOT NULL,
-PRIMARY KEY CLUSTERED 
-(
-	[ma_kho_hang] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY],
- CONSTRAINT [UQ_khohang_kho_sp] UNIQUE NONCLUSTERED 
-(
-	[ma_kho] ASC,
-	[masp] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
-) ON [PRIMARY]
-
-GO
-ALTER TABLE [dbo].[KHO_HANG] ADD  CONSTRAINT [DF_khohang_ton]  DEFAULT ((0)) FOR [so_luong_ton]
-GO
-ALTER TABLE [dbo].[KHO_HANG] ADD  CONSTRAINT [DF_khohang_min]  DEFAULT ((0)) FOR [muc_toi_thieu]
-GO
-ALTER TABLE [dbo].[KHO_HANG] ADD  CONSTRAINT [DF_khohang_max]  DEFAULT ((10000)) FOR [muc_toi_da]
-GO
-ALTER TABLE [dbo].[KHO_HANG] ADD  CONSTRAINT [DF_khohang_update]  DEFAULT (sysutcdatetime()) FOR [ngay_cap_nhat]
-GO
-ALTER TABLE [dbo].[KHO_HANG]  WITH CHECK ADD  CONSTRAINT [FK_khohang_kho] FOREIGN KEY([ma_kho])
-REFERENCES [dbo].[KHO] ([ma_kho])
-ON DELETE CASCADE
-GO
-ALTER TABLE [dbo].[KHO_HANG] CHECK CONSTRAINT [FK_khohang_kho]
-GO
-ALTER TABLE [dbo].[KHO_HANG]  WITH CHECK ADD  CONSTRAINT [FK_khohang_sanpham] FOREIGN KEY([masp])
-REFERENCES [dbo].[san_pham] ([masp])
-ON DELETE CASCADE
-GO
-ALTER TABLE [dbo].[KHO_HANG] CHECK CONSTRAINT [FK_khohang_sanpham]
-GO
-
 -- ====================================================================
 -- PHẦN 2: HÀM (FUNCTIONS)
 -- ====================================================================
@@ -1638,13 +1440,34 @@ END;
 
 GO
 
+-- Hàm: fn_TinhDiemDanhGiaTrungBinh
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER OFF
+GO
+
+-- Hàm 1 (Scalar): Tính điểm số sao trung bình của một cuốn sách
+CREATE   FUNCTION fn_TinhDiemDanhGiaTrungBinh (@masp INT)
+RETURNS DECIMAL(2,1)
+AS
+BEGIN
+    DECLARE @diem DECIMAL(2,1);
+    SELECT @diem = CAST(ROUND(AVG(CAST(so_sao AS FLOAT)), 1) AS DECIMAL(2,1))
+    FROM danh_gia
+    WHERE masp = @masp AND trang_thai = N'HienThi';
+
+    RETURN ISNULL(@diem, 5.0);
+END;
+
+GO
+
 -- Hàm: fn_LayDanhSachSachCuaShop
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER OFF
 GO
 
--- HÃ m 4 (Inline Table-Valued): Lấy danh sách sách của một Shop kÃ¨m danh má»¥c
+-- Hàm 4 (Inline Table-Valued): Lấy danh sách sách của một Shop kèm danh mục
 CREATE   FUNCTION fn_LayDanhSachSachCuaShop (@ma_shop INT)
 RETURNS TABLE
 AS
@@ -1663,31 +1486,6 @@ RETURN (
     JOIN danh_muc dm ON sp.ma_danh_muc = dm.ma_danh_muc
     WHERE sp.ma_shop = @ma_shop
 );
-
-GO
-
--- Hàm: fn_TinhDiemDanhGiaTrungBinh
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER OFF
-GO
-
--- ====================================================================
--- PHẦN 5: DỮ LIỆU MẪU ĐẦY ĐỦ (SEED DATA)
--- ====================================================================
-
--- HÃ m 1 (Scalar): TÃ­nh Ä‘iá»ƒm sá»‘ sao trung bÃ¬nh của một cuốn sách
-CREATE   FUNCTION fn_TinhDiemDanhGiaTrungBinh (@masp INT)
-RETURNS DECIMAL(2,1)
-AS
-BEGIN
-    DECLARE @diem DECIMAL(2,1);
-    SELECT @diem = CAST(ROUND(AVG(CAST(so_sao AS FLOAT)), 1) AS DECIMAL(2,1))
-    FROM danh_gia
-    WHERE masp = @masp AND trang_thai = N'HienThi';
-
-    RETURN ISNULL(@diem, 5.0);
-END;
 
 GO
 
@@ -2292,14 +2090,6 @@ INSERT [dbo].[tai_khoan] ([ma_tai_khoan], [ten_dang_nhap], [email], [mat_khau_ha
 SET IDENTITY_INSERT [dbo].[tai_khoan] OFF
 GO
 
--- Dữ liệu bảng: nhan_vien (2 dòng)
-SET IDENTITY_INSERT [dbo].[nhan_vien] ON 
-
-INSERT [dbo].[nhan_vien] ([manv], [ma_tai_khoan], [ho_ten], [chuc_vu], [email], [so_dien_thoai], [ngay_vao_lam], [trang_thai], [dia_chi]) VALUES (1, 1, N'Trần Quản Trị', N'Quản trị viên hệ thống', N'admin@the4bookstore.vn', N'0901234567', CAST(N'2025-01-01' AS Date), N'HoatDong', NULL)
-INSERT [dbo].[nhan_vien] ([manv], [ma_tai_khoan], [ho_ten], [chuc_vu], [email], [so_dien_thoai], [ngay_vao_lam], [trang_thai], [dia_chi]) VALUES (3, 8, N'Lê Thị Quản Lý', N'Quản lý vận hành hệ thống', N'manager@the4bookstore.vn', N'0907654321', CAST(N'2025-02-01' AS Date), N'HoatDong', N'TP. Hồ Chí Minh')
-SET IDENTITY_INSERT [dbo].[nhan_vien] OFF
-GO
-
 -- Dữ liệu bảng: khach_hang (7 dòng)
 SET IDENTITY_INSERT [dbo].[khach_hang] ON 
 
@@ -2373,14 +2163,6 @@ SET IDENTITY_INSERT [dbo].[nha_cung_cap] ON
 INSERT [dbo].[nha_cung_cap] ([mancc], [tenncc], [dia_chi], [so_dien_thoai], [email], [ma_so_thue], [trang_thai]) VALUES (1, N'Công Ty Phát Hành Sách FAHASA', N'60-62 Lê Lợi, Q1, TP.HCM', N'02838224579', N'fahasa@fahasa.com.vn', NULL, N'HoatDong')
 INSERT [dbo].[nha_cung_cap] ([mancc], [tenncc], [dia_chi], [so_dien_thoai], [email], [ma_so_thue], [trang_thai]) VALUES (2, N'Công Ty Sách Phương Nam', N'940 ÄÆ°á»ng 3/2, Q11, TP.HCM', N'02839650066', N'hotro@phuongnam.com', NULL, N'HoatDong')
 SET IDENTITY_INSERT [dbo].[nha_cung_cap] OFF
-GO
-
--- Dữ liệu bảng: KHO (2 dòng)
-SET IDENTITY_INSERT [dbo].[KHO] ON 
-
-INSERT [dbo].[KHO] ([ma_kho], [ten_kho], [dia_chi], [so_dien_thoai], [trang_thai], [ngay_tao], [ghi_chu]) VALUES (1, N'Tá»•ng Kho PhÃ­a Nam (TP.HCM)', N'Khu CNC Linh Trung, TP. Thá»§ Äá»©c, TP. Há»“ ChÃ­ Minh', N'02838960001', N'HoatDong', CAST(N'2026-10-17T04:24:59.7165409' AS DateTime2), NULL)
-INSERT [dbo].[KHO] ([ma_kho], [ten_kho], [dia_chi], [so_dien_thoai], [trang_thai], [ngay_tao], [ghi_chu]) VALUES (2, N'Tá»•ng Kho PhÃ­a Báº¯c (HÃ  Ná»™i)', N'KCN Tiên Sơn, Bắc Ninh - Hà Nội', N'02438960002', N'HoatDong', CAST(N'2026-10-17T04:24:59.7165409' AS DateTime2), NULL)
-SET IDENTITY_INSERT [dbo].[KHO] OFF
 GO
 
 -- Dữ liệu bảng: san_pham (14 dòng)

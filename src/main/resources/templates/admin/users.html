@@ -111,12 +111,7 @@
                                             <span th:text="${shopProfiles[u.maTaiKhoan].tenShop}">Tên Shop</span>
                                         </a>
                                     </div>
-                                    <!-- Nhân viên -->
-                                    <div th:if="${staffProfiles[u.maTaiKhoan] != null}">
-                                        <div class="font-semibold text-purple-700" th:text="${staffProfiles[u.maTaiKhoan].hoTen}">Họ Tên NV</div>
-                                        <div class="text-[11px] text-on-surface-variant" th:text="'Chức vụ: ' + ${staffProfiles[u.maTaiKhoan].chucVu}">Chức vụ</div>
-                                    </div>
-                                    <div th:if="${customerProfiles[u.maTaiKhoan] == null and shopProfiles[u.maTaiKhoan] == null and staffProfiles[u.maTaiKhoan] == null}"
+                                    <div th:if="${customerProfiles[u.maTaiKhoan] == null and shopProfiles[u.maTaiKhoan] == null}"
                                          class="text-on-surface-variant/60 italic text-[11px]">Chưa liên kết hồ sơ</div>
                                 </td>
                                 <td class="p-4">
@@ -132,7 +127,6 @@
                                         <span th:case="'ADMIN'" class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-rose-100 text-rose-800">SUPER ADMIN</span>
                                         <span th:case="'MANAGER'" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 text-purple-800">MANAGER</span>
                                         <span th:case="'VENDOR'" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">VENDOR</span>
-                                        <span th:case="'NHANVIENKHO'" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">THỦ KHO</span>
                                         <span th:case="*" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700">USER</span>
                                     </span>
                                 </td>

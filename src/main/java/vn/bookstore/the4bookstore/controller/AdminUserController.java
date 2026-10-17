@@ -10,11 +10,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import vn.bookstore.the4bookstore.entity.KhachHang;
-import vn.bookstore.the4bookstore.entity.NhanVien;
 import vn.bookstore.the4bookstore.entity.Shop;
 import vn.bookstore.the4bookstore.entity.TaiKhoan;
 import vn.bookstore.the4bookstore.repository.KhachHangRepository;
-import vn.bookstore.the4bookstore.repository.NhanVienRepository;
 import vn.bookstore.the4bookstore.repository.ShopRepository;
 import vn.bookstore.the4bookstore.repository.TaiKhoanRepository;
 
@@ -38,7 +36,6 @@ public class AdminUserController {
 
     private final TaiKhoanRepository taiKhoanRepository;
     private final KhachHangRepository khachHangRepository;
-    private final NhanVienRepository nhanVienRepository;
     private final ShopRepository shopRepository;
     private final PasswordEncoder passwordEncoder;
     private final org.springframework.security.core.session.SessionRegistry sessionRegistry;
@@ -46,14 +43,12 @@ public class AdminUserController {
 
     public AdminUserController(TaiKhoanRepository taiKhoanRepository,
                                KhachHangRepository khachHangRepository,
-                               NhanVienRepository nhanVienRepository,
                                ShopRepository shopRepository,
                                PasswordEncoder passwordEncoder,
                                org.springframework.security.core.session.SessionRegistry sessionRegistry,
                                @org.springframework.beans.factory.annotation.Autowired(required = false) SecurityAuditService securityAuditService) {
         this.taiKhoanRepository = taiKhoanRepository;
         this.khachHangRepository = khachHangRepository;
-        this.nhanVienRepository = nhanVienRepository;
         this.shopRepository = shopRepository;
         this.passwordEncoder = passwordEncoder;
         this.sessionRegistry = sessionRegistry;
@@ -99,14 +94,12 @@ public class AdminUserController {
         PageRequest pageRequest = PageRequest.of(page, 15);
         Page<TaiKhoan> userPage = taiKhoanRepository.searchAccounts(keyword, role, pageRequest);
 
-        // Nạp thông tin hồ sơ liên kết (Khách hàng, Nhân viên, Shop)
+        // Nạp thông tin hồ sơ liên kết (Khách hàng, Shop)
         Map<Integer, KhachHang> customerProfiles = new HashMap<>();
-        Map<Integer, NhanVien> staffProfiles = new HashMap<>();
         Map<Integer, Shop> shopProfiles = new HashMap<>();
 
         for (TaiKhoan tk : userPage.getContent()) {
             khachHangRepository.findByTaiKhoan(tk).ifPresent(kh -> customerProfiles.put(tk.getMaTaiKhoan(), kh));
-            nhanVienRepository.findByTaiKhoan(tk).ifPresent(nv -> staffProfiles.put(tk.getMaTaiKhoan(), nv));
             shopRepository.findByTaiKhoan(tk).ifPresent(sp -> shopProfiles.put(tk.getMaTaiKhoan(), sp));
         }
 
@@ -115,7 +108,6 @@ public class AdminUserController {
         model.addAttribute("keyword", keyword != null ? keyword : "");
         model.addAttribute("selectedRole", role != null ? role : "");
         model.addAttribute("customerProfiles", customerProfiles);
-        model.addAttribute("staffProfiles", staffProfiles);
         model.addAttribute("shopProfiles", shopProfiles);
 
         // Số liệu thống kê
@@ -211,41 +203,6 @@ public class AdminUserController {
         taiKhoanRepository.save(tk);
         if (securityAuditService != null) {
             securityAuditService.logRoleChange(tk.getTenDangNhap(), oldRole, upperRole, auth != null ? auth.getName() : "SYSTEM");
-        }
-
-        // Tự động đồng bộ / tạo hồ sơ Quản trị / Quản lý (Manager)
-        if ("MANAGER".equals(upperRole) || "NHANVIENKHO".equals(upperRole)) {
-            Optional<NhanVien> optNv = nhanVienRepository.findByTaiKhoan(tk);
-            NhanVien nv;
-            String chucVu = "MANAGER".equals(upperRole) ? "Quản lý hệ thống" : "Nhân viên kho";
-            if (optNv.isPresent()) {
-                nv = optNv.get();
-                nv.setTrangThai("DangLam");
-                nv.setChucVu(chucVu);
-            } else {
-                nv = new NhanVien();
-                nv.setTaiKhoan(tk);
-                nv.setNgayVaoLam(java.time.LocalDate.now());
-                nv.setTrangThai("DangLam");
-                nv.setChucVu(chucVu);
-                nv.setEmail(tk.getEmail());
-
-                Optional<KhachHang> optKh = khachHangRepository.findByTaiKhoan(tk);
-                String hoTen = optKh.map(KhachHang::getHoTen).filter(s -> s != null && !s.isBlank()).orElse(tk.getTenDangNhap());
-                String sdt = optKh.map(KhachHang::getSoDienThoai).filter(s -> s != null && !s.isBlank()).orElse("09" + String.format("%08d", tk.getMaTaiKhoan()));
-                String diaChi = optKh.map(KhachHang::getDiaChi).orElse(null);
-
-                nv.setHoTen(hoTen);
-                nv.setSoDienThoai(sdt);
-                nv.setDiaChi(diaChi);
-            }
-            nhanVienRepository.save(nv);
-        } else {
-            // Không phải vai trò quản lý (ADMIN, USER, VENDOR) -> đánh dấu Đã Nghỉ
-            nhanVienRepository.findByTaiKhoan(tk).ifPresent(nv -> {
-                nv.setTrangThai("DaNghi");
-                nhanVienRepository.save(nv);
-            });
         }
 
         // Hủy phiên đăng nhập cũ để người dùng nhận vai trò mới khi truy cập lại

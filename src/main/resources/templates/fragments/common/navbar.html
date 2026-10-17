@@ -185,10 +185,6 @@
                         <span class="material-symbols-outlined text-[18px]">admin_panel_settings</span>
                         <span>Quản Trị</span>
                     </a>
-                    <a sec:authorize="hasRole('NHANVIENKHO')" th:href="@{/admin/kho}" class="inline-flex items-center gap-1 px-space-sm py-2 rounded-xl bg-primary text-on-primary font-label-md text-xs font-semibold hover:bg-primary-container transition-colors shadow-sm">
-                        <span class="material-symbols-outlined text-[18px]">warehouse</span>
-                        <span>Quản Lý Kho</span>
-                    </a>
 
                     <!-- Client Notification Bell (Visible for Logged-In Users) -->
                     <th:block sec:authorize="isAuthenticated()">

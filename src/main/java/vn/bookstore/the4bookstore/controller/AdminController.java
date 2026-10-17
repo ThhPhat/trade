@@ -23,7 +23,6 @@ import vn.bookstore.the4bookstore.repository.SanPhamRepository;
 import vn.bookstore.the4bookstore.repository.DonHangRepository;
 import vn.bookstore.the4bookstore.repository.TacGiaRepository;
 import vn.bookstore.the4bookstore.repository.SanPhamTacGiaRepository;
-import vn.bookstore.the4bookstore.service.KhoService;
 import vn.bookstore.the4bookstore.service.ReportService;
 import vn.bookstore.the4bookstore.service.OrderService;
 import vn.bookstore.the4bookstore.service.TacGiaService;

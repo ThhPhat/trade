@@ -40,7 +40,6 @@ class AdminControllerTest {
     @MockitoBean private SanPhamTacGiaRepository sanPhamTacGiaRepository;
     @MockitoBean private DonHangRepository donHangRepository;
 
-    @MockitoBean private KhoService khoService;
     @MockitoBean private ReportService reportService;
     @MockitoBean private OrderService orderService;
     @MockitoBean private TacGiaService tacGiaService;

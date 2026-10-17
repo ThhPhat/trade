@@ -1,39 +1,35 @@
 package vn.bookstore.the4bookstore.entity;
+
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-@Table(name = "PHIEU_KIEM_KE", indexes = {
-    @Index(name = "idx_pkk_ngaykiemke", columnList = "ngayKiemKe"),
-    @Index(name = "idx_pkk_trangthai", columnList = "trangThai")
+@Table(name = "phieu_kiem_ke", indexes = {
+    @Index(name = "idx_pkk_ngaykiemke", columnList = "ngay_kiem_ke"),
+    @Index(name = "idx_pkk_trangthai", columnList = "trang_thai")
 })
 @Data @NoArgsConstructor @AllArgsConstructor
 public class PhieuKiemKe {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "ma_phieu_kiem_ke")
     private Integer maPhieuKiemKe;
-    @Column(nullable = false)
+
+    @Column(name = "ngay_kiem_ke", nullable = false)
     private LocalDateTime ngayKiemKe = LocalDateTime.now();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ma_shop", nullable = false)
     private Shop shop;
 
-    @Transient
-    private Kho kho;
-
-    @Transient
-    private NhanVien nhanVien;
-
-    @Transient
-    private NhanVien nvPheDuyet;
-
-    @Column(nullable = false, length = 30)
+    @Column(name = "trang_thai", nullable = false, length = 30)
     private String trangThai = "DangKiemKe";
 
+    @Column(name = "ngay_phe_duyet")
     private LocalDateTime ngayPheDuyet;
-    @Column(length = 500)
+
+    @Column(name = "ghi_chu", length = 500)
     private String ghiChu;
 
     @OneToMany(mappedBy = "phieuKiemKe")

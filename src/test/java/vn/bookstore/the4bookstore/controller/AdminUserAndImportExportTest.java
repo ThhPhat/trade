@@ -37,7 +37,6 @@ class AdminUserAndImportExportTest {
 
     @MockitoBean private TaiKhoanRepository taiKhoanRepository;
     @MockitoBean private KhachHangRepository khachHangRepository;
-    @MockitoBean private NhanVienRepository nhanVienRepository;
     @MockitoBean private ShopRepository shopRepository;
     @MockitoBean private SanPhamRepository sanPhamRepository;
     @MockitoBean private DonHangRepository donHangRepository;
