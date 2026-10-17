@@ -91,10 +91,6 @@ erDiagram
         int ma_thanh_toan PK
         int madh FK
     }
-    hoa_don {
-        int ma_hd PK
-        int ma_dh FK
-    }
     danh_gia {
         int ma_danh_gia PK
         int madh FK
@@ -164,7 +160,6 @@ erDiagram
     khuyen_mai ||--o{ voucher_da_luu : "thu_thap"
 
     don_hang ||--o{ thanh_toan : "thanh_toan"
-    don_hang ||--o| hoa_don : "xuat"
     don_hang ||--o{ danh_gia : "danh_gia_tu"
 
     danh_gia ||--o{ danh_gia_media : "dinh_kem"

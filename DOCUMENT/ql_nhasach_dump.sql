@@ -1,4 +1,4 @@
-﻿-- ====================================================================
+-- ====================================================================
 -- THE4BOOKSTORE - HỆ THỐNG CƠ SỞ DỮ LIỆU SÀN THƯƠNG MẠI ĐIỆN TỬ SÁCH
 -- FILE TẠO CSDL TOÀN DIỆN VÀ MỚI NHẤT (SCHEMA + DATA + PROCEDURES + ROLES)
 -- HỆ QUẢN TRỊ CSDL: MICROSOFT SQL SERVER 2022/2025 (T-SQL)
@@ -1028,39 +1028,6 @@ GO
 ALTER TABLE [dbo].[thanh_toan]  WITH CHECK ADD  CONSTRAINT [CK_thanhtoan_sotien] CHECK  (([so_tien]>=(0)))
 GO
 ALTER TABLE [dbo].[thanh_toan] CHECK CONSTRAINT [CK_thanhtoan_sotien]
-GO
-
--- Bảng: hoa_don
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-CREATE TABLE [dbo].[hoa_don](
-	[ma_hd] [int] IDENTITY(1,1) NOT NULL,
-	[ma_dh] [int] NOT NULL,
-	[ngay_lap] [datetime2](7) NOT NULL,
-	[tong_tien_thanh_toan] [int] NOT NULL,
-	[trang_thai] [nvarchar](30) COLLATE Vietnamese_CI_AS NOT NULL,
-PRIMARY KEY CLUSTERED 
-(
-	[ma_hd] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY],
-UNIQUE NONCLUSTERED 
-(
-	[ma_dh] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
-) ON [PRIMARY]
-
-GO
-ALTER TABLE [dbo].[hoa_don] ADD  CONSTRAINT [DF_hoadon_ngay]  DEFAULT (sysutcdatetime()) FOR [ngay_lap]
-GO
-ALTER TABLE [dbo].[hoa_don] ADD  CONSTRAINT [DF_hoadon_trangthai]  DEFAULT (N'ChuaThanhToan') FOR [trang_thai]
-GO
-ALTER TABLE [dbo].[hoa_don]  WITH CHECK ADD  CONSTRAINT [FK_hoadon_donhang] FOREIGN KEY([ma_dh])
-REFERENCES [dbo].[don_hang] ([madh])
-ON DELETE CASCADE
-GO
-ALTER TABLE [dbo].[hoa_don] CHECK CONSTRAINT [FK_hoadon_donhang]
 GO
 
 -- Bảng: danh_gia
