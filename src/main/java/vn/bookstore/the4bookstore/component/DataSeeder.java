@@ -17,7 +17,6 @@ public class DataSeeder implements CommandLineRunner {
     private final KhachHangRepository khachHangRepository;
     private final DanhMucRepository danhMucRepository;
     private final NhaXuatBanRepository nhaXuatBanRepository;
-    private final NhaCungCapRepository nhaCungCapRepository;
     private final SanPhamRepository sanPhamRepository;
     private final TacGiaRepository tacGiaRepository;
     private final SanPhamTacGiaRepository sanPhamTacGiaRepository;
@@ -31,7 +30,6 @@ public class DataSeeder implements CommandLineRunner {
                       KhachHangRepository khachHangRepository,
                       DanhMucRepository danhMucRepository,
                       NhaXuatBanRepository nhaXuatBanRepository,
-                      NhaCungCapRepository nhaCungCapRepository,
                       SanPhamRepository sanPhamRepository,
                       TacGiaRepository tacGiaRepository,
                       SanPhamTacGiaRepository sanPhamTacGiaRepository,
@@ -41,7 +39,6 @@ public class DataSeeder implements CommandLineRunner {
         this.khachHangRepository = khachHangRepository;
         this.danhMucRepository = danhMucRepository;
         this.nhaXuatBanRepository = nhaXuatBanRepository;
-        this.nhaCungCapRepository = nhaCungCapRepository;
         this.sanPhamRepository = sanPhamRepository;
         this.tacGiaRepository = tacGiaRepository;
         this.sanPhamTacGiaRepository = sanPhamTacGiaRepository;
@@ -114,7 +111,7 @@ public class DataSeeder implements CommandLineRunner {
         DanhMuc catHistory = createCategoryIfNotFound("Khoa Học & Lịch Sử", "Lịch sử nhân loại, vũ trụ và khoa học thường thức");
         DanhMuc catSciFi = createCategoryIfNotFound("Khoa Học Viễn Tưởng", "Tiểu thuyết viễn tưởng kinh điển và hiện đại");
 
-        // Seed Publisher & Supplier
+        // Seed Publisher
         NhaXuatBan nxb = new NhaXuatBan();
         nxb.setTenNXB("Nhà Xuất Bản Hội Nhà Văn");
         nxb.setDiaChi("Hà Nội");
@@ -122,31 +119,23 @@ public class DataSeeder implements CommandLineRunner {
         nxb.setEmail("nxbhnv@gmail.com");
         nxb = nhaXuatBanRepository.save(nxb);
 
-        NhaCungCap ncc = new NhaCungCap();
-        ncc.setTenNCC("Công ty Sách Phương Nam");
-        ncc.setDiaChi("TP.HCM");
-        ncc.setSoDienThoai("0283833333");
-        ncc.setEmail("contact@phuongnam.com");
-        ncc.setTrangThai("HoatDong");
-        ncc = nhaCungCapRepository.save(ncc);
-
         // Seed Books
-        createBook("The Midnight Library", "978-0525559474", 189000, 25, catFiction, nxb, ncc,
+        createBook("The Midnight Library", "978-0525559474", 189000, 25, catFiction, nxb,
                 "https://lh3.googleusercontent.com/aida-public/AB6AXuAJxhxEUoGYZXYaOldMaT7d3dcCRrYvCD-3AWG8q4nOBMKeBIhtPi1dKb9NiDZHTXWMxMULBn3rsm5dU8_IVOjwK8Bnkg8xf-IGsBbsQoLtc5D6EWqcU1KfQ1LzI9jMW8JHZBBy9sHF_7t1onS8pagaubUOfOqYifnPkQMRgKeMgWgWQ71XMqmHdC9fJzuMiB3aqbLZt8bE5qj4HVtt62KzVUKztkjut685dS6dOCMbTJ_WPnz-9N7y");
 
-        createBook("Atomic Habits - Thay Đổi Tí Hon", "978-0735211292", 220000, 0, catSelfHelp, nxb, ncc,
+        createBook("Atomic Habits - Thay Đổi Tí Hon", "978-0735211292", 220000, 0, catSelfHelp, nxb,
                 "https://lh3.googleusercontent.com/aida-public/AB6AXuC0ZepDd_foKXu3i6ER1m8WWEdur0sxuw_PzY9MNfI4REnQ3rf6R_2Cm9EnfFAhXCPxQTTtVl4s2CrHSmtbVz08lHsAHDSiErKboS8Y4p5NQiHrun0Ek56kgIt1soK3hBbriVWEntfW_SHfXzkp7nmY2OyfVyfhAuJ50SpGyqZseN_277pw-RUdZgMOpRkN3ksmBAnBDCRnpGWTd3UWhZiP2GhZTpYd0mZ4A0F2WZ20z_Y2aCKwxl9w");
 
-        createBook("Tâm Lý Học Về Tiền", "978-0857197689", 150000, 3, catEcon, nxb, ncc,
+        createBook("Tâm Lý Học Về Tiền", "978-0857197689", 150000, 3, catEcon, nxb,
                 "https://lh3.googleusercontent.com/aida-public/AB6AXuAUSZ5dqoRMUTssXIap1lFtbGqNj76EO4_JpeLICxgK6i8RQ-b6FBevsmTpBNYLqOGOhEJmM72f7BeRd_P6wYVJ0WrTJJCFwjmrX7y4IYbT9cGZhUYpfZ41NtYpK8wDRUwUU5JolPlF4JYof0nf-Mnjr2hBZFwxagtPhNGSVfaR65hlzsL-oDdP7Q53Ww7C4vzv_B90IFfI-_FjyHy7V4wP5GHZfTpmShIiBp4oEL19xwu0tRaTGEgW");
 
-        createBook("Sapiens: Lược Sử Loài Người", "978-0062316097", 265000, 38, catHistory, nxb, ncc,
+        createBook("Sapiens: Lược Sử Loài Người", "978-0062316097", 265000, 38, catHistory, nxb,
                 "https://lh3.googleusercontent.com/aida-public/AB6AXuCG70bn_Qqg9AKCp8J9XwZoQ0H8otME2a1VxaIQ9mbLAQk60DgJssT5k7D_fsGf6ttO0j-TROb1NzE4QR1_sbRLD856RV8UIFgynUd7SujhVFdhLBJkAPHxPynAmPFKFoKuLSY2tyJX9T_1SDen13Mk4MN2urDBWhtknhDsTK8-O2oLxA8yjhXNZy0YUWK2U5gHXvRhAIj2d-YivtCOD_hFsb8Qu8Z00zBpmbfcRC4at7Dd35UbsRB0");
 
-        createBook("Cây Cam Ngọt Của Tôi", "978-6047781234", 108000, 45, catFiction, nxb, ncc,
+        createBook("Cây Cam Ngọt Của Tôi", "978-6047781234", 108000, 45, catFiction, nxb,
                 "https://lh3.googleusercontent.com/aida-public/AB6AXuAJxhxEUoGYZXYaOldMaT7d3dcCRrYvCD-3AWG8q4nOBMKeBIhtPi1dKb9NiDZHTXWMxMULBn3rsm5dU8_IVOjwK8Bnkg8xf-IGsBbsQoLtc5D6EWqcU1KfQ1LzI9jMW8JHZBBy9sHF_7t1onS8pagaubUOfOqYifnPkQMRgKeMgWgWQ71XMqmHdC9fJzuMiB3aqbLZt8bE5qj4HVtt62KzVUKztkjut685dS6dOCMbTJ_WPnz-9N7y");
 
-        createBook("Dune - Xứ Cát", "978-0441013593", 245000, 18, catSciFi, nxb, ncc,
+        createBook("Dune - Xứ Cát", "978-0441013593", 245000, 18, catSciFi, nxb,
                 "https://lh3.googleusercontent.com/aida-public/AB6AXuCG70bn_Qqg9AKCp8J9XwZoQ0H8otME2a1VxaIQ9mbLAQk60DgJssT5k7D_fsGf6ttO0j-TROb1NzE4QR1_sbRLD856RV8UIFgynUd7SujhVFdhLBJkAPHxPynAmPFKFoKuLSY2tyJX9T_1SDen13Mk4MN2urDBWhtknhDsTK8-O2oLxA8yjhXNZy0YUWK2U5gHXvRhAIj2d-YivtCOD_hFsb8Qu8Z00zBpmbfcRC4at7Dd35UbsRB0");
     }
 
@@ -163,7 +152,7 @@ public class DataSeeder implements CommandLineRunner {
                 });
     }
 
-    private void createBook(String title, String isbn, int price, int stock, DanhMuc category, NhaXuatBan nxb, NhaCungCap ncc, String coverUrl) {
+    private void createBook(String title, String isbn, int price, int stock, DanhMuc category, NhaXuatBan nxb, String coverUrl) {
         SanPham sp = new SanPham();
         sp.setTenSP(title);
         sp.setISBN(isbn);
@@ -173,7 +162,6 @@ public class DataSeeder implements CommandLineRunner {
         sp.setMucTonToiThieu(5);
         sp.setDanhMuc(category);
         sp.setNhaXuatBan(nxb);
-        sp.setNhaCungCap(ncc);
         sp.setMoTa(coverUrl);
         sp.setTrangThai(stock > 0 ? "DangBan" : "HetHang");
         sp.setNgayTao(LocalDateTime.now());
@@ -191,36 +179,26 @@ public class DataSeeder implements CommandLineRunner {
         DanhMuc catBookNook = createCategoryIfNotFound("Mô Hình Book Nook", "Mô hình gỗ 3D Book Nook trang trí giá sách");
         DanhMuc catBoardgame = createCategoryIfNotFound("Boardgame & Quà Tặng", "Trò chơi boardgame trí tuệ và hộp quà tặng độc đáo");
 
-        NhaCungCap ncc = nhaCungCapRepository.findAll().stream().findFirst().orElseGet(() -> {
-            NhaCungCap n = new NhaCungCap();
-            n.setTenNCC("Công ty Sách Phương Nam");
-            n.setDiaChi("TP.HCM");
-            n.setSoDienThoai("0283833333");
-            n.setEmail("contact@phuongnam.com");
-            n.setTrangThai("HoatDong");
-            return nhaCungCapRepository.save(n);
-        });
-
-        createProductItem("Sổ Tay Bìa Da Vintage Classic", "VPP-001", "VanPhongPham", 85000, 40, catSoTay, ncc,
+        createProductItem("Sổ Tay Bìa Da Vintage Classic", "VPP-001", "VanPhongPham", 85000, 40, catSoTay,
                 "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=500&auto=format&fit=crop&q=80");
-        createProductItem("Bút Máy Thư Pháp Pilot Kakuno", "VPP-002", "VanPhongPham", 210000, 25, catBut, ncc,
+        createProductItem("Bút Máy Thư Pháp Pilot Kakuno", "VPP-002", "VanPhongPham", 210000, 25, catBut,
                 "https://images.unsplash.com/photo-1583485088034-697b5bc54ccd?w=500&auto=format&fit=crop&q=80");
-        createProductItem("Bộ Bookmark Kim Loại Mạ Vàng Cổ Điển", "VPP-003", "VanPhongPham", 45000, 60, catDungCu, ncc,
+        createProductItem("Bộ Bookmark Kim Loại Mạ Vàng Cổ Điển", "VPP-003", "VanPhongPham", 45000, 60, catDungCu,
                 "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=500&auto=format&fit=crop&q=80");
-        createProductItem("Đèn Kẹp Đọc Sách Bảo Vệ Mắt LED", "VPP-004", "VanPhongPham", 135000, 15, catDungCu, ncc,
+        createProductItem("Đèn Kẹp Đọc Sách Bảo Vệ Mắt LED", "VPP-004", "VanPhongPham", 135000, 15, catDungCu,
                 "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=500&auto=format&fit=crop&q=80");
 
-        createProductItem("Túi Canvas The4BookStore Vintage Tote", "QT-001", "QuaTang", 120000, 35, catTuiTote, ncc,
+        createProductItem("Túi Canvas The4BookStore Vintage Tote", "QT-001", "QuaTang", 120000, 35, catTuiTote,
                 "https://images.unsplash.com/photo-1544816155-12df9643f363?w=500&auto=format&fit=crop&q=80");
-        createProductItem("Mô Hình Book Nook Gỗ 3D Hẻm Xéo", "QT-002", "QuaTang", 450000, 10, catBookNook, ncc,
+        createProductItem("Mô Hình Book Nook Gỗ 3D Hẻm Xéo", "QT-002", "QuaTang", 450000, 10, catBookNook,
                 "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=500&auto=format&fit=crop&q=80");
-        createProductItem("Bộ Boardgame Catan Bản Tiếng Việt", "QT-003", "QuaTang", 590000, 8, catBoardgame, ncc,
+        createProductItem("Bộ Boardgame Catan Bản Tiếng Việt", "QT-003", "QuaTang", 590000, 8, catBoardgame,
                 "https://images.unsplash.com/photo-1610890716171-6b1bb98ffd09?w=500&auto=format&fit=crop&q=80");
-        createProductItem("Hộp Quà Tặng Người Yêu Sách Reader Box", "QT-004", "QuaTang", 320000, 18, catBoardgame, ncc,
+        createProductItem("Hộp Quà Tặng Người Yêu Sách Reader Box", "QT-004", "QuaTang", 320000, 18, catBoardgame,
                 "https://images.unsplash.com/photo-1513519245088-0e12902e5a38?w=500&auto=format&fit=crop&q=80");
     }
 
-    private void createProductItem(String title, String isbn, String loaiSP, int price, int stock, DanhMuc category, NhaCungCap ncc, String coverUrl) {
+    private void createProductItem(String title, String isbn, String loaiSP, int price, int stock, DanhMuc category, String coverUrl) {
         if (sanPhamRepository.findAll().stream().anyMatch(p -> isbn.equalsIgnoreCase(p.getISBN()))) {
             return;
         }
@@ -232,7 +210,6 @@ public class DataSeeder implements CommandLineRunner {
         sp.setSoLuongTon(stock);
         sp.setMucTonToiThieu(5);
         sp.setDanhMuc(category);
-        sp.setNhaCungCap(ncc);
         sp.setMoTa(coverUrl);
         sp.setTrangThai(stock > 0 ? "DangBan" : "HetHang");
         sp.setNgayTao(LocalDateTime.now());

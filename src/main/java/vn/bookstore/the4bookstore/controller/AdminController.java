@@ -13,11 +13,9 @@ import vn.bookstore.the4bookstore.entity.SanPham;
 import vn.bookstore.the4bookstore.entity.DonHang;
 import vn.bookstore.the4bookstore.entity.TacGia;
 import vn.bookstore.the4bookstore.entity.NhaXuatBan;
-import vn.bookstore.the4bookstore.entity.NhaCungCap;
 import vn.bookstore.the4bookstore.entity.SanPhamTacGia;
 import vn.bookstore.the4bookstore.entity.SanPhamTacGiaId;
 import vn.bookstore.the4bookstore.repository.DanhMucRepository;
-import vn.bookstore.the4bookstore.repository.NhaCungCapRepository;
 import vn.bookstore.the4bookstore.repository.NhaXuatBanRepository;
 import vn.bookstore.the4bookstore.repository.SanPhamRepository;
 import vn.bookstore.the4bookstore.repository.DonHangRepository;
@@ -51,7 +49,6 @@ public class AdminController {
     private final SanPhamRepository sanPhamRepository;
     private final DanhMucRepository danhMucRepository;
     private final NhaXuatBanRepository nhaXuatBanRepository;
-    private final NhaCungCapRepository nhaCungCapRepository;
     private final TacGiaRepository tacGiaRepository;
     private final SanPhamTacGiaRepository sanPhamTacGiaRepository;
 
@@ -72,7 +69,6 @@ public class AdminController {
         public AdminController(SanPhamRepository sanPhamRepository,
                            DanhMucRepository danhMucRepository,
                            NhaXuatBanRepository nhaXuatBanRepository,
-                           NhaCungCapRepository nhaCungCapRepository,
                            TacGiaRepository tacGiaRepository,
                            SanPhamTacGiaRepository sanPhamTacGiaRepository,
                            ReportService reportService,
@@ -81,7 +77,6 @@ public class AdminController {
         this.sanPhamRepository = sanPhamRepository;
         this.danhMucRepository = danhMucRepository;
         this.nhaXuatBanRepository = nhaXuatBanRepository;
-        this.nhaCungCapRepository = nhaCungCapRepository;
         this.tacGiaRepository = tacGiaRepository;
         this.sanPhamTacGiaRepository = sanPhamTacGiaRepository;
         this.reportService = reportService;
@@ -551,115 +546,13 @@ public class AdminController {
         return ResponseEntity.ok(bookDtos);
     }
 
-    // ==================== QUẢN LÝ NHÀ CUNG CẤP ====================
+    // ==================== QUẢN LÝ NHÀ CUNG CẤP (Đã chuyển sang mô hình Gian Hàng / Shop) ====================
     @GetMapping({"/suppliers", "/nha-cung-cap"})
-    public String suppliers(@RequestParam(value = "search", required = false) String search,
-                            Model model) {
-        List<NhaCungCap> suppliers;
-        if (search != null && !search.isBlank()) {
-            suppliers = nhaCungCapRepository.findAll().stream()
-                    .filter(s -> s.getTenNCC() != null && s.getTenNCC().toLowerCase().contains(search.toLowerCase()))
-                    .toList();
-            model.addAttribute("searchKeyword", search);
-        } else {
-            suppliers = nhaCungCapRepository.findAll();
-        }
-        model.addAttribute("suppliers", suppliers);
-        return "admin/suppliers";
+    public String suppliers(RedirectAttributes ra) {
+        ra.addFlashAttribute("infoMessage", "Hệ thống đã chuyển sang mô hình sàn thương mại điện tử đa gian hàng (Shops/Vendors).");
+        return "redirect:/admin/shops";
     }
 
-    @PostMapping("/suppliers/save")
-    public String saveSupplier(@ModelAttribute NhaCungCap supplier, RedirectAttributes ra) {
-        try {
-            if (supplier.getTrangThai() == null || supplier.getTrangThai().isBlank()) {
-                supplier.setTrangThai("HoatDong");
-            }
-            nhaCungCapRepository.save(supplier);
-            ra.addFlashAttribute("successMessage", "Lưu thông tin nhà cung cấp thành công!");
-        } catch (Exception e) {
-            ra.addFlashAttribute("errorMessage", "Lỗi: " + e.getMessage());
-        }
-        return "redirect:/admin/suppliers";
-    }
-
-    @PostMapping("/suppliers/delete/{id}")
-    public String deleteSupplier(@PathVariable Integer id, RedirectAttributes ra) {
-        try {
-            nhaCungCapRepository.deleteById(id);
-            ra.addFlashAttribute("successMessage", "Đã xóa nhà cung cấp thành công!");
-        } catch (Exception e) {
-            ra.addFlashAttribute("errorMessage", "Không thể xóa nhà cung cấp này vì đã có phiếu nhập/sách liên kết. Bạn có thể chuyển trạng thái sang Tạm ngưng.");
-        }
-        return "redirect:/admin/suppliers";
-    }
-
-    @GetMapping("/api/suppliers/{id}/books")
-    @ResponseBody
-    public ResponseEntity<?> getSupplierBooks(@PathVariable Integer id) {
-        List<SanPham> books = sanPhamRepository.findByNhaCungCapId(id);
-        List<Map<String, Object>> result = books.stream().map(b -> {
-            Map<String, Object> map = new HashMap<>();
-            map.put("maSP", b.getMaSP());
-            map.put("tenSP", b.getTenSP());
-            map.put("isbn", b.getISBN() != null ? b.getISBN() : "");
-            map.put("giaBan", b.getGiaBan() != null ? b.getGiaBan() : 0);
-            map.put("soLuongTon", b.getSoLuongTon() != null ? b.getSoLuongTon() : 0);
-            map.put("hinhAnh", b.getHinhAnh());
-            map.put("danhMuc", b.getDanhMuc() != null ? b.getDanhMuc().getTenDanhMuc() : "");
-            return map;
-        }).toList();
-        return ResponseEntity.ok(result);
-    }
-
-    @GetMapping("/api/suppliers/{id}/available-books")
-    @ResponseBody
-    public ResponseEntity<?> getAvailableBooksForSupplier(@PathVariable Integer id,
-                                                         @RequestParam(value = "keyword", required = false) String keyword) {
-        List<SanPham> books = sanPhamRepository.findAvailableBooksForSupplier(id, keyword, PageRequest.of(0, 30));
-        List<Map<String, Object>> result = books.stream().map(b -> {
-            Map<String, Object> map = new HashMap<>();
-            map.put("maSP", b.getMaSP());
-            map.put("tenSP", b.getTenSP());
-            map.put("isbn", b.getISBN() != null ? b.getISBN() : "");
-            map.put("giaBan", b.getGiaBan() != null ? b.getGiaBan() : 0);
-            map.put("hinhAnh", b.getHinhAnh());
-            map.put("nhaCungCap", b.getNhaCungCap() != null ? b.getNhaCungCap().getTenNCC() : "Chưa có NCC");
-            return map;
-        }).toList();
-        return ResponseEntity.ok(result);
-    }
-
-    @PostMapping("/api/suppliers/{id}/assign-book")
-    @ResponseBody
-    public ResponseEntity<?> assignBookToSupplier(@PathVariable Integer id, @RequestParam Integer productId) {
-        Optional<NhaCungCap> nccOpt = nhaCungCapRepository.findById(id);
-        if (nccOpt.isEmpty()) {
-            return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Nhà cung cấp không tồn tại"));
-        }
-        Optional<SanPham> spOpt = sanPhamRepository.findById(productId);
-        if (spOpt.isEmpty()) {
-            return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Sách không tồn tại"));
-        }
-        SanPham sp = spOpt.get();
-        sp.setNhaCungCap(nccOpt.get());
-        sanPhamRepository.save(sp);
-        return ResponseEntity.ok(Map.of("success", true, "message", "Đã thêm mặt hàng vào nhà cung cấp!"));
-    }
-
-    @PostMapping("/api/suppliers/{id}/unlink-book")
-    @ResponseBody
-    public ResponseEntity<?> unlinkBookFromSupplier(@PathVariable Integer id, @RequestParam Integer productId) {
-        Optional<SanPham> spOpt = sanPhamRepository.findById(productId);
-        if (spOpt.isEmpty()) {
-            return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Sách không tồn tại"));
-        }
-        SanPham sp = spOpt.get();
-        if (sp.getNhaCungCap() != null && sp.getNhaCungCap().getMaNCC().equals(id)) {
-            sp.setNhaCungCap(null);
-            sanPhamRepository.save(sp);
-        }
-        return ResponseEntity.ok(Map.of("success", true, "message", "Đã gỡ mặt hàng khỏi nhà cung cấp!"));
-    }
 
 
     @GetMapping("/api/notifications")

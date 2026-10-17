@@ -35,7 +35,6 @@ class AdminControllerTest {
     @MockitoBean private SanPhamRepository sanPhamRepository;
     @MockitoBean private DanhMucRepository danhMucRepository;
     @MockitoBean private NhaXuatBanRepository nhaXuatBanRepository;
-    @MockitoBean private NhaCungCapRepository nhaCungCapRepository;
     @MockitoBean private TacGiaRepository tacGiaRepository;
     @MockitoBean private SanPhamTacGiaRepository sanPhamTacGiaRepository;
     @MockitoBean private DonHangRepository donHangRepository;

@@ -299,33 +299,6 @@ GO
 SET ANSI_PADDING OFF
 GO
 
--- Bảng: nha_cung_cap
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-SET ANSI_PADDING ON
-GO
-CREATE TABLE [dbo].[nha_cung_cap](
-	[mancc] [int] IDENTITY(1,1) NOT NULL,
-	[tenncc] [nvarchar](150) COLLATE Vietnamese_CI_AS NOT NULL,
-	[dia_chi] [nvarchar](255) COLLATE Vietnamese_CI_AS NULL,
-	[so_dien_thoai] [varchar](20) COLLATE Vietnamese_CI_AS NULL,
-	[email] [varchar](100) COLLATE Vietnamese_CI_AS NULL,
-	[ma_so_thue] [varchar](50) COLLATE Vietnamese_CI_AS NULL,
-	[trang_thai] [varchar](20) COLLATE Vietnamese_CI_AS NOT NULL,
-PRIMARY KEY CLUSTERED 
-(
-	[mancc] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
-) ON [PRIMARY]
-
-GO
-SET ANSI_PADDING OFF
-GO
-ALTER TABLE [dbo].[nha_cung_cap] ADD  CONSTRAINT [DF_ncc_trangthai]  DEFAULT ('HoatDong') FOR [trang_thai]
-GO
-
 -- Bảng: san_pham
 SET ANSI_NULLS ON
 GO
@@ -2155,14 +2128,6 @@ INSERT [dbo].[nha_xuat_ban] ([manxb], [tennxb], [dia_chi], [so_dien_thoai], [ema
 INSERT [dbo].[nha_xuat_ban] ([manxb], [tennxb], [dia_chi], [so_dien_thoai], [email]) VALUES (4, N'NXB Tổng Hợp TP.HCM', N'62 Nguyễn Thị Minh Khai, Q1, TP.HCM', N'02838225340', N'tonghop@nxbhcm.com.vn')
 INSERT [dbo].[nha_xuat_ban] ([manxb], [tennxb], [dia_chi], [so_dien_thoai], [email]) VALUES (5, N'NXB Giáo Dục Việt Nam', N'81 Tráº§n HÆ°ng Äáº¡o, HÃ  Ná»™i', N'02438220801', N'contact@nxbgd.vn')
 SET IDENTITY_INSERT [dbo].[nha_xuat_ban] OFF
-GO
-
--- Dữ liệu bảng: nha_cung_cap (2 dòng)
-SET IDENTITY_INSERT [dbo].[nha_cung_cap] ON 
-
-INSERT [dbo].[nha_cung_cap] ([mancc], [tenncc], [dia_chi], [so_dien_thoai], [email], [ma_so_thue], [trang_thai]) VALUES (1, N'Công Ty Phát Hành Sách FAHASA', N'60-62 Lê Lợi, Q1, TP.HCM', N'02838224579', N'fahasa@fahasa.com.vn', NULL, N'HoatDong')
-INSERT [dbo].[nha_cung_cap] ([mancc], [tenncc], [dia_chi], [so_dien_thoai], [email], [ma_so_thue], [trang_thai]) VALUES (2, N'Công Ty Sách Phương Nam', N'940 ÄÆ°á»ng 3/2, Q11, TP.HCM', N'02839650066', N'hotro@phuongnam.com', NULL, N'HoatDong')
-SET IDENTITY_INSERT [dbo].[nha_cung_cap] OFF
 GO
 
 -- Dữ liệu bảng: san_pham (14 dòng)

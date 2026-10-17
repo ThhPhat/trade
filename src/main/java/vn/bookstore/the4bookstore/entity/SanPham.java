@@ -101,14 +101,6 @@ public class SanPham {
         }
     }
 
-    public void setNhaCungCap(NhaCungCap ncc) {
-        // No-op for marketplace
-    }
-
-    public NhaCungCap getNhaCungCap() {
-        return null;
-    }
-
     public String getTenNhaXuatBan() {
         return tenNhaXuatBan != null ? tenNhaXuatBan : "";
     }

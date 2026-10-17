@@ -37,9 +37,6 @@ erDiagram
     nha_xuat_ban {
         int manxb PK
     }
-    nha_cung_cap {
-        int mancc PK
-    }
     san_pham {
         int masp PK
         int ma_shop FK

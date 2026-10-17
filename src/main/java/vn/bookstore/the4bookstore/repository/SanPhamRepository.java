@@ -200,8 +200,6 @@ public interface SanPhamRepository extends JpaRepository<SanPham, Integer> {
     default List<SanPham> findByNhaXuatBan_MaNXB(Integer maNXB) { return java.util.List.of(); }
     default long countByNhaXuatBan_MaNXB(Integer maNXB) { return 0L; }
     default Page<SanPham> findByNhaXuatBan_MaNXBAndTrangThaiIn(Integer maNXB, List<String> trangThais, Pageable pageable) { return Page.empty(); }
-    default Page<SanPham> findByNhaXuatBan_MaNXBAndTrangThai(Integer maNXB, String trangThai, Pageable pageable) { return Page.empty(); }
-    default List<SanPham> findByNhaCungCapId(Integer maNCC) { return java.util.List.of(); }
 
     @Query("SELECT sptg.sanPham FROM SanPhamTacGia sptg WHERE sptg.tacGia.maTacGia = :maTacGia")
     List<SanPham> findBooksByTacGiaId(@Param("maTacGia") Integer maTacGia);
@@ -294,8 +292,4 @@ public interface SanPhamRepository extends JpaRepository<SanPham, Integer> {
                                           Pageable pageable);
 
     long countByShop_MaShopAndTrangThaiKhoa(Integer maShop, String trangThaiKhoa);
-
-    default List<SanPham> findAvailableBooksForSupplier(Integer maNCC, String keyword, Pageable pageable) {
-        return java.util.List.of();
-    }
 }
